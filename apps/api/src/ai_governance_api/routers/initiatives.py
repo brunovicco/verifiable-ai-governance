@@ -58,7 +58,7 @@ async def _load_initiative(session: AsyncSession, initiative_id: str) -> Initiat
     initiative = await session.scalar(
         select(Initiative)
         .where(Initiative.id == initiative_id)
-        .options(selectinload(Initiative.approvals))
+        .options(selectinload(Initiative.approvals), selectinload(Initiative.systems))
     )
     if initiative is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Initiative not found")

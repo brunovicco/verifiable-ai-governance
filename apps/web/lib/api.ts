@@ -1,4 +1,4 @@
-import type { Identity, Initiative } from "@/lib/types";
+import type { AgentAsset, AISystem, Identity, Initiative, ModelAsset } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 export const DEMO_REQUESTER: Identity = { userId: "demo.requester" };
@@ -74,4 +74,68 @@ export function decideApproval(
     { method: "POST", body: JSON.stringify(payload) },
     identity,
   );
+}
+
+export function createAISystem(
+  initiativeId: string,
+  payload: Record<string, unknown>,
+): Promise<AISystem> {
+  return request(`/api/v1/initiatives/${initiativeId}/systems`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getAISystem(id: string): Promise<AISystem> {
+  return request(`/api/v1/systems/${id}`);
+}
+
+export function createModel(
+  systemId: string,
+  payload: Record<string, unknown>,
+): Promise<ModelAsset> {
+  return request(`/api/v1/systems/${systemId}/models`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function createAgent(
+  systemId: string,
+  payload: Record<string, unknown>,
+): Promise<AgentAsset> {
+  return request(`/api/v1/systems/${systemId}/agents`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function retireAISystem(id: string, version: number): Promise<AISystem> {
+  return request(`/api/v1/systems/${id}/retire`, {
+    method: "POST",
+    body: JSON.stringify({
+      expected_version: version,
+      reason: "Sistema retirado pelo responsável no portal de governança.",
+    }),
+  });
+}
+
+export function retireModel(id: string, version: number): Promise<ModelAsset> {
+  return request(`/api/v1/models/${id}/retire`, {
+    method: "POST",
+    body: JSON.stringify({
+      expected_version: version,
+      reason: "Modelo retirado pelo responsável no portal de governança.",
+    }),
+  });
+}
+
+export function retireAgent(id: string, version: number): Promise<AgentAsset> {
+  return request(`/api/v1/agents/${id}/retire`, {
+    method: "POST",
+    body: JSON.stringify({
+      expected_version: version,
+      reason: "Agente retirado pelo responsável no portal de governança.",
+    }),
+  });
 }
