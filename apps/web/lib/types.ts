@@ -11,6 +11,57 @@ export interface Approval {
   version: number;
 }
 
+export interface ModelAsset {
+  id: string;
+  ai_system_id: string;
+  provider: string;
+  model_name: string;
+  model_version: string;
+  deployment_region: string;
+  approved_use_cases: string[];
+  prohibited_use_cases: string[];
+  allowed_data_classes: string[];
+  evaluation_baseline: Record<string, unknown>;
+  deprecation_date: string | null;
+  status: string;
+  version: number;
+}
+
+export interface AgentAsset {
+  id: string;
+  ai_system_id: string;
+  name: string;
+  purpose: string;
+  owner_id: string;
+  autonomy_level: string;
+  allowed_models: string[];
+  tools: string[];
+  permissions: string[];
+  max_cost: number | null;
+  max_runtime_seconds: number | null;
+  human_approval_points: string[];
+  kill_switch_enabled: boolean;
+  status: string;
+  version: number;
+}
+
+export interface AISystem {
+  id: string;
+  initiative_id: string;
+  name: string;
+  purpose: string;
+  owner_id: string;
+  status: string;
+  risk_tier: string;
+  production: boolean;
+  metadata_json: Record<string, unknown>;
+  version: number;
+  created_at: string;
+  updated_at: string;
+  models?: ModelAsset[];
+  agents?: AgentAsset[];
+}
+
 export interface Initiative {
   id: string;
   name: string;
@@ -34,6 +85,7 @@ export interface Initiative {
   international_processing?: boolean;
   inference_countries?: string[];
   approvals?: Approval[];
+  systems?: AISystem[];
 }
 
 export interface Identity {

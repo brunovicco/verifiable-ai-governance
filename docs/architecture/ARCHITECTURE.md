@@ -48,6 +48,14 @@ PostgreSQL mantém o estado transacional. Entidades mutáveis possuem `version`;
 de decisão exigem `expected_version`. Eventos de auditoria são append-only e encadeados
 por hash para tornar alterações posteriores detectáveis.
 
+### Inventário operacional
+
+Uma iniciativa em estado `approved` pode originar um ou mais sistemas. A criação é
+restrita ao owner da iniciativa; mutações de sistema, modelo e agente são restritas ao
+owner do sistema ou a um administrador. Todos os comandos mutáveis exigem a versão
+esperada. Aposentadoria substitui exclusão física e fecha o agregado para novas
+alterações, preservando os registros e eventos de auditoria.
+
 ## Modelo lógico inicial
 
 ```mermaid

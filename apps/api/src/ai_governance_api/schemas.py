@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from governance_schemas import (
     ApprovalArea,
@@ -11,6 +12,188 @@ from governance_schemas import (
     RiskTier,
 )
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+
+def _clean_strings(values: list[str]) -> list[str]:
+    return sorted({value.strip() for value in values if value.strip()})
+
+
+class ModelAssetCreate(BaseModel):
+    provider: str = Field(min_length=2, max_length=200)
+    model_name: str = Field(min_length=2, max_length=200)
+    model_version: str = Field(min_length=1, max_length=100)
+    deployment_region: str = Field(min_length=2, max_length=100)
+    approved_use_cases: list[str] = Field(default_factory=list)
+    prohibited_use_cases: list[str] = Field(default_factory=list)
+    allowed_data_classes: list[DataClassification] = Field(default_factory=list)
+    evaluation_baseline: dict[str, Any] = Field(default_factory=dict)
+    deprecation_date: datetime | None = None
+
+    @field_validator("approved_use_cases", "prohibited_use_cases")
+    @classmethod
+    def clean_use_cases(cls, values: list[str]) -> list[str]:
+        return _clean_strings(values)
+
+
+class ModelAssetUpdate(BaseModel):
+    expected_version: int = Field(ge=1)
+    provider: str | None = Field(default=None, min_length=2, max_length=200)
+    model_name: str | None = Field(default=None, min_length=2, max_length=200)
+    model_version: str | None = Field(default=None, min_length=1, max_length=100)
+    deployment_region: str | None = Field(default=None, min_length=2, max_length=100)
+    approved_use_cases: list[str] | None = None
+    prohibited_use_cases: list[str] | None = None
+    allowed_data_classes: list[DataClassification] | None = None
+    evaluation_baseline: dict[str, Any] | None = None
+    deprecation_date: datetime | None = None
+
+    @field_validator("approved_use_cases", "prohibited_use_cases")
+    @classmethod
+    def clean_optional_use_cases(cls, values: list[str] | None) -> list[str] | None:
+        return _clean_strings(values) if values is not None else None
+
+    @model_validator(mode="after")
+    def require_change(self) -> "ModelAssetUpdate":
+        if self.model_fields_set == {"expected_version"}:
+            raise ValueError("Informe ao menos um campo para atualizar.")
+        return self
+
+
+class AgentCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=200)
+    purpose: str = Field(min_length=10, max_length=5000)
+    owner_id: str | None = Field(default=None, min_length=3, max_length=200)
+    autonomy_level: AutonomyLevel
+    allowed_models: list[str] = Field(default_factory=list)
+    tools: list[str] = Field(default_factory=list)
+    permissions: list[str] = Field(default_factory=list)
+    max_cost: float | None = Field(default=None, ge=0)
+    max_runtime_seconds: int | None = Field(default=None, ge=1)
+    human_approval_points: list[str] = Field(default_factory=list)
+    kill_switch_enabled: bool = True
+
+    @field_validator("allowed_models", "tools", "permissions", "human_approval_points")
+    @classmethod
+    def clean_lists(cls, values: list[str]) -> list[str]:
+        return _clean_strings(values)
+
+
+class AgentUpdate(BaseModel):
+    expected_version: int = Field(ge=1)
+    name: str | None = Field(default=None, min_length=2, max_length=200)
+    purpose: str | None = Field(default=None, min_length=10, max_length=5000)
+    owner_id: str | None = Field(default=None, min_length=3, max_length=200)
+    autonomy_level: AutonomyLevel | None = None
+    allowed_models: list[str] | None = None
+    tools: list[str] | None = None
+    permissions: list[str] | None = None
+    max_cost: float | None = Field(default=None, ge=0)
+    max_runtime_seconds: int | None = Field(default=None, ge=1)
+    human_approval_points: list[str] | None = None
+    kill_switch_enabled: bool | None = None
+
+    @field_validator("allowed_models", "tools", "permissions", "human_approval_points")
+    @classmethod
+    def clean_optional_lists(cls, values: list[str] | None) -> list[str] | None:
+        return _clean_strings(values) if values is not None else None
+
+    @model_validator(mode="after")
+    def require_change(self) -> "AgentUpdate":
+        if self.model_fields_set == {"expected_version"}:
+            raise ValueError("Informe ao menos um campo para atualizar.")
+        return self
+
+
+class AISystemCreate(BaseModel):
+    name: str = Field(min_length=3, max_length=200)
+    purpose: str = Field(min_length=20, max_length=5000)
+    owner_id: str | None = Field(default=None, min_length=3, max_length=200)
+    production: bool = False
+    metadata_json: dict[str, Any] = Field(default_factory=dict)
+
+
+class AISystemUpdate(BaseModel):
+    expected_version: int = Field(ge=1)
+    name: str | None = Field(default=None, min_length=3, max_length=200)
+    purpose: str | None = Field(default=None, min_length=20, max_length=5000)
+    owner_id: str | None = Field(default=None, min_length=3, max_length=200)
+    production: bool | None = None
+    metadata_json: dict[str, Any] | None = None
+
+    @model_validator(mode="after")
+    def require_change(self) -> "AISystemUpdate":
+        if self.model_fields_set == {"expected_version"}:
+            raise ValueError("Informe ao menos um campo para atualizar.")
+        return self
+
+
+class RetirementRequest(BaseModel):
+    expected_version: int = Field(ge=1)
+    reason: str = Field(min_length=10, max_length=2000)
+
+
+class ModelAssetRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    ai_system_id: str
+    provider: str
+    model_name: str
+    model_version: str
+    deployment_region: str
+    approved_use_cases: list[str]
+    prohibited_use_cases: list[str]
+    allowed_data_classes: list[str]
+    status: EntityStatus
+    evaluation_baseline: dict[str, Any]
+    deprecation_date: datetime | None
+    version: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class AgentRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    ai_system_id: str
+    name: str
+    purpose: str
+    owner_id: str
+    autonomy_level: AutonomyLevel
+    allowed_models: list[str]
+    tools: list[str]
+    permissions: list[str]
+    max_cost: float | None
+    max_runtime_seconds: int | None
+    human_approval_points: list[str]
+    kill_switch_enabled: bool
+    status: EntityStatus
+    version: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class AISystemRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    initiative_id: str
+    name: str
+    purpose: str
+    owner_id: str
+    status: EntityStatus
+    risk_tier: RiskTier
+    production: bool
+    metadata_json: dict[str, Any]
+    version: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class AISystemDetail(AISystemRead):
+    models: list[ModelAssetRead] = Field(default_factory=list)
+    agents: list[AgentRead] = Field(default_factory=list)
 
 
 class InitiativeCreate(BaseModel):
@@ -89,6 +272,7 @@ class InitiativeDetail(InitiativeRead):
     international_processing: bool
     inference_countries: list[str]
     approvals: list[ApprovalRead] = Field(default_factory=list)
+    systems: list[AISystemRead] = Field(default_factory=list)
 
 
 class ApprovalDecisionRequest(BaseModel):

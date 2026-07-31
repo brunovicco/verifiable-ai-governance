@@ -5,9 +5,9 @@ import { FormEvent, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 import { StatusPill } from "@/components/StatusPill";
-import { decideApproval, getInitiative, submitInitiative } from "@/lib/api";
+import { createAISystem, decideApproval, getInitiative, submitInitiative } from "@/lib/api";
 import { label } from "@/lib/labels";
-import type { Approval, Initiative } from "@/lib/types";
+import type { AISystem, Approval, Initiative } from "@/lib/types";
 
 function ApprovalCard({ approval, initiativeId, onUpdated }: { approval: Approval; initiativeId: string; onUpdated: (value: Initiative) => void }) {
   const [open, setOpen] = useState(false);
@@ -45,6 +45,105 @@ function ApprovalCard({ approval, initiativeId, onUpdated }: { approval: Approva
   </article>;
 }
 
+function SystemInventory({
+  initiative,
+  onCreated,
+}: {
+  initiative: Initiative;
+  onCreated: (system: AISystem) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const systems = initiative.systems ?? [];
+
+  async function create(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    try {
+      const system = await createAISystem(initiative.id, {
+        name: String(data.get("name")),
+        purpose: String(data.get("purpose")),
+        owner_id: String(data.get("owner_id")),
+        production: data.get("production") === "on",
+      });
+      onCreated(system);
+      form.reset();
+      setOpen(false);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Falha ao cadastrar o sistema.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="panel inventory-panel">
+      <div className="panel-heading">
+        <div>
+          <p className="eyebrow">INVENTÁRIO OPERACIONAL</p>
+          <h2>Sistemas de IA</h2>
+        </div>
+        {initiative.status === "approved" && (
+          <button className="button button-small" onClick={() => setOpen(!open)}>
+            {open ? "Cancelar" : "Cadastrar sistema"}
+          </button>
+        )}
+      </div>
+      {open && (
+        <form className="inventory-form" onSubmit={create}>
+          <div className="field-grid">
+            <label>
+              Nome do sistema
+              <input name="name" required minLength={3} />
+            </label>
+            <label>
+              Responsável
+              <input name="owner_id" required defaultValue={initiative.business_owner_id} />
+            </label>
+          </div>
+          <label>
+            Finalidade operacional
+            <textarea name="purpose" required minLength={20} rows={3} />
+          </label>
+          <label className="check inline-check">
+            <input name="production" type="checkbox" />
+            <span>Este sistema já está em produção</span>
+          </label>
+          {error && <div className="notice notice-error">{error}</div>}
+          <button className="button button-primary" disabled={busy}>
+            {busy ? "Cadastrando…" : "Adicionar ao inventário"}
+          </button>
+        </form>
+      )}
+      {systems.length === 0 ? (
+        <div className="empty compact-empty">
+          <strong>Nenhum sistema vinculado.</strong>
+          <span>O cadastro é liberado depois da aprovação da iniciativa.</span>
+        </div>
+      ) : (
+        <div className="inventory-list">
+          {systems.map((system) => (
+            <Link className="inventory-row" href={`/systems/${system.id}`} key={system.id}>
+              <div>
+                <strong>{system.name}</strong>
+                <small>{system.purpose}</small>
+              </div>
+              <div className="status-row">
+                <StatusPill value={system.status} />
+                <span aria-hidden>→</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function InitiativePage() {
   const { id } = useParams<{ id: string }>();
   const [initiative, setInitiative] = useState<Initiative | null>(null);
@@ -65,6 +164,12 @@ export default function InitiativePage() {
   const required = initiative.approvals?.filter((item) => item.required) ?? [];
   const approved = required.filter((item) => item.status === "approved").length;
 
+  function addSystem(system: AISystem) {
+    setInitiative((current) =>
+      current ? { ...current, systems: [...(current.systems ?? []), system] } : current,
+    );
+  }
+
   return <div className="page-shell detail-page">
     <div className="breadcrumb"><Link href="/">Portfólio</Link><span>/</span><span>{initiative.name}</span></div>
     <section className="detail-header">
@@ -77,5 +182,8 @@ export default function InitiativePage() {
       <article className="panel documents-card"><p className="eyebrow">DOCUMENTAÇÃO REQUERIDA</p><h2>{initiative.required_documents.length} artefatos</h2><ul className="document-list">{initiative.required_documents.map((document) => <li key={document}><span>✓</span>{label(document)}</li>)}</ul></article>
     </section>
     {initiative.status !== "draft" && <section className="panel approvals-panel"><div className="panel-heading"><div><p className="eyebrow">FLUXO DE APROVAÇÃO</p><h2>{approved} de {required.length} gates concluídos</h2></div><div className="progress"><span style={{ width: `${required.length ? (approved / required.length) * 100 : 0}%` }} /></div></div><div className="approval-grid">{initiative.approvals?.map((approval) => <ApprovalCard approval={approval} initiativeId={initiative.id} key={approval.id} onUpdated={setInitiative} />)}</div></section>}
+    {(initiative.status === "approved" || (initiative.systems?.length ?? 0) > 0) && (
+      <SystemInventory initiative={initiative} onCreated={addSystem} />
+    )}
   </div>;
 }

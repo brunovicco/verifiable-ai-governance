@@ -99,6 +99,9 @@ class Initiative(VersionedMixin, Base):
         back_populates="initiative", cascade="all, delete-orphan", lazy="selectin"
     )
     assessments: Mapped[list[Assessment]] = relationship(back_populates="initiative")
+    systems: Mapped[list[AISystem]] = relationship(
+        back_populates="initiative", lazy="selectin"
+    )
 
 
 class AISystem(VersionedMixin, Base):
@@ -117,6 +120,12 @@ class AISystem(VersionedMixin, Base):
     risk_tier: Mapped[RiskTier] = mapped_column(Enum(RiskTier, native_enum=False), nullable=False)
     production: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+    initiative: Mapped[Initiative] = relationship(back_populates="systems")
+    models: Mapped[list[ModelAsset]] = relationship(
+        back_populates="ai_system", lazy="selectin"
+    )
+    agents: Mapped[list[Agent]] = relationship(back_populates="ai_system", lazy="selectin")
 
 
 class ModelAsset(VersionedMixin, Base):
@@ -138,6 +147,8 @@ class ModelAsset(VersionedMixin, Base):
     )
     evaluation_baseline: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
     deprecation_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    ai_system: Mapped[AISystem] = relationship(back_populates="models")
 
 
 class Agent(VersionedMixin, Base):
@@ -163,6 +174,8 @@ class Agent(VersionedMixin, Base):
     status: Mapped[EntityStatus] = mapped_column(
         Enum(EntityStatus, native_enum=False), default=EntityStatus.DRAFT, nullable=False
     )
+
+    ai_system: Mapped[AISystem] = relationship(back_populates="agents")
 
 
 class Assessment(VersionedMixin, Base):

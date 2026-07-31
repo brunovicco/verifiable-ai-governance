@@ -47,6 +47,17 @@ autonomia não sejam diluídos por uma soma baixa em outras dimensões.
 O score é triagem, não decisão final. Revisores podem elevar o risco com justificativa;
 redução futura exigirá evidência e aprovação de Governança de IA.
 
+## Inventário operacional
+
+Somente uma iniciativa aprovada pode originar um sistema de IA. O owner da iniciativa
+atribui um responsável identificável ao sistema; esse responsável controla o registro
+de modelos e agentes. Modelos e agentes novos começam em `draft`, pois a aprovação da
+iniciativa não substitui avaliação, escopo aprovado ou baseline técnico do ativo.
+
+A exclusão física não faz parte do fluxo normal. Aposentar um sistema muda seu estado,
+desativa a indicação de produção, aposenta os ativos vinculados e registra evidência
+auditável. Alterações posteriores ficam bloqueadas.
+
 ## Cadeia de controle
 
 Cada controle deverá declarar identificador, objetivo, tipo, aplicabilidade, owner,

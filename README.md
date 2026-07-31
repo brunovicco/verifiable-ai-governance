@@ -8,8 +8,10 @@ governança em controles verificáveis, aprovações condicionais e evidências 
 
 - portal Next.js voltado a solicitantes e aprovadores não técnicos;
 - API FastAPI com autenticação preparada para OIDC;
-- inventário inicial para iniciativas, sistemas, modelos, agentes, avaliações,
-  aprovações, evidências, incidentes e processamento internacional;
+- inventário navegável de iniciativas, sistemas, modelos e agentes, com ownership,
+  versão, região, escopo de uso, autonomia, ferramentas e limites operacionais;
+- estruturas persistentes preparadas para avaliações, evidências, incidentes e
+  processamento internacional;
 - classificação preliminar de risco e workflow condicional para Negócio, Arquitetura,
   Segurança, Infra, DevOps, Privacidade, Jurídico, Compliance e Dados;
 - segregação de funções, versionamento otimista e trilha de auditoria encadeada por hash;
@@ -67,7 +69,10 @@ make build
 4. Um aprovador autorizado, diferente do owner, registra decisão e justificativa.
 5. Uma rejeição bloqueia a iniciativa. A aprovação só ocorre quando todos os gates
    obrigatórios forem aprovados.
-6. Toda mudança material gera evento de auditoria com versão e cadeia de hashes.
+6. O owner vincula sistemas de IA à iniciativa aprovada e registra seus modelos e
+   agentes; ativos novos permanecem em rascunho até assurance posterior.
+7. Alterações usam concorrência otimista, e aposentadorias preservam o histórico.
+8. Toda mudança material gera evento de auditoria com versão e cadeia de hashes.
 
 ## Autenticação OIDC
 
