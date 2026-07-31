@@ -1,0 +1,21 @@
+{
+  "name": "verifiable-ai-governance",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace @governance/web run dev",
+    "build:web": "npm --workspace @governance/web run build",
+    "lint:web": "npm --workspace @governance/web run lint",
+    "test:web": "npm --workspace @governance/web run test"
+  },
+  "engines": {
+    "node": ">=20.9"
+  },
+  "overrides": {
+    "postcss": "8.5.25",
+    "sharp": "0.35.0"
+  }
+}

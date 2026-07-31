@@ -1,0 +1,51 @@
+[project]
+name = "verifiable-ai-governance-workspace"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+  "ai-governance-api",
+  "governance-schemas",
+  "policy-engine",
+]
+
+[tool.uv.sources]
+ai-governance-api = { workspace = true }
+governance-schemas = { workspace = true }
+policy-engine = { workspace = true }
+
+[tool.uv.workspace]
+members = [
+  "apps/api",
+  "packages/governance-schemas",
+  "packages/policy-engine",
+]
+
+[dependency-groups]
+dev = [
+  "httpx>=0.28.1,<0.29",
+  "mypy>=1.17.0,<2",
+  "pytest>=8.4.0,<9",
+  "pytest-asyncio>=1.1.0,<2",
+  "ruff>=0.12.0,<1",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["apps/api/tests", "packages/policy-engine/tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = [
+  "apps/api/src",
+  "packages/governance-schemas/src",
+  "packages/policy-engine/src",
+]

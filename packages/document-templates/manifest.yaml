@@ -1,0 +1,32 @@
+schema_version: "1.0"
+templates:
+  - id: corporate-acceptable-ai-use-policy
+    version: "1.0.0"
+    file: templates/acceptable-ai-use-policy.md
+    scope: corporate
+    owner: AI Governance
+  - id: new-ai-proposal
+    version: "1.0.0"
+    file: templates/new-ai-proposal.md
+    scope: initiative
+    owner: Business
+  - id: ai-impact-assessment
+    version: "1.0.0"
+    file: templates/ai-impact-assessment.md
+    scope: initiative
+    owner: AI Governance
+  - id: ripd
+    version: "1.0.0"
+    file: templates/ripd.md
+    scope: initiative
+    owner: Privacy
+  - id: international-processing-assessment
+    version: "1.0.0"
+    file: templates/international-processing-assessment.md
+    scope: initiative
+    owner: Privacy
+  - id: monitoring-plan
+    version: "1.0.0"
+    file: templates/monitoring-plan.md
+    scope: ai_system
+    owner: Operations

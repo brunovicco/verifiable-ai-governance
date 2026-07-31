@@ -1,0 +1,16 @@
+[project]
+name = "policy-engine"
+version = "0.1.0"
+description = "Deterministic governance policy evaluation"
+requires-python = ">=3.12"
+dependencies = ["governance-schemas"]
+
+[tool.uv.sources]
+governance-schemas = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/policy_engine"]

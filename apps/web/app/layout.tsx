@@ -1,0 +1,38 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Verifiable AI Governance",
+  description: "Governança de IA do cadastro ao monitoramento",
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="pt-BR">
+      <body>
+        <header className="topbar">
+          <Link className="brand" href="/">
+            <span className="brand-mark">V</span>
+            <span>
+              <strong>Verifiable AI</strong>
+              <small>Governance workspace</small>
+            </span>
+          </Link>
+          <nav aria-label="Navegação principal">
+            <Link href="/">Portfólio</Link>
+            <Link className="button button-small" href="/initiatives/new">
+              Nova iniciativa
+            </Link>
+          </nav>
+        </header>
+        <main>{children}</main>
+        <footer>
+          <span>Políticas verificáveis · Evidências · Decisões auditáveis</span>
+          <span>v0.1</span>
+        </footer>
+      </body>
+    </html>
+  );
+}
