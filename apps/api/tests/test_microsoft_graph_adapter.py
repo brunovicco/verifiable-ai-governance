@@ -1,4 +1,5 @@
-from collections.abc import Callable
+import logging
+from collections.abc import Awaitable, Callable
 from urllib.parse import parse_qs
 
 import httpx
@@ -25,21 +26,36 @@ GROUP_TWO = "55555555-5555-4555-8555-555555555555"
 TOKEN_PATH = f"/{TENANT_ID}/oauth2/v2.0/token"
 
 
+async def no_sleep(_: float) -> None:
+    """Avoid real retry delays in deterministic adapter tests."""
+
+
 def directory(
     handler: Callable[[httpx.Request], httpx.Response],
     *,
     max_pages: int = 5,
+    max_attempts: int = 3,
+    backoff_base_seconds: float = 0.25,
+    max_retry_delay_seconds: float = 2,
     max_retry_after_seconds: int = 120,
+    sleep: Callable[[float], Awaitable[None]] = no_sleep,
+    jitter: Callable[[], float] = lambda: 0.0,
 ) -> MicrosoftGraphCorporateDirectory:
+    """Build the adapter with deterministic retry collaborators."""
     return MicrosoftGraphCorporateDirectory(
         tenant_id=TENANT_ID,
         client_id=CLIENT_ID,
         client_secret="test-client-secret",
         timeout_seconds=1,
         max_pages=max_pages,
+        max_attempts=max_attempts,
+        backoff_base_seconds=backoff_base_seconds,
+        max_retry_delay_seconds=max_retry_delay_seconds,
         max_retry_after_seconds=max_retry_after_seconds,
         max_response_bytes=1024 * 1024,
         transport=httpx.MockTransport(handler),
+        sleep=sleep,
+        jitter=jitter,
     )
 
 
@@ -140,9 +156,13 @@ async def test_graph_adapter_rejects_untrusted_pagination_destination() -> None:
 
 
 async def test_graph_adapter_bounds_numeric_retry_after() -> None:
+    graph_attempts = 0
+
     def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal graph_attempts
         if request.url.host == "login.microsoftonline.com":
             return token_response(request)
+        graph_attempts += 1
         return httpx.Response(429, headers={"Retry-After": "600"})
 
     with pytest.raises(CorporateDirectoryUnavailable) as caught:
@@ -152,6 +172,143 @@ async def test_graph_adapter_bounds_numeric_retry_after() -> None:
         )
 
     assert caught.value.retry_after_seconds == 90
+    assert graph_attempts == 1
+
+
+async def test_graph_adapter_retries_throttled_get_after_server_delay(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    profile_attempts = 0
+    delays: list[float] = []
+
+    async def capture_sleep(delay: float) -> None:
+        delays.append(delay)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal profile_attempts
+        if request.url.host == "login.microsoftonline.com":
+            return token_response(request)
+        if request.url.path == "/v1.0/me":
+            profile_attempts += 1
+            if profile_attempts == 1:
+                return httpx.Response(429, headers={"Retry-After": "1"})
+            return httpx.Response(200, json={"id": USER_ID})
+        return httpx.Response(200, json={"value": []})
+
+    with caplog.at_level(logging.WARNING):
+        profile = await directory(handler, sleep=capture_sleep).resolve(
+            "api-access-token",
+            expected_identity(),
+        )
+
+    assert profile.object_id == USER_ID
+    assert profile_attempts == 2
+    assert delays == [1.0]
+    assert "operation=profile status=429 attempt=1" in caplog.text
+    assert "api-access-token" not in caplog.text
+    assert "delegated-graph-token" not in caplog.text
+
+
+async def test_graph_adapter_retries_transient_failure_with_jittered_backoff() -> None:
+    profile_attempts = 0
+    delays: list[float] = []
+
+    async def capture_sleep(delay: float) -> None:
+        delays.append(delay)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal profile_attempts
+        if request.url.host == "login.microsoftonline.com":
+            return token_response(request)
+        if request.url.path == "/v1.0/me":
+            profile_attempts += 1
+            if profile_attempts == 1:
+                return httpx.Response(503)
+            return httpx.Response(200, json={"id": USER_ID})
+        return httpx.Response(200, json={"value": []})
+
+    profile = await directory(
+        handler,
+        backoff_base_seconds=0.2,
+        sleep=capture_sleep,
+        jitter=lambda: 0.5,
+    ).resolve("api-access-token", expected_identity())
+
+    assert profile.object_id == USER_ID
+    assert profile_attempts == 2
+    assert delays == pytest.approx([0.3])
+
+
+async def test_graph_adapter_does_not_retry_obo_token_exchange() -> None:
+    token_attempts = 0
+    delays: list[float] = []
+
+    async def capture_sleep(delay: float) -> None:
+        delays.append(delay)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal token_attempts
+        token_attempts += 1
+        return httpx.Response(503, headers={"Retry-After": "1"})
+
+    with pytest.raises(CorporateDirectoryUnavailable):
+        await directory(handler, sleep=capture_sleep).resolve(
+            "api-access-token",
+            expected_identity(),
+        )
+
+    assert token_attempts == 1
+    assert delays == []
+
+
+async def test_graph_adapter_does_not_retry_non_transient_graph_status() -> None:
+    graph_attempts = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal graph_attempts
+        if request.url.host == "login.microsoftonline.com":
+            return token_response(request)
+        graph_attempts += 1
+        return httpx.Response(403)
+
+    with pytest.raises(CorporateDirectoryUnavailable):
+        await directory(handler).resolve("api-access-token", expected_identity())
+
+    assert graph_attempts == 1
+
+
+async def test_graph_adapter_fails_closed_after_retry_budget_is_exhausted(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    graph_attempts = 0
+    delays: list[float] = []
+
+    async def capture_sleep(delay: float) -> None:
+        delays.append(delay)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal graph_attempts
+        if request.url.host == "login.microsoftonline.com":
+            return token_response(request)
+        graph_attempts += 1
+        return httpx.Response(500)
+
+    with (
+        caplog.at_level(logging.WARNING),
+        pytest.raises(CorporateDirectoryUnavailable),
+    ):
+        await directory(
+            handler,
+            max_attempts=3,
+            backoff_base_seconds=0.1,
+            sleep=capture_sleep,
+        ).resolve("api-access-token", expected_identity())
+
+    assert graph_attempts == 3
+    assert delays == pytest.approx([0.1, 0.2])
+    assert "microsoft_graph_retry_exhausted operation=profile status=500 attempts=3" in (
+        caplog.text
+    )
 
 
 async def test_graph_adapter_rejects_invalid_group_identifier() -> None:

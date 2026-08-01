@@ -49,6 +49,9 @@ MICROSOFT_GRAPH_CLIENT_ID=<api-client-id>
 MICROSOFT_GRAPH_CLIENT_SECRET=<valor-injetado-pelo-secret-manager>
 MICROSOFT_GRAPH_TIMEOUT_SECONDS=5
 MICROSOFT_GRAPH_MAX_PAGES=20
+MICROSOFT_GRAPH_MAX_ATTEMPTS=3
+MICROSOFT_GRAPH_BACKOFF_BASE_SECONDS=0.25
+MICROSOFT_GRAPH_MAX_RETRY_DELAY_SECONDS=2
 MICROSOFT_GRAPH_MAX_RETRY_AFTER_SECONDS=300
 MICROSOFT_GRAPH_MAX_RESPONSE_BYTES=1048576
 ```
@@ -111,8 +114,20 @@ testes determinísticos do adapter.
 - revogar a credencial anterior e registrar a evidência da rotação;
 - em comprometimento, revogar segredo, sessões e consentimentos conforme o playbook de
   IAM, então revisar logs sem copiar material secreto;
-- respostas `429` expõem somente um `Retry-After` numérico limitado; retry automático,
-  jitter, cache e stale identity pertencem à próxima etapa;
+- leituras Graph com `429`, `500`, `502`, `503` ou `504` usam no máximo
+  `MICROSOFT_GRAPH_MAX_ATTEMPTS`, contando a primeira tentativa;
+- `Retry-After` numérico é usado quando não excede
+  `MICROSOFT_GRAPH_MAX_RETRY_DELAY_SECONDS`; valores maiores falham rápido e são
+  propagados ao chamador até o limite de `MICROSOFT_GRAPH_MAX_RETRY_AFTER_SECONDS`;
+- sem `Retry-After`, o atraso usa backoff exponencial a partir de
+  `MICROSOFT_GRAPH_BACKOFF_BASE_SECONDS`, com jitter e limite local;
+- a troca OBO não é repetida automaticamente, pois o retry fica restrito às leituras
+  idempotentes de perfil e grupos;
+- logs `microsoft_graph_retry`, `microsoft_graph_retry_deferred` e
+  `microsoft_graph_retry_exhausted` permitem alertas por operação, status e tentativa,
+  sem URL, token, usuário, tenant ou conteúdo de resposta;
+- cache, invalidação e stale identity permanecem pendentes e serão tratados como uma
+  decisão separada de consistência entre réplicas;
 - indisponibilidade ou resposta inconsistente falha de forma fechada e nunca adiciona
   capacidades de aprovação.
 
