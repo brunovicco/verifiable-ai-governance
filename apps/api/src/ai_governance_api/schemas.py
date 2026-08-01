@@ -32,6 +32,16 @@ class CorporateDirectoryProfileRead(BaseModel):
     source: str = "microsoft_graph"
 
 
+class AuthorizationProvenanceRead(BaseModel):
+    """Catalog evidence safe to expose to the authenticated principal."""
+
+    catalog_id: str
+    catalog_version: str
+    catalog_digest: str = Field(pattern=r"^[a-f0-9]{64}$")
+    matched_mapping_ids: list[str] = Field(default_factory=list)
+    source_types: list[str] = Field(default_factory=list)
+
+
 class PrincipalRead(BaseModel):
     """Authenticated identity information safe to expose to its owner."""
 
@@ -42,6 +52,7 @@ class PrincipalRead(BaseModel):
     tenant_id: str | None = None
     object_id: str | None = None
     account_type: DirectoryAccountType | None = None
+    authorization_provenance: AuthorizationProvenanceRead | None = None
     directory_profile: CorporateDirectoryProfileRead | None = None
 
 

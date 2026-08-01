@@ -145,6 +145,7 @@ async def test_oidc_http_adapter_propagates_corporate_identity_policy(
     assert captured["allowed_tenant_ids"] == (TENANT_ID,)
     assert captured["issuer_tenant_id"] == TENANT_ID
     assert captured["guest_approvals_enabled"] is True
+    assert captured["entra_app_roles_claim"] == "roles"
 
 
 async def test_disabled_directory_enrichment_does_not_require_bearer() -> None:

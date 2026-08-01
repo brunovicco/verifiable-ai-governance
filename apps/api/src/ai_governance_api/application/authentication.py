@@ -42,6 +42,7 @@ class AuthenticateAccessToken:
         admin_claim: str,
         max_token_length: int,
         corporate_policy: CorporateIdentityPolicy | None = None,
+        corporate_roles_claim: str | None = None,
     ) -> None:
         """Initialize the use case with an external verifier and claim policy."""
         self._verifier = verifier
@@ -49,6 +50,7 @@ class AuthenticateAccessToken:
         self._admin_claim = admin_claim
         self._max_token_length = max_token_length
         self._corporate_policy = corporate_policy
+        self._corporate_roles_claim = corporate_roles_claim
 
     def execute(self, token: str) -> Principal:
         """Authenticate a non-empty token and return its least-privileged identity."""
@@ -63,6 +65,7 @@ class AuthenticateAccessToken:
                 areas_claim=self._areas_claim,
                 admin_claim=self._admin_claim,
                 corporate_policy=self._corporate_policy,
+                corporate_roles_claim=self._corporate_roles_claim,
             )
         except IdentityMappingError as exc:
             raise InvalidAccessToken(str(exc)) from exc

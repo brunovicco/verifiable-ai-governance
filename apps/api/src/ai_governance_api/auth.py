@@ -42,6 +42,7 @@ def oidc_authenticator(
     allowed_tenant_ids: tuple[str, ...],
     issuer_tenant_id: str | None,
     guest_approvals_enabled: bool,
+    entra_app_roles_claim: str,
 ) -> AuthenticateAccessToken:
     """Compose and cache the OIDC authentication use case from immutable settings."""
     verifier = PyJwtOidcVerifier(
@@ -64,6 +65,11 @@ def oidc_authenticator(
                 issuer_tenant_id=issuer_tenant_id or "",
                 guest_approvals_enabled=guest_approvals_enabled,
             )
+            if identity_mode is OidcIdentityMode.ENTRA
+            else None
+        ),
+        corporate_roles_claim=(
+            entra_app_roles_claim
             if identity_mode is OidcIdentityMode.ENTRA
             else None
         ),
@@ -103,6 +109,7 @@ async def _oidc_principal(
             else None
         ),
         guest_approvals_enabled=settings.oidc_guest_approvals_enabled,
+        entra_app_roles_claim=settings.oidc_entra_app_roles_claim,
     )
     try:
         return await run_in_threadpool(authenticator.execute, credentials.credentials)

@@ -85,11 +85,13 @@ def test_member_uses_stable_tenant_and_object_identity() -> None:
             "oid": OBJECT_ID.upper(),
             "acct": 0,
             "governance_areas": ["security"],
+            "roles": ["Governance.Security.Reviewer"],
             "governance_admin": True,
         },
         areas_claim="governance_areas",
         admin_claim="governance_admin",
         corporate_policy=corporate_policy(),
+        corporate_roles_claim="roles",
     )
 
     assert principal.user_id == f"{TENANT_ID}:{OBJECT_ID}"
@@ -97,7 +99,10 @@ def test_member_uses_stable_tenant_and_object_identity() -> None:
     assert principal.directory_identity.tenant_id == TENANT_ID
     assert principal.directory_identity.object_id == OBJECT_ID
     assert principal.directory_identity.account_type is DirectoryAccountType.MEMBER
-    assert principal.approval_areas == frozenset({ApprovalArea.SECURITY})
+    assert principal.approval_areas == frozenset()
+    assert principal.directory_role_values == frozenset(
+        {"Governance.Security.Reviewer"}
+    )
     assert principal.is_admin
 
 
@@ -107,12 +112,13 @@ def test_guest_has_no_governance_capabilities_by_default() -> None:
             "tid": TENANT_ID,
             "oid": OBJECT_ID,
             "acct": "1",
-            "governance_areas": ["security"],
+            "roles": ["Governance.Security.Reviewer"],
             "governance_admin": True,
         },
         areas_claim="governance_areas",
         admin_claim="governance_admin",
         corporate_policy=corporate_policy(),
+        corporate_roles_claim="roles",
     )
 
     assert principal.directory_identity is not None
@@ -127,15 +133,19 @@ def test_explicit_policy_can_enable_guest_approval_capabilities() -> None:
             "tid": TENANT_ID,
             "oid": OBJECT_ID,
             "acct": 1,
-            "governance_areas": ["privacy"],
+            "roles": ["Governance.Privacy.Reviewer"],
             "governance_admin": True,
         },
         areas_claim="governance_areas",
         admin_claim="governance_admin",
         corporate_policy=corporate_policy(guest_approvals_enabled=True),
+        corporate_roles_claim="roles",
     )
 
-    assert principal.approval_areas == frozenset({ApprovalArea.PRIVACY})
+    assert principal.approval_areas == frozenset()
+    assert principal.directory_role_values == frozenset(
+        {"Governance.Privacy.Reviewer"}
+    )
     assert not principal.is_admin
 
 
@@ -146,18 +156,35 @@ def test_unknown_account_type_cannot_receive_capabilities(account_claim: object)
             "tid": TENANT_ID,
             "oid": OBJECT_ID,
             "acct": account_claim,
-            "governance_areas": ["security"],
+            "roles": ["Governance.Security.Reviewer"],
             "governance_admin": True,
         },
         areas_claim="governance_areas",
         admin_claim="governance_admin",
         corporate_policy=corporate_policy(guest_approvals_enabled=True),
+        corporate_roles_claim="roles",
     )
 
     assert principal.directory_identity is not None
     assert principal.directory_identity.account_type is DirectoryAccountType.UNKNOWN
     assert principal.approval_areas == frozenset()
     assert not principal.is_admin
+
+
+def test_invalid_corporate_app_roles_claim_is_rejected() -> None:
+    with pytest.raises(IdentityMappingError, match="App Roles claim is invalid"):
+        principal_from_claims(
+            {
+                "tid": TENANT_ID,
+                "oid": OBJECT_ID,
+                "acct": 0,
+                "roles": ["Governance.Security.Reviewer", 42],
+            },
+            areas_claim="governance_areas",
+            admin_claim="governance_admin",
+            corporate_policy=corporate_policy(),
+            corporate_roles_claim="roles",
+        )
 
 
 def test_non_allowlisted_tenant_is_rejected() -> None:

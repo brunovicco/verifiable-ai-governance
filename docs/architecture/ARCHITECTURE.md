@@ -79,8 +79,11 @@ Microsoft Graph via OBO implementa a porta `CorporateDirectoryPort` para obter p
 endpoints fixos, timeouts e paginação validada, enquanto o caso de uso vincula o
 resultado a `(tenant_id, object_id)`. O endpoint expõe apenas o perfil; quantidade e
 lista de grupos permanecem internas. Autorizações continuarão derivadas somente de App
-Roles ou object IDs mapeados, nunca de nomes ou de `department`. O plano detalhado está
-em `MICROSOFT_ENTRA_GRAPH_PLAN.md`; as decisões estão nos ADRs 0011, 0012 e 0013.
+Roles ou object IDs presentes no catálogo YAML tenant-specific, nunca de nomes ou de
+`department`. A decisão retorna catálogo, versão, digest e mapping IDs; aprovações
+persistem essa provenance na cadeia de auditoria. O padrão empacotado é vazio e alterações podem
+ser fornecidas por configuração externa. O plano detalhado está em
+`MICROSOFT_ENTRA_GRAPH_PLAN.md`; as decisões estão nos ADRs 0011 a 0014.
 
 ### Assessments estruturados
 

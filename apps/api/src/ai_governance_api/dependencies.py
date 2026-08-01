@@ -17,6 +17,7 @@ from ai_governance_api.adapters import (
     SqlAlchemyEvidenceStore,
     SqlAlchemyInitiativeControlContextStore,
     SqlAlchemyTransaction,
+    YamlDirectoryAuthorizationCatalog,
 )
 from ai_governance_api.application import (
     ControlCatalogPort,
@@ -30,6 +31,7 @@ from ai_governance_api.application import (
     ListControlCatalog,
     ListEvidence,
     ResolveCorporateDirectory,
+    ResolveDirectoryAuthorization,
     SaveAssessment,
     SubmitAssessment,
     UploadEvidence,
@@ -37,6 +39,10 @@ from ai_governance_api.application import (
 from ai_governance_api.auth import BEARER_CHALLENGE, BearerCredentials, get_principal
 from ai_governance_api.config import Settings, get_settings
 from ai_governance_api.database import get_db
+from ai_governance_api.domain.directory_authorization import (
+    DirectoryAuthorizationCatalog,
+    DirectoryAuthorizationError,
+)
 from ai_governance_api.domain.identity import Principal
 from ai_governance_api.services import InitiativeService, InventoryService, PolicyEvaluator
 
@@ -64,6 +70,40 @@ def get_control_catalog() -> ControlCatalogPort:
 
 PolicyEvaluatorDependency = Annotated[PolicyEvaluator, Depends(get_policy_evaluator)]
 ControlCatalogDependency = Annotated[ControlCatalogPort, Depends(get_control_catalog)]
+
+
+@lru_cache
+def get_directory_authorization_catalog() -> DirectoryAuthorizationCatalog:
+    """Load the packaged or explicitly configured Entra mapping catalog once."""
+    path = get_settings().directory_authorization_catalog_path
+    return (
+        YamlDirectoryAuthorizationCatalog.from_path(path)
+        if path
+        else YamlDirectoryAuthorizationCatalog.from_package()
+    )
+
+
+DirectoryAuthorizationCatalogDependency = Annotated[
+    DirectoryAuthorizationCatalog,
+    Depends(get_directory_authorization_catalog),
+]
+
+
+def get_directory_authorization_resolver(
+    catalog: DirectoryAuthorizationCatalogDependency,
+    settings: SettingsDependency,
+) -> ResolveDirectoryAuthorization:
+    """Build the stateless capability resolver from immutable deployment policy."""
+    return ResolveDirectoryAuthorization(
+        catalog,
+        guest_approvals_enabled=settings.oidc_guest_approvals_enabled,
+    )
+
+
+DirectoryAuthorizationResolverDependency = Annotated[
+    ResolveDirectoryAuthorization,
+    Depends(get_directory_authorization_resolver),
+]
 
 
 def get_corporate_directory_resolver(
@@ -132,6 +172,34 @@ async def get_corporate_directory_profile(
 CurrentCorporateDirectoryProfile = Annotated[
     CorporateDirectoryProfile | None,
     Depends(get_corporate_directory_profile),
+]
+
+
+async def get_authorized_principal(
+    principal: CurrentPrincipal,
+    directory_profile: CurrentCorporateDirectoryProfile,
+    resolver: DirectoryAuthorizationResolverDependency,
+) -> Principal:
+    """Resolve catalog-derived capabilities for authorization-sensitive requests."""
+    try:
+        return resolver.execute(
+            principal,
+            group_object_ids=(
+                directory_profile.group_object_ids
+                if directory_profile is not None
+                else frozenset()
+            ),
+        )
+    except DirectoryAuthorizationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Directory authorization could not be trusted",
+        ) from exc
+
+
+CurrentAuthorizedPrincipal = Annotated[
+    Principal,
+    Depends(get_authorized_principal),
 ]
 
 

@@ -145,8 +145,9 @@ Status em 2026-08-01: o adapter MSAL do portal, PKCE, `sessionStorage`, login/lo
 token silencioso da API, identidade `(tid, oid)`, tenant allowlist, política fail-closed
 para guest/conta sem `acct` confiável e enriquecimento Graph via OBO estão
 implementados. O adapter Graph possui `$select` mínimo, grupos transitivos, paginação
-com destino validado, timeout e propagação limitada de `Retry-After`. Validação contra
-tenant real, catálogo de mapeamento, cache, revogação e assurance permanecem pendentes.
+com destino validado, timeout e propagação limitada de `Retry-After`. O catálogo
+versionado App Role/object ID também está implementado com provenance auditável.
+Validação contra tenant real, cache, revogação e assurance permanecem pendentes.
 
 ### Fase 1 — Fundação Entra
 
@@ -172,10 +173,11 @@ tenant real, catálogo de mapeamento, cache, revogação e assurance permanecem 
 
 ### Fase 4 — Mapeamento governado
 
-- catálogo versionado grupo/App Role → `ApprovalArea`;
-- workflow de alteração com IAM, Segurança e Governança de IA;
-- endpoint de identidade com área organizacional, capacidades e provenance;
-- auditoria de sincronização e decisões.
+- [x] catálogo versionado grupo/App Role → `ApprovalArea`;
+- [x] workflow de alteração como código com IAM, Segurança e Governança de IA;
+- [x] endpoint de identidade com área organizacional, capacidades e provenance;
+- [x] provenance do catálogo no evento auditável de decisão;
+- [ ] auditoria de sincronização, cache e revogação.
 
 ### Fase 5 — Assurance
 

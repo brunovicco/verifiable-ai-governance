@@ -14,6 +14,12 @@ from ai_governance_api.domain.assessments import (
     RIPDAnswers,
     Subprocessor,
 )
+from ai_governance_api.domain.directory_authorization import (
+    DirectoryAuthorizationCatalog,
+    DirectoryAuthorizationError,
+    DirectoryAuthorizationMapping,
+    DirectoryAuthorizationSource,
+)
 from ai_governance_api.domain.evidence import (
     EvidenceActor,
     EvidenceKind,
@@ -24,6 +30,7 @@ from ai_governance_api.domain.evidence import (
     StoredObject,
 )
 from ai_governance_api.domain.identity import (
+    AuthorizationProvenance,
     CorporateIdentityPolicy,
     DirectoryAccountType,
     DirectoryIdentity,
@@ -48,8 +55,13 @@ __all__ = [
     "AssessmentNotEditable",
     "AssessmentRecord",
     "AssessmentTypeMismatch",
+    "AuthorizationProvenance",
     "CorporateIdentityPolicy",
     "DirectoryAccountType",
+    "DirectoryAuthorizationCatalog",
+    "DirectoryAuthorizationError",
+    "DirectoryAuthorizationMapping",
+    "DirectoryAuthorizationSource",
     "DirectoryIdentity",
     "EvidenceActor",
     "EvidenceKind",

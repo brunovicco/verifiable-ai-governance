@@ -52,6 +52,19 @@ class Principal:
     approval_areas: frozenset[ApprovalArea] = field(default_factory=frozenset)
     is_admin: bool = False
     directory_identity: DirectoryIdentity | None = None
+    directory_role_values: frozenset[str] = field(default_factory=frozenset)
+    authorization_provenance: "AuthorizationProvenance | None" = None
+
+
+@dataclass(frozen=True, slots=True)
+class AuthorizationProvenance:
+    """Content-minimized evidence for a resolved authorization decision."""
+
+    catalog_id: str
+    catalog_version: str
+    catalog_digest: str
+    matched_mapping_ids: tuple[str, ...] = ()
+    source_types: tuple[str, ...] = ()
 
 
 def principal_from_claims(
@@ -60,6 +73,7 @@ def principal_from_claims(
     areas_claim: str,
     admin_claim: str,
     corporate_policy: CorporateIdentityPolicy | None = None,
+    corporate_roles_claim: str | None = None,
 ) -> Principal:
     """Map verified OIDC claims into the least-privileged domain identity."""
     directory_identity = (
@@ -70,7 +84,22 @@ def principal_from_claims(
     user_id = directory_identity.key if directory_identity else _subject_from_claims(claims)
     email_value = claims.get("email")
     email = email_value.strip() if isinstance(email_value, str) else None
-    approval_areas = parse_approval_areas(_claim_at_path(claims, areas_claim))
+    raw_areas = _claim_at_path(claims, areas_claim)
+    raw_directory_roles = (
+        _claim_at_path(claims, corporate_roles_claim)
+        if directory_identity is not None and corporate_roles_claim is not None
+        else raw_areas
+    )
+    approval_areas = (
+        frozenset()
+        if directory_identity is not None
+        else parse_approval_areas(raw_areas)
+    )
+    directory_role_values = (
+        _directory_role_values(raw_directory_roles)
+        if directory_identity is not None
+        else frozenset()
+    )
     is_admin = _claim_at_path(claims, admin_claim) is True
     if (
         directory_identity is not None
@@ -92,6 +121,7 @@ def principal_from_claims(
         approval_areas=approval_areas,
         is_admin=is_admin,
         directory_identity=directory_identity,
+        directory_role_values=directory_role_values,
     )
 
 
@@ -110,6 +140,28 @@ def parse_approval_areas(raw_areas: object) -> frozenset[ApprovalArea]:
         except ValueError:
             continue
     return frozenset(parsed)
+
+
+def _directory_role_values(raw_roles: object) -> frozenset[str]:
+    """Return bounded case-sensitive App Role values from a verified claim."""
+    if isinstance(raw_roles, str):
+        values = [raw_roles]
+    elif isinstance(raw_roles, list) and all(isinstance(value, str) for value in raw_roles):
+        values = raw_roles
+    elif raw_roles is None:
+        return frozenset()
+    else:
+        raise IdentityMappingError("OIDC App Roles claim is invalid")
+    if len(values) > 128:
+        raise IdentityMappingError("OIDC App Roles claim exceeds its item limit")
+    normalized: set[str] = set()
+    for value in values:
+        role = value.strip()
+        if len(role) > 256:
+            raise IdentityMappingError("OIDC App Role value exceeds its size limit")
+        if role:
+            normalized.add(role)
+    return frozenset(normalized)
 
 
 def _claim_at_path(claims: Mapping[str, object], path: str) -> object:

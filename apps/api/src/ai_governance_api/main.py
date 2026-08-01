@@ -12,7 +12,10 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from ai_governance_api.config import get_settings
 from ai_governance_api.database import engine
-from ai_governance_api.dependencies import get_control_catalog
+from ai_governance_api.dependencies import (
+    get_control_catalog,
+    get_directory_authorization_catalog,
+)
 from ai_governance_api.errors import ApplicationError, ErrorKind
 from ai_governance_api.models import Base
 from ai_governance_api.routers.assessments import router as assessments_router
@@ -124,6 +127,7 @@ def create_app() -> FastAPI:
     """Build and configure the API application."""
     settings = get_settings()
     get_control_catalog()
+    get_directory_authorization_catalog()
     configure_logging(settings.log_level)
     app = FastAPI(
         title=settings.app_name,

@@ -2,7 +2,11 @@
 
 from fastapi import APIRouter, status
 
-from ai_governance_api.dependencies import CurrentPrincipal, InitiativeServiceDependency
+from ai_governance_api.dependencies import (
+    CurrentAuthorizedPrincipal,
+    CurrentPrincipal,
+    InitiativeServiceDependency,
+)
 from ai_governance_api.models import AuditEvent, Initiative, ReviewSubmission
 from ai_governance_api.schemas import (
     ApprovalDecisionRequest,
@@ -87,7 +91,7 @@ async def decide_approval(
     approval_id: str,
     request: ApprovalDecisionRequest,
     service: InitiativeServiceDependency,
-    principal: CurrentPrincipal,
+    principal: CurrentAuthorizedPrincipal,
 ) -> Initiative:
     """Record an authorized approval decision."""
     return await service.decide_approval(initiative_id, approval_id, request, principal)
@@ -97,7 +101,7 @@ async def decide_approval(
 async def list_review_history(
     initiative_id: str,
     service: InitiativeServiceDependency,
-    principal: CurrentPrincipal,
+    principal: CurrentAuthorizedPrincipal,
 ) -> list[ReviewSubmission]:
     """Return immutable review-round summaries to authorized participants."""
     return await service.list_review_history(initiative_id, principal)

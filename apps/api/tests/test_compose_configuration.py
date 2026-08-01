@@ -79,6 +79,12 @@ def test_api_corporate_identity_policy_is_environment_driven() -> None:
     assert environment["OIDC_GUEST_APPROVALS_ENABLED"] == (
         "${OIDC_GUEST_APPROVALS_ENABLED:-false}"
     )
+    assert environment["OIDC_ENTRA_APP_ROLES_CLAIM"] == (
+        "${OIDC_ENTRA_APP_ROLES_CLAIM:-roles}"
+    )
+    assert environment["DIRECTORY_AUTHORIZATION_CATALOG_PATH"] == (
+        "${DIRECTORY_AUTHORIZATION_CATALOG_PATH:-}"
+    )
 
 
 def test_api_graph_obo_configuration_is_environment_driven() -> None:

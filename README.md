@@ -149,6 +149,11 @@ se issuer/JWKS não usarem HTTPS. O claim configurado em `OIDC_GROUPS_CLAIM` pod
 caminho aninhado, como `realm_access.roles`, e deve conter as áreas que o usuário pode
 aprovar. Somente o booleano JSON `true` no `OIDC_ADMIN_CLAIM` concede administração.
 
+Essa conversão direta vale apenas para o modo OIDC genérico. No modo Entra, App Roles
+do claim `OIDC_ENTRA_APP_ROLES_CLAIM` e object IDs transitivos do Graph somente geram
+áreas quando constam no catálogo tenant-specific configurado por
+`DIRECTORY_AUTHORIZATION_CATALOG_PATH`. O catálogo empacotado é vazio por padrão.
+
 Assinatura, issuer, audience, expiração, emissão e subject são obrigatoriamente
 validados. Algoritmos simétricos não são aceitos. A obtenção de JWKS possui timeout e
 cache configuráveis, e tokens excessivamente grandes são rejeitados antes do acesso ao
@@ -178,10 +183,11 @@ No modo Entra, a API usa a identidade estável `(tid, oid)`, exige tenant allowl
 remove capacidades de aprovação de guests ou contas sem classificação `acct` confiável.
 Quando habilitado, Microsoft Graph via OBO identifica automaticamente perfil e
 departamento no endpoint `/api/v1/auth/me` e resolve grupos transitivos apenas
-internamente. Quantidade e object IDs não são expostos e ainda não alteram autorização.
-Áreas de aprovação virão
-somente de App Roles ou object IDs explicitamente mapeados; departamento e nomes de
-grupos não concedem autorização. Consulte também o
+internamente. Quantidade e object IDs não são expostos; somente mappings explícitos
+podem convertê-los em capacidades.
+Áreas de aprovação vêm somente de App Roles ou object IDs explicitamente mapeados; o
+catálogo versionado produz provenance no endpoint e na auditoria de decisões.
+Departamento e nomes de grupos não concedem autorização. Consulte também o
 [runbook Graph OBO](docs/operations/MICROSOFT_GRAPH_OBO_SETUP.md).
 Consulte o [plano Entra/Graph](docs/architecture/MICROSOFT_ENTRA_GRAPH_PLAN.md).
 
