@@ -3,20 +3,69 @@
 from fastapi import APIRouter
 
 from ai_governance_api.dependencies import (
+    BlockDirectoryAccessDependency,
     CurrentAuthorizedPrincipal,
     CurrentCorporateDirectoryProfile,
     CurrentPrincipal,
     InvalidateDirectoryAuthorizationDependency,
+    RestoreDirectoryAccessDependency,
 )
 from ai_governance_api.schemas import (
     AuthorizationProvenanceRead,
     CorporateDirectoryProfileRead,
+    DirectoryAccessBlockRequest,
+    DirectoryAccessRestoreRequest,
+    DirectoryAccessStateRead,
     DirectoryAuthorizationCacheInvalidationRead,
     DirectoryAuthorizationCacheInvalidationRequest,
     PrincipalRead,
 )
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
+
+
+@router.post("/directory-access/block", response_model=DirectoryAccessStateRead)
+async def block_directory_access(
+    request: DirectoryAccessBlockRequest,
+    principal: CurrentPrincipal,
+    command: BlockDirectoryAccessDependency,
+) -> DirectoryAccessStateRead:
+    """Suspend one Entra identity immediately through an audited admin action."""
+    state = await command.execute(
+        tenant_id=str(request.tenant_id),
+        object_id=str(request.object_id),
+        reason=request.reason,
+        reference=request.reference,
+        actor=principal,
+    )
+    return DirectoryAccessStateRead(
+        restriction_id=state.target.entry_id,
+        blocked=state.blocked,
+        changed_at=state.changed_at,
+        version=state.version,
+    )
+
+
+@router.post("/directory-access/restore", response_model=DirectoryAccessStateRead)
+async def restore_directory_access(
+    request: DirectoryAccessRestoreRequest,
+    principal: CurrentPrincipal,
+    command: RestoreDirectoryAccessDependency,
+) -> DirectoryAccessStateRead:
+    """Restore one Entra identity while forcing fresh authorization resolution."""
+    state = await command.execute(
+        tenant_id=str(request.tenant_id),
+        object_id=str(request.object_id),
+        reason=request.reason,
+        reference=request.reference,
+        actor=principal,
+    )
+    return DirectoryAccessStateRead(
+        restriction_id=state.target.entry_id,
+        blocked=state.blocked,
+        changed_at=state.changed_at,
+        version=state.version,
+    )
 
 
 @router.post(

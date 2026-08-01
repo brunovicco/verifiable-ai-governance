@@ -108,7 +108,7 @@ não texto livre.
 
 ## Follow-up
 
-- definir revogação emergencial coordenada de sessão e acesso no Entra;
+- integrar a restrição local definida no ADR 0018 à futura revogação de sessão no Entra;
 - validar remoção real de grupo, guest, Conditional Access e SLA em tenant não
   produtivo;
 - exportar métricas agregadas de hit, miss, expiração, invalidação e falha, sem

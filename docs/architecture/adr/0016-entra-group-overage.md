@@ -88,6 +88,6 @@ revogação definitiva de sessão e acesso permanece uma responsabilidade separa
 
 - Cache curto com freshness explícita e invalidação entre réplicas: concluído no ADR
   0017.
-- Definir revogação emergencial e stale identity fail-closed.
+- Integrar a restrição emergencial do ADR 0018 à revogação de sessão no provedor.
 - Validar group overage em tenant Entra não produtivo.
 - Exportar métricas agregadas por fonte de resolução, sem IDs de grupos.

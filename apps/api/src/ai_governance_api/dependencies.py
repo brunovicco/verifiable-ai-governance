@@ -15,6 +15,11 @@ from ai_governance_api.adapters import (
     S3ObjectStorage,
     SqlAlchemyAssessmentAudit,
     SqlAlchemyAssessmentStore,
+    SqlAlchemyDirectoryAccessAudit,
+    SqlAlchemyDirectoryAccessCacheInvalidation,
+    SqlAlchemyDirectoryAccessReader,
+    SqlAlchemyDirectoryAccessStore,
+    SqlAlchemyDirectoryAccessTransaction,
     SqlAlchemyDirectoryAuthorizationCache,
     SqlAlchemyDirectoryAuthorizationCacheAudit,
     SqlAlchemyDirectoryAuthorizationCacheReader,
@@ -26,6 +31,7 @@ from ai_governance_api.adapters import (
     YamlDirectoryAuthorizationCatalog,
 )
 from ai_governance_api.application import (
+    BlockDirectoryAccess,
     CacheResolvedDirectoryAuthorization,
     ControlCatalogPort,
     CorporateDirectoryIdentityMismatch,
@@ -33,14 +39,17 @@ from ai_governance_api.application import (
     CorporateDirectoryProfile,
     CorporateDirectoryResponseInvalid,
     CorporateDirectoryUnavailable,
+    DirectoryAccessUnavailable,
     DirectoryAuthorizationCacheUnavailable,
     EvaluateInitiativeControls,
     InvalidateDirectoryAuthorization,
     ListAssessments,
     ListControlCatalog,
     ListEvidence,
+    RequireActiveDirectoryAccess,
     ResolveCorporateDirectory,
     ResolveDirectoryAuthorization,
+    RestoreDirectoryAccess,
     ReuseDirectoryAuthorization,
     SaveAssessment,
     SubmitAssessment,
@@ -64,7 +73,7 @@ from ai_governance_api.domain.identity import (
 from ai_governance_api.services import InitiativeService, InventoryService, PolicyEvaluator
 
 DatabaseSession = Annotated[AsyncSession, Depends(get_db)]
-CurrentPrincipal = Annotated[Principal, Depends(get_principal)]
+AuthenticatedPrincipal = Annotated[Principal, Depends(get_principal)]
 SettingsDependency = Annotated[Settings, Depends(get_settings)]
 
 
@@ -166,6 +175,74 @@ CacheResolvedDirectoryAuthorizationDependency = Annotated[
 InvalidateDirectoryAuthorizationDependency = Annotated[
     InvalidateDirectoryAuthorization,
     Depends(get_invalidate_directory_authorization),
+]
+
+
+def get_require_active_directory_access() -> RequireActiveDirectoryAccess:
+    """Build the per-request emergency access query with a short DB session."""
+    return RequireActiveDirectoryAccess(
+        SqlAlchemyDirectoryAccessReader(SessionFactory)
+    )
+
+
+RequireActiveDirectoryAccessDependency = Annotated[
+    RequireActiveDirectoryAccess,
+    Depends(get_require_active_directory_access),
+]
+
+
+async def get_active_principal(
+    principal: AuthenticatedPrincipal,
+    access_query: RequireActiveDirectoryAccessDependency,
+) -> Principal:
+    """Reject suspended directory identities before any protected route executes."""
+    try:
+        return await access_query.execute(principal)
+    except DirectoryAccessUnavailable as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Directory access state could not be trusted",
+        ) from exc
+
+
+CurrentPrincipal = Annotated[Principal, Depends(get_active_principal)]
+
+
+def get_block_directory_access(
+    session: DatabaseSession,
+    settings: SettingsDependency,
+) -> BlockDirectoryAccess:
+    """Build the audited emergency block command at the composition root."""
+    return BlockDirectoryAccess(
+        SqlAlchemyDirectoryAccessStore(session),
+        SqlAlchemyDirectoryAccessCacheInvalidation(session),
+        SqlAlchemyDirectoryAccessAudit(session),
+        SqlAlchemyDirectoryAccessTransaction(session),
+        allowed_tenant_ids=settings.oidc_allowed_tenant_id_set,
+    )
+
+
+def get_restore_directory_access(
+    session: DatabaseSession,
+    settings: SettingsDependency,
+) -> RestoreDirectoryAccess:
+    """Build the audited access-restoration command at the composition root."""
+    return RestoreDirectoryAccess(
+        SqlAlchemyDirectoryAccessStore(session),
+        SqlAlchemyDirectoryAccessCacheInvalidation(session),
+        SqlAlchemyDirectoryAccessAudit(session),
+        SqlAlchemyDirectoryAccessTransaction(session),
+        allowed_tenant_ids=settings.oidc_allowed_tenant_id_set,
+    )
+
+
+BlockDirectoryAccessDependency = Annotated[
+    BlockDirectoryAccess,
+    Depends(get_block_directory_access),
+]
+RestoreDirectoryAccessDependency = Annotated[
+    RestoreDirectoryAccess,
+    Depends(get_restore_directory_access),
 ]
 
 

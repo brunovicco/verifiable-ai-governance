@@ -31,6 +31,17 @@ from ai_governance_api.application.corporate_directory import (
     CorporateDirectoryUnavailable,
     ResolveCorporateDirectory,
 )
+from ai_governance_api.application.directory_access import (
+    BlockDirectoryAccess,
+    DirectoryAccessAuditPort,
+    DirectoryAccessCacheInvalidationPort,
+    DirectoryAccessReaderPort,
+    DirectoryAccessTransactionPort,
+    DirectoryAccessUnavailable,
+    DirectoryAccessWriterPort,
+    RequireActiveDirectoryAccess,
+    RestoreDirectoryAccess,
+)
 from ai_governance_api.application.directory_authorization import (
     ResolveDirectoryAuthorization,
 )
@@ -75,6 +86,13 @@ __all__ = [
     "CorporateDirectoryResponseInvalid",
     "CorporateDirectoryUnavailable",
     "CacheResolvedDirectoryAuthorization",
+    "BlockDirectoryAccess",
+    "DirectoryAccessAuditPort",
+    "DirectoryAccessCacheInvalidationPort",
+    "DirectoryAccessReaderPort",
+    "DirectoryAccessTransactionPort",
+    "DirectoryAccessUnavailable",
+    "DirectoryAccessWriterPort",
     "DirectoryAuthorizationCacheAuditPort",
     "DirectoryAuthorizationCacheInvalidationPort",
     "DirectoryAuthorizationCacheReaderPort",
@@ -98,6 +116,8 @@ __all__ = [
     "ObjectStoragePort",
     "ResolveCorporateDirectory",
     "ResolveDirectoryAuthorization",
+    "RequireActiveDirectoryAccess",
+    "RestoreDirectoryAccess",
     "ReuseDirectoryAuthorization",
     "SaveAssessment",
     "SubmitAssessment",
