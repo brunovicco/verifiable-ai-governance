@@ -44,3 +44,22 @@ def test_api_waits_for_explicit_successful_migration() -> None:
     assert api["depends_on"]["migrate"] == {
         "condition": "service_completed_successfully"
     }
+
+
+def test_web_authentication_build_configuration_is_explicit() -> None:
+    compose = cast(
+        dict[str, Any],
+        yaml.safe_load((ROOT / "docker-compose.yml").read_text(encoding="utf-8")),
+    )
+
+    web = compose["services"]["web"]
+    expected_public_configuration = {
+        "NEXT_PUBLIC_AUTH_MODE": "${NEXT_PUBLIC_AUTH_MODE:-local}",
+        "NEXT_PUBLIC_ENTRA_CLIENT_ID": "${NEXT_PUBLIC_ENTRA_CLIENT_ID:-}",
+        "NEXT_PUBLIC_ENTRA_TENANT_ID": "${NEXT_PUBLIC_ENTRA_TENANT_ID:-}",
+        "NEXT_PUBLIC_ENTRA_API_SCOPE": "${NEXT_PUBLIC_ENTRA_API_SCOPE:-}",
+    }
+
+    for name, value in expected_public_configuration.items():
+        assert web["build"]["args"][name] == value
+        assert web["environment"][name] == value

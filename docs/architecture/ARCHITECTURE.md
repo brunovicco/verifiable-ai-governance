@@ -62,11 +62,17 @@ O compose OIDC opcional importa um realm Keycloak declarativo para validar emiss
 audience, grupos e rejeição de credenciais ausentes ou adulteradas. Essa implementação
 de teste não acopla o runtime ao Keycloak.
 
-A implementação corporativa planejada usa Microsoft Entra ID no login e Microsoft
-Graph via OBO para identificar perfil, departamento e associações transitivas. O
-domínio continuará dependente de portas próprias. Autorizações serão derivadas de App
-Roles ou object IDs de grupos mapeados, nunca de nomes ou do atributo `department`. O
-plano detalhado está em `MICROSOFT_ENTRA_GRAPH_PLAN.md`.
+O portal já possui um adapter Microsoft Entra ID com MSAL Browser/React, Authorization
+Code + PKCE, authority tenant-specific, cache em `sessionStorage` e access token
+destinado à API. Em modo Entra, o client remove headers de identidade simulada e envia
+somente bearer token; a API continua sendo a autoridade sobre autenticação e
+autorização. O modo local permanece explicitamente separado.
+
+Microsoft Graph via OBO, identidade `(tid, oid)`, perfil, `department` e associações
+transitivas continuam planejados. O domínio dependerá de portas próprias. Autorizações
+serão derivadas de App Roles ou object IDs mapeados, nunca de nomes ou de `department`.
+O plano detalhado está em `MICROSOFT_ENTRA_GRAPH_PLAN.md` e a decisão do portal no ADR
+0011.
 
 ### Assessments estruturados
 

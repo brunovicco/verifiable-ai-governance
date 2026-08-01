@@ -19,6 +19,7 @@ import {
   uploadEvidence,
 } from "@/lib/api";
 import { label } from "@/lib/labels";
+import { getPortalAuthConfig } from "@/lib/auth/config";
 import type {
   AISystem,
   Approval,
@@ -260,6 +261,7 @@ function EvidenceWorkspace({
 }
 
 function ApprovalCard({ approval, initiativeId, onUpdated }: { approval: Approval; initiativeId: string; onUpdated: (value: Initiative) => Promise<void> }) {
+  const authConfig = getPortalAuthConfig();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -268,12 +270,20 @@ function ApprovalCard({ approval, initiativeId, onUpdated }: { approval: Approva
     event.preventDefault(); setBusy(true); setError("");
     const data = new FormData(event.currentTarget);
     try {
-      const updated = await decideApproval(initiativeId, approval.id, {
-        decision: data.get("decision") as "approved" | "rejected" | "changes_requested",
-        comments: String(data.get("comments")),
-        evidence_uri: String(data.get("evidence_uri")),
-        expected_version: approval.version,
-      }, { userId: String(data.get("reviewer")), areas: [approval.area] });
+      const identity = authConfig.mode === "local"
+        ? { userId: String(data.get("reviewer")), areas: [approval.area] }
+        : undefined;
+      const updated = await decideApproval(
+        initiativeId,
+        approval.id,
+        {
+          decision: data.get("decision") as "approved" | "rejected" | "changes_requested",
+          comments: String(data.get("comments")),
+          evidence_uri: String(data.get("evidence_uri")),
+          expected_version: approval.version,
+        },
+        identity,
+      );
       await onUpdated(updated); setOpen(false);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Falha ao registrar decisão."); }
     finally { setBusy(false); }
@@ -285,7 +295,11 @@ function ApprovalCard({ approval, initiativeId, onUpdated }: { approval: Approva
     {approval.decided_by && <small>Decidido por {approval.decided_by}: {approval.comments}</small>}
     {approval.status === "pending" && <button className="link-button" onClick={() => setOpen(!open)}>{open ? "Fechar" : "Registrar decisão"}</button>}
     {open && <form className="decision-form" onSubmit={decide}>
-      <label>Identificação do revisor<input name="reviewer" required minLength={3} placeholder={`revisor.${approval.area}`} /></label>
+      {authConfig.mode === "local" ? (
+        <label>Identificação do revisor<input name="reviewer" required minLength={3} placeholder={`revisor.${approval.area}`} /></label>
+      ) : (
+        <p className="authenticated-reviewer">A decisão será vinculada à sua identidade corporativa autenticada.</p>
+      )}
       <label>Decisão<select name="decision"><option value="approved">Aprovar</option><option value="changes_requested">Solicitar ajustes</option><option value="rejected">Rejeitar definitivamente</option></select></label>
       <label>Justificativa<textarea name="comments" required minLength={5} rows={2} /></label>
       <label>Referência da evidência<input name="evidence_uri" required placeholder="URL, ticket ou URN" /></label>

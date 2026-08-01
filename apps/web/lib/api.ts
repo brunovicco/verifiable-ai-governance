@@ -11,6 +11,7 @@ import type {
   ModelAsset,
   ReviewSubmission,
 } from "@/lib/types";
+import { applyRequestAuthentication } from "@/lib/auth/request";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 export const DEMO_REQUESTER: Identity = { userId: "demo.requester" };
@@ -33,11 +34,11 @@ async function request<T>(
   if (!(options.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
-  headers.set("X-User-Id", identity.userId);
-  headers.set("X-User-Areas", identity.areas?.join(",") ?? "");
+  await applyRequestAuthentication(headers, identity);
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     cache: "no-store",
+    credentials: "omit",
     headers,
   });
   if (!response.ok) {
@@ -149,7 +150,7 @@ export function decideApproval(
     evidence_uri: string;
     expected_version: number;
   },
-  identity: Identity,
+  identity: Identity = DEMO_REQUESTER,
 ): Promise<Initiative> {
   return request(
     `/api/v1/initiatives/${initiativeId}/approvals/${approvalId}/decision`,
