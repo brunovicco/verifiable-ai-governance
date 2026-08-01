@@ -1,4 +1,6 @@
-.PHONY: setup dev dev-api dev-web test lint format build quality migrate compose-up compose-down oidc-up oidc-verify oidc-down
+.PHONY: setup dev dev-api dev-web test lint format build quality migrate compose-up compose-down oidc-up oidc-verify oidc-down backup backup-verify backup-restore-test backup-restore
+
+BACKUP_DIR ?= backups/manual
 
 setup:
 	uv sync --all-packages
@@ -50,3 +52,17 @@ oidc-verify:
 
 oidc-down:
 	docker compose -f docker-compose.yml -f docker-compose.oidc.yml down
+
+backup:
+	uv run python scripts/manage_backups.py create --output "$(BACKUP_DIR)"
+
+backup-verify:
+	uv run python scripts/manage_backups.py verify --backup "$(BACKUP_DIR)"
+
+backup-restore-test:
+	uv run python scripts/manage_backups.py restore-test --backup "$(BACKUP_DIR)"
+
+backup-restore:
+	@test -n "$(RESTORE_DATABASE)" || (echo "RESTORE_DATABASE is required" && exit 2)
+	@test -n "$(RESTORE_BUCKET)" || (echo "RESTORE_BUCKET is required" && exit 2)
+	uv run python scripts/manage_backups.py restore --backup "$(BACKUP_DIR)" --database "$(RESTORE_DATABASE)" --bucket "$(RESTORE_BUCKET)"

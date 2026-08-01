@@ -11,7 +11,7 @@
 - [x] Workflow de revisão, solicitação de ajuste e resubmissão sem apagar histórico.
 - [x] Integração OIDC validada com ao menos um provedor e mapeamento de grupos.
 - [x] Migrações explícitas e bloqueantes no startup do Compose.
-- [ ] Política de backup/restauração testada.
+- [x] Política de backup/restauração testada para PostgreSQL e evidências.
 - [x] Tornar a imagem ClamAV do ambiente local compatível com hosts ARM64.
 
 ## P1 — Operação e assurance
