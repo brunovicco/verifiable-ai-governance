@@ -1,7 +1,5 @@
 """Run the repository-owned, fail-reporting quality gate."""
 
-from __future__ import annotations
-
 import argparse
 import subprocess
 import sys

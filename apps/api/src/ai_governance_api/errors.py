@@ -12,6 +12,9 @@ class ErrorKind(StrEnum):
     NOT_FOUND = "not_found"
     CONFLICT = "conflict"
     UNPROCESSABLE = "unprocessable"
+    PAYLOAD_TOO_LARGE = "payload_too_large"
+    UNSUPPORTED_MEDIA_TYPE = "unsupported_media_type"
+    DEPENDENCY_UNAVAILABLE = "dependency_unavailable"
 
 
 class ApplicationError(Exception):

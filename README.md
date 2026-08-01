@@ -18,6 +18,8 @@ governança em controles verificáveis, aprovações condicionais e evidências 
   internacional, com formulários guiados, risco residual e submissão para revisão;
 - catálogo baseline com 25 controles em YAML, regras declarativas e visualização
   explicável de aplicabilidade por iniciativa;
+- upload de evidências com allowlist, limite, validação de assinatura, SHA-256, scan
+  ClamAV obrigatório, object storage privado e rollback compensatório;
 - segregação de funções, versionamento otimista e trilha de auditoria encadeada por hash;
 - PostgreSQL local, migração inicial, testes e CI.
 
@@ -33,6 +35,10 @@ docker compose up --build
 Se a porta local do PostgreSQL já estiver ocupada, use por exemplo
 `POSTGRES_PORT=55432 docker compose up --build`; a comunicação interna entre os
 containers continua automática.
+
+O Compose também inicia MinIO e ClamAV. Na primeira execução, o scanner pode levar
+alguns minutos para preparar as assinaturas; até ficar disponível, uploads falham de
+forma fechada com `503`.
 
 Abra o portal em <http://localhost:3000> e a documentação da API em
 <http://localhost:8000/docs>.
@@ -75,6 +81,12 @@ organizacional diferente, configure `CONTROL_CATALOG_PATH` com o caminho de um Y
 válido. Arquivo ausente, schema inválido, IDs duplicados ou quantidade inesperada fazem
 a aplicação falhar de forma fechada.
 
+Uploads aceitam inicialmente PDF, PNG, JPEG, TXT, CSV e JSON até 10 MiB. O portal não
+expõe bucket ou chave interna. Em ambientes não locais, desabilite
+`OBJECT_STORAGE_AUTO_CREATE_BUCKET` e configure
+`OBJECT_STORAGE_SERVER_SIDE_ENCRYPTION`; credenciais podem vir da cadeia padrão do
+provedor em vez de variáveis estáticas.
+
 ## Fluxo do MVP
 
 1. O solicitante cadastra uma proposta em linguagem de negócio.
@@ -90,6 +102,8 @@ a aplicação falhar de forma fechada.
    agentes; ativos novos permanecem em rascunho até assurance posterior.
 8. Alterações usam concorrência otimista, e aposentadorias preservam o histórico.
 9. Toda mudança material gera evento de auditoria com versão e cadeia de hashes.
+10. Evidências anexadas são validadas, vinculadas ao hash, escaneadas e armazenadas sem
+    copiar conteúdo para logs ou PostgreSQL.
 
 ## Autenticação OIDC
 

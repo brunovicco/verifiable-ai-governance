@@ -1,7 +1,5 @@
 """SQLAlchemy persistence models for governance aggregates and audit events."""
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
@@ -105,11 +103,13 @@ class Initiative(VersionedMixin, Base):
     required_documents: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    approvals: Mapped[list[Approval]] = relationship(
+    approvals: Mapped[list["Approval"]] = relationship(
         back_populates="initiative", cascade="all, delete-orphan", lazy="selectin"
     )
-    assessments: Mapped[list[Assessment]] = relationship(back_populates="initiative")
-    systems: Mapped[list[AISystem]] = relationship(back_populates="initiative", lazy="selectin")
+    assessments: Mapped[list["Assessment"]] = relationship(back_populates="initiative")
+    systems: Mapped[list["AISystem"]] = relationship(
+        back_populates="initiative", lazy="selectin"
+    )
 
 
 class AISystem(VersionedMixin, Base):
@@ -132,8 +132,12 @@ class AISystem(VersionedMixin, Base):
     metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
 
     initiative: Mapped[Initiative] = relationship(back_populates="systems")
-    models: Mapped[list[ModelAsset]] = relationship(back_populates="ai_system", lazy="selectin")
-    agents: Mapped[list[Agent]] = relationship(back_populates="ai_system", lazy="selectin")
+    models: Mapped[list["ModelAsset"]] = relationship(
+        back_populates="ai_system", lazy="selectin"
+    )
+    agents: Mapped[list["Agent"]] = relationship(
+        back_populates="ai_system", lazy="selectin"
+    )
 
 
 class ModelAsset(VersionedMixin, Base):
@@ -245,7 +249,7 @@ class Approval(VersionedMixin, Base):
     comments: Mapped[str | None] = mapped_column(Text)
 
     initiative: Mapped[Initiative] = relationship(back_populates="approvals")
-    evidence: Mapped[list[Evidence]] = relationship(back_populates="approval")
+    evidence: Mapped[list["Evidence"]] = relationship(back_populates="approval")
 
 
 class Evidence(VersionedMixin, Base):
@@ -264,6 +268,16 @@ class Evidence(VersionedMixin, Base):
     metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
     supplied_by: Mapped[str] = mapped_column(String(200), nullable=False)
     trusted_source: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    original_filename: Mapped[str | None] = mapped_column(String(255))
+    content_type: Mapped[str | None] = mapped_column(String(100))
+    size_bytes: Mapped[int | None] = mapped_column(Integer)
+    scan_status: Mapped[str] = mapped_column(
+        String(50), default="not_applicable", nullable=False
+    )
+    scanner: Mapped[str | None] = mapped_column(String(100))
+    scanned_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    storage_bucket: Mapped[str | None] = mapped_column(String(255))
+    storage_key: Mapped[str | None] = mapped_column(String(1024))
 
     approval: Mapped[Approval | None] = relationship(back_populates="evidence")
 

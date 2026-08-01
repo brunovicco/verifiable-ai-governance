@@ -210,6 +210,15 @@ fieldset:disabled { opacity: .76; }
 .compact-checks { grid-template-columns: 1fr 1fr; margin-top: 0; }
 .compact-checks .check { min-height: 48px; font-size: 12px; }
 
+.evidence-form { padding: 22px; margin-bottom: 22px; border: 1px solid var(--line); border-radius: 14px; background: #fafbf8; display: grid; gap: 16px; }
+.evidence-form > small { color: var(--muted); }
+.evidence-list { display: grid; gap: 10px; }
+.evidence-row { padding: 16px 18px; border: 1px solid var(--line); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.evidence-row strong, .evidence-row small { display: block; }
+.evidence-row small { margin-top: 5px; color: var(--muted); }
+.evidence-integrity { display: flex; align-items: center; gap: 12px; text-align: right; }
+.evidence-integrity code { color: var(--green); font-size: 12px; }
+
 footer { max-width: 1180px; height: 66px; padding: 0 24px; margin: 0 auto; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 11px; }
 
 @media (max-width: 800px) {
@@ -232,5 +241,6 @@ footer { max-width: 1180px; height: 66px; padding: 0 24px; margin: 0 auto; borde
   .control-card summary { grid-template-columns: 1fr; }
   .control-card summary .status { width: fit-content; }
   .progress { width: 100px; }
+  .evidence-row, .evidence-integrity { align-items: flex-start; flex-direction: column; text-align: left; }
   th, td { padding: 14px 16px; }
 }

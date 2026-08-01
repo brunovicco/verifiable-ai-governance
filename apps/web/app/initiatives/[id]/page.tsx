@@ -11,7 +11,9 @@ import {
   getInitiative,
   getInitiativeControls,
   listAssessments,
+  listEvidence,
   submitInitiative,
+  uploadEvidence,
 } from "@/lib/api";
 import { label } from "@/lib/labels";
 import type {
@@ -20,9 +22,20 @@ import type {
   Assessment,
   AssessmentKind,
   ControlEvaluation,
+  Evidence,
+  EvidenceKind,
   Initiative,
   InitiativeControlReport,
 } from "@/lib/types";
+
+const EVIDENCE_KINDS: Array<{ value: EvidenceKind; label: string }> = [
+  { value: "assessment", label: "Assessment" },
+  { value: "architecture", label: "Arquitetura" },
+  { value: "security_test", label: "Teste de segurança" },
+  { value: "policy", label: "Política" },
+  { value: "approval", label: "Aprovação" },
+  { value: "other", label: "Outro" },
+];
 
 const ASSESSMENT_KINDS: AssessmentKind[] = [
   "ai-impact-assessment",
@@ -134,6 +147,110 @@ function ControlWorkspace({ report }: { report: InitiativeControlReport }) {
           </section>
         ))}
       </div>
+    </section>
+  );
+}
+
+function EvidenceWorkspace({
+  initiativeId,
+  evidence,
+  onUploaded,
+}: {
+  initiativeId: string;
+  evidence: Evidence[];
+  onUploaded: (record: Evidence) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function upload(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    const file = data.get("file");
+    try {
+      if (!(file instanceof File) || file.size === 0) {
+        throw new Error("Selecione um arquivo não vazio.");
+      }
+      const record = await uploadEvidence(
+        initiativeId,
+        data.get("kind") as EvidenceKind,
+        file,
+      );
+      onUploaded(record);
+      form.reset();
+      setOpen(false);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Falha ao enviar evidência.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="panel evidence-panel">
+      <div className="panel-heading">
+        <div>
+          <p className="eyebrow">ARTEFATOS VERIFICÁVEIS</p>
+          <h2>Evidências anexadas</h2>
+        </div>
+        <button className="button button-small" onClick={() => setOpen(!open)}>
+          {open ? "Cancelar" : "Anexar evidência"}
+        </button>
+      </div>
+      {open && (
+        <form className="evidence-form" onSubmit={upload}>
+          <div className="field-grid">
+            <label>
+              Finalidade
+              <select name="kind" defaultValue="assessment">
+                {EVIDENCE_KINDS.map((kind) => (
+                  <option value={kind.value} key={kind.value}>{kind.label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Arquivo
+              <input
+                name="file"
+                type="file"
+                required
+                accept=".pdf,.png,.jpg,.jpeg,.txt,.csv,.json"
+              />
+            </label>
+          </div>
+          <small>Limite padrão de 10 MiB. O arquivo será validado, escaneado e vinculado ao SHA-256.</small>
+          {error && <div className="notice notice-error">{error}</div>}
+          <button className="button button-primary" disabled={busy}>
+            {busy ? "Validando e escaneando…" : "Enviar com verificação"}
+          </button>
+        </form>
+      )}
+      {evidence.length === 0 ? (
+        <div className="empty compact-empty">
+          <strong>Nenhum artefato anexado.</strong>
+          <span>Referências informadas em aprovações não são tratadas como arquivos verificados.</span>
+        </div>
+      ) : (
+        <div className="evidence-list">
+          {evidence.map((record) => (
+            <article className="evidence-row" key={record.id}>
+              <div>
+                <strong>{record.original_filename}</strong>
+                <small>{EVIDENCE_KINDS.find((kind) => kind.value === record.kind)?.label}</small>
+              </div>
+              <div className="evidence-integrity">
+                <StatusPill value={record.scan_status} />
+                <code title={record.sha256}>SHA-256 {record.sha256.slice(0, 12)}…</code>
+                <small>{(record.size_bytes / 1024).toFixed(1)} KiB · {record.scanner}</small>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -278,15 +395,17 @@ export default function InitiativePage() {
   const [initiative, setInitiative] = useState<Initiative | null>(null);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [controlReport, setControlReport] = useState<InitiativeControlReport | null>(null);
+  const [evidence, setEvidence] = useState<Evidence[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    Promise.all([getInitiative(id), listAssessments(id), getInitiativeControls(id)])
-      .then(([initiativeValue, assessmentValues, controls]) => {
+    Promise.all([getInitiative(id), listAssessments(id), getInitiativeControls(id), listEvidence(id)])
+      .then(([initiativeValue, assessmentValues, controls, evidenceValues]) => {
         setInitiative(initiativeValue);
         setAssessments(assessmentValues);
         setControlReport(controls);
+        setEvidence(evidenceValues);
       })
       .catch((reason: Error) => setError(reason.message));
   }, [id]);
@@ -321,6 +440,11 @@ export default function InitiativePage() {
       <article className="panel documents-card"><p className="eyebrow">DOCUMENTAÇÃO REQUERIDA</p><h2>{initiative.required_documents.length} artefatos</h2><ul className="document-list">{initiative.required_documents.map((document) => <li key={document}><span>✓</span>{label(document)}</li>)}</ul></article>
     </section>
     <AssessmentWorkspace assessments={assessments} initiative={initiative} />
+    <EvidenceWorkspace
+      initiativeId={initiative.id}
+      evidence={evidence}
+      onUploaded={(record) => setEvidence((current) => [...current, record])}
+    />
     {controlReport && <ControlWorkspace report={controlReport} />}
     {initiative.status !== "draft" && <section className="panel approvals-panel"><div className="panel-heading"><div><p className="eyebrow">FLUXO DE APROVAÇÃO</p><h2>{approved} de {required.length} gates concluídos</h2></div><div className="progress"><span style={{ width: `${required.length ? (approved / required.length) * 100 : 0}%` }} /></div></div><div className="approval-grid">{initiative.approvals?.map((approval) => <ApprovalCard approval={approval} initiativeId={initiative.id} key={approval.id} onUpdated={setInitiative} />)}</div></section>}
     {(initiative.status === "approved" || (initiative.systems?.length ?? 0) > 0) && (

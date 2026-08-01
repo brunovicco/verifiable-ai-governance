@@ -48,6 +48,30 @@ export interface InitiativeControlReport {
   controls: ControlEvaluation[];
 }
 
+export type EvidenceKind =
+  | "policy"
+  | "assessment"
+  | "architecture"
+  | "security_test"
+  | "approval"
+  | "other";
+
+export interface Evidence {
+  id: string;
+  initiative_id: string;
+  kind: EvidenceKind;
+  original_filename: string;
+  content_type: string;
+  size_bytes: number;
+  sha256: string;
+  scan_status: "clean" | "infected";
+  scanner: string;
+  scanned_at: string;
+  supplied_by: string;
+  version: number;
+  created_at: string;
+}
+
 export interface Approval {
   id: string;
   area: string;
