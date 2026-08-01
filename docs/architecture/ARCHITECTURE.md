@@ -147,6 +147,19 @@ fica saudável. A API depende da conclusão bem-sucedida desse processo e usa
 um modelo ORM mais novo consulte um schema persistente antigo. `create_all` permanece
 apenas como conveniência local explicitamente opt-in, nunca como mecanismo de upgrade.
 
+### Backup e restore assurance
+
+O backup operacional também segue dependências apontando para dentro. Casos de uso
+coordenam portas de archive, PostgreSQL e object storage; adapters usam filesystem,
+ferramentas do container e S3; a CLI atua apenas como composition root. O pacote une
+dump lógico e objetos por um manifesto versionado, privado e validado por SHA-256.
+
+O inventário de objetos é comparado à quantidade de metadados confiáveis no banco,
+detectando backups parciais. Como não existe transação distribuída entre PostgreSQL e
+S3, a política exige quiesce de escritas. Restore só ocorre em destinos inexistentes e
+o assurance restaura em banco/bucket aleatórios, compara revisão, tabelas, metadados e
+conteúdo, e limpa os alvos isolados. Consulte o ADR 0010 e o runbook operacional.
+
 ### Evidências anexadas
 
 Uploads passam por um pipeline fail-closed independente do transporte: leitura

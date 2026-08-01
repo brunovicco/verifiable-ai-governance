@@ -116,7 +116,9 @@ def test_production_accepts_explicit_fail_closed_configuration() -> None:
         "application/controls.py",
         "domain/evidence.py",
         "domain/identity.py",
+        "domain/backups.py",
         "application/authentication.py",
+        "application/backups.py",
         "application/evidence.py",
     ],
 )

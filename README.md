@@ -89,6 +89,27 @@ organizacional diferente, configure `CONTROL_CATALOG_PATH` com o caminho de um Y
 válido. Arquivo ausente, schema inválido, IDs duplicados ou quantidade inesperada fazem
 a aplicação falhar de forma fechada.
 
+## Backup e restauração
+
+O ambiente local possui um pacote portátil que combina dump lógico do PostgreSQL,
+objetos privados de evidência e manifesto versionado com SHA-256. O fluxo nunca
+sobrescreve um diretório, banco ou bucket existente. Para garantir consistência entre
+os dois backing services, interrompa escritas da API durante a captura:
+
+```bash
+docker compose stop web api
+make backup BACKUP_DIR=backups/2026-08-01
+make backup-verify BACKUP_DIR=backups/2026-08-01
+make backup-restore-test BACKUP_DIR=backups/2026-08-01
+docker compose start api web
+```
+
+O restore test cria banco e bucket isolados, compara revisão Alembic, quantidade de
+tabelas e checksums completos dos objetos, e então remove os destinos de teste. O
+pacote contém dados potencialmente pessoais e confidenciais, recebe permissões locais
+restritivas e deve ser criptografado, ter retenção definida e armazenamento externo
+controlado. Consulte o [runbook de backup e restauração](docs/operations/BACKUP_RESTORE.md).
+
 Uploads aceitam inicialmente PDF, PNG, JPEG, TXT, CSV e JSON até 10 MiB. O portal não
 expõe bucket ou chave interna. Em ambientes não locais, desabilite
 `OBJECT_STORAGE_AUTO_CREATE_BUCKET` e configure
