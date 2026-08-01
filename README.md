@@ -14,6 +14,8 @@ governança em controles verificáveis, aprovações condicionais e evidências 
   processamento internacional;
 - classificação preliminar de risco e workflow condicional para Negócio, Arquitetura,
   Segurança, Infra, DevOps, Privacidade, Jurídico, Compliance e Dados;
+- assessments estruturados e versionados para impacto de IA, RIPD e processamento
+  internacional, com formulários guiados, risco residual e submissão para revisão;
 - segregação de funções, versionamento otimista e trilha de auditoria encadeada por hash;
 - PostgreSQL local, migração inicial, testes e CI.
 
@@ -70,14 +72,17 @@ fornecida por variáveis de ambiente; `.env` é apenas uma conveniência local.
 
 1. O solicitante cadastra uma proposta em linguagem de negócio.
 2. O motor calcula risco preliminar e explica quais áreas precisam aprovar.
-3. A submissão cria um gate para cada área; gates não aplicáveis ficam registrados.
-4. Um aprovador autorizado, diferente do owner, registra decisão e justificativa.
-5. Uma rejeição bloqueia a iniciativa. A aprovação só ocorre quando todos os gates
+3. O owner preenche os assessments aplicáveis em rascunhos versionados e os envia para
+   revisão independente; respostas completas não são copiadas para o audit log.
+4. A submissão da iniciativa cria um gate para cada área; gates não aplicáveis ficam
+   registrados.
+5. Um aprovador autorizado, diferente do owner, registra decisão e justificativa.
+6. Uma rejeição bloqueia a iniciativa. A aprovação só ocorre quando todos os gates
    obrigatórios forem aprovados.
-6. O owner vincula sistemas de IA à iniciativa aprovada e registra seus modelos e
+7. O owner vincula sistemas de IA à iniciativa aprovada e registra seus modelos e
    agentes; ativos novos permanecem em rascunho até assurance posterior.
-7. Alterações usam concorrência otimista, e aposentadorias preservam o histórico.
-8. Toda mudança material gera evento de auditoria com versão e cadeia de hashes.
+8. Alterações usam concorrência otimista, e aposentadorias preservam o histórico.
+9. Toda mudança material gera evento de auditoria com versão e cadeia de hashes.
 
 ## Autenticação OIDC
 

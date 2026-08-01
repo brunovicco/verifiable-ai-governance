@@ -1,5 +1,27 @@
 export type ApprovalStatus = "not_required" | "pending" | "approved" | "rejected";
 
+export type AssessmentKind =
+  | "ai-impact-assessment"
+  | "ripd"
+  | "international-processing-assessment";
+
+export type RiskTier = "low" | "medium" | "high" | "critical";
+
+export interface Assessment {
+  id: string;
+  initiative_id: string;
+  assessment_type: AssessmentKind;
+  schema_version: string;
+  status: string;
+  answers: Record<string, unknown>;
+  risk_score: number;
+  risk_tier: RiskTier;
+  assessed_by: string;
+  version: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Approval {
   id: string;
   area: string;

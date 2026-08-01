@@ -13,6 +13,7 @@ from ai_governance_api.config import get_settings
 from ai_governance_api.database import engine
 from ai_governance_api.errors import ApplicationError, ErrorKind
 from ai_governance_api.models import Base
+from ai_governance_api.routers.assessments import router as assessments_router
 from ai_governance_api.routers.health import router as health_router
 from ai_governance_api.routers.initiatives import router as initiatives_router
 from ai_governance_api.routers.inventory import router as inventory_router
@@ -65,6 +66,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(health_router)
     app.include_router(initiatives_router)
+    app.include_router(assessments_router)
     app.include_router(inventory_router)
 
     @app.exception_handler(ApplicationError)

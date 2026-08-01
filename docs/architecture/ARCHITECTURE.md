@@ -41,6 +41,33 @@ Erros esperados usam categorias de aplicação estáveis e são traduzidos para 
 na borda. Configuração de deploy é imutável, fornecida pelo ambiente e validada de forma
 fail-closed antes de servir tráfego.
 
+### Assessments estruturados
+
+O módulo de assessments aplica Clean Architecture com dependências apontando para o
+núcleo. Tipos imutáveis e regras de aplicabilidade vivem no domínio; casos de uso
+definem as portas de persistência, auditoria e transação que consomem; adapters
+SQLAlchemy implementam essas portas; Pydantic e FastAPI existem apenas na borda HTTP.
+
+```mermaid
+flowchart LR
+  H["FastAPI + Pydantic"] --> U["Casos de uso"]
+  S["SQLAlchemy adapters"] --> U
+  U --> D["Domínio puro"]
+  C["Composition root"] --> H
+  C --> S
+```
+
+Cada definição tem contrato e versão explícitos. O banco garante apenas uma avaliação
+corrente por tipo e iniciativa. Rascunhos pertencem ao owner (ou administrador), usam
+versão esperada para mutações e, quando submetidos, tornam-se imutáveis até existir o
+workflow explícito de revisão e ressubmissão. A auditoria registra tipo, versão, risco e
+campos alterados, sem duplicar respostas potencialmente sensíveis.
+
+O desenho também preserva propriedades dos Twelve-Factor Apps: configuração vem do
+ambiente, processos de API permanecem stateless, PostgreSQL é um backing service
+substituível por configuração, logs são eventos e dependências são declaradas e
+reprodutíveis pelos lockfiles.
+
 ### Governance schemas
 
 Pacote compartilhado que define enums, contexto de política, decisão, breakdown de
@@ -80,6 +107,7 @@ erDiagram
   AI_SYSTEM ||--o{ INCIDENT : experiences
   APPROVAL ||--o{ EVIDENCE : cites
   INITIATIVE ||--o{ AUDIT_EVENT : records
+  ASSESSMENT ||--o{ AUDIT_EVENT : records
 ```
 
 ## Limites de confiança
