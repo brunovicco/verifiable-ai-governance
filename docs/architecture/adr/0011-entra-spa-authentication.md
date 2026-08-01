@@ -99,9 +99,9 @@ degrada para headers locais; inicia interação ou bloqueia a chamada.
 ## Follow-up
 
 - Validar o fluxo contra um tenant Entra real e políticas de Conditional Access.
-- Implementar identidade corporativa `(tid, oid)`, tenant allowlist e política de guest.
+- Identidade corporativa `(tid, oid)`, tenant allowlist e política de guest: concluída
+  no ADR 0012.
 - Implementar OBO e enriquecimento mínimo via Microsoft Graph.
 - Criar catálogo versionado de App Roles/object IDs para `ApprovalArea`.
 - Definir CSP compatível com Next.js/MSAL e executar testes de XSS.
 - Avaliar BFF com sessão HttpOnly se o threat model de produção exigir.
-

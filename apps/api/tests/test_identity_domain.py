@@ -1,10 +1,24 @@
 import pytest
 from ai_governance_api.domain.identity import (
+    CorporateIdentityPolicy,
+    DirectoryAccountType,
     IdentityMappingError,
     parse_approval_areas,
     principal_from_claims,
 )
 from governance_schemas import ApprovalArea
+
+TENANT_ID = "11111111-1111-4111-8111-111111111111"
+OBJECT_ID = "22222222-2222-4222-8222-222222222222"
+
+
+def corporate_policy(*, guest_approvals_enabled: bool = False) -> CorporateIdentityPolicy:
+    """Return the explicit tenant policy used by corporate identity tests."""
+    return CorporateIdentityPolicy(
+        allowed_tenant_ids=frozenset({TENANT_ID}),
+        issuer_tenant_id=TENANT_ID,
+        guest_approvals_enabled=guest_approvals_enabled,
+    )
 
 
 def test_nested_provider_roles_map_only_governance_areas() -> None:
@@ -60,4 +74,134 @@ def test_missing_subject_is_rejected() -> None:
             {"sub": "  "},
             areas_claim="governance_areas",
             admin_claim="governance_admin",
+        )
+
+
+def test_member_uses_stable_tenant_and_object_identity() -> None:
+    principal = principal_from_claims(
+        {
+            "sub": "pairwise-subject",
+            "tid": TENANT_ID.upper(),
+            "oid": OBJECT_ID.upper(),
+            "acct": 0,
+            "governance_areas": ["security"],
+            "governance_admin": True,
+        },
+        areas_claim="governance_areas",
+        admin_claim="governance_admin",
+        corporate_policy=corporate_policy(),
+    )
+
+    assert principal.user_id == f"{TENANT_ID}:{OBJECT_ID}"
+    assert principal.directory_identity is not None
+    assert principal.directory_identity.tenant_id == TENANT_ID
+    assert principal.directory_identity.object_id == OBJECT_ID
+    assert principal.directory_identity.account_type is DirectoryAccountType.MEMBER
+    assert principal.approval_areas == frozenset({ApprovalArea.SECURITY})
+    assert principal.is_admin
+
+
+def test_guest_has_no_governance_capabilities_by_default() -> None:
+    principal = principal_from_claims(
+        {
+            "tid": TENANT_ID,
+            "oid": OBJECT_ID,
+            "acct": "1",
+            "governance_areas": ["security"],
+            "governance_admin": True,
+        },
+        areas_claim="governance_areas",
+        admin_claim="governance_admin",
+        corporate_policy=corporate_policy(),
+    )
+
+    assert principal.directory_identity is not None
+    assert principal.directory_identity.account_type is DirectoryAccountType.GUEST
+    assert principal.approval_areas == frozenset()
+    assert not principal.is_admin
+
+
+def test_explicit_policy_can_enable_guest_approval_capabilities() -> None:
+    principal = principal_from_claims(
+        {
+            "tid": TENANT_ID,
+            "oid": OBJECT_ID,
+            "acct": 1,
+            "governance_areas": ["privacy"],
+            "governance_admin": True,
+        },
+        areas_claim="governance_areas",
+        admin_claim="governance_admin",
+        corporate_policy=corporate_policy(guest_approvals_enabled=True),
+    )
+
+    assert principal.approval_areas == frozenset({ApprovalArea.PRIVACY})
+    assert not principal.is_admin
+
+
+@pytest.mark.parametrize("account_claim", [None, True, False, 2, "member", []])
+def test_unknown_account_type_cannot_receive_capabilities(account_claim: object) -> None:
+    principal = principal_from_claims(
+        {
+            "tid": TENANT_ID,
+            "oid": OBJECT_ID,
+            "acct": account_claim,
+            "governance_areas": ["security"],
+            "governance_admin": True,
+        },
+        areas_claim="governance_areas",
+        admin_claim="governance_admin",
+        corporate_policy=corporate_policy(guest_approvals_enabled=True),
+    )
+
+    assert principal.directory_identity is not None
+    assert principal.directory_identity.account_type is DirectoryAccountType.UNKNOWN
+    assert principal.approval_areas == frozenset()
+    assert not principal.is_admin
+
+
+def test_non_allowlisted_tenant_is_rejected() -> None:
+    with pytest.raises(IdentityMappingError, match="tenant is not allowed"):
+        principal_from_claims(
+            {
+                "tid": "33333333-3333-4333-8333-333333333333",
+                "oid": OBJECT_ID,
+                "acct": 0,
+            },
+            areas_claim="governance_areas",
+            admin_claim="governance_admin",
+            corporate_policy=corporate_policy(),
+        )
+
+
+def test_allowlisted_tenant_that_differs_from_issuer_is_rejected() -> None:
+    other_tenant = "33333333-3333-4333-8333-333333333333"
+    policy = CorporateIdentityPolicy(
+        allowed_tenant_ids=frozenset({TENANT_ID, other_tenant}),
+        issuer_tenant_id=TENANT_ID,
+    )
+
+    with pytest.raises(IdentityMappingError, match="does not match the verified issuer"):
+        principal_from_claims(
+            {"tid": other_tenant, "oid": OBJECT_ID, "acct": 0},
+            areas_claim="governance_areas",
+            admin_claim="governance_admin",
+            corporate_policy=policy,
+        )
+
+
+@pytest.mark.parametrize(
+    ("claim", "value"),
+    [("tid", "not-a-uuid"), ("oid", ""), ("oid", None)],
+)
+def test_invalid_corporate_identity_claim_is_rejected(claim: str, value: object) -> None:
+    claims: dict[str, object] = {"tid": TENANT_ID, "oid": OBJECT_ID, "acct": 0}
+    claims[claim] = value
+
+    with pytest.raises(IdentityMappingError, match=rf"{claim} claim missing or invalid"):
+        principal_from_claims(
+            claims,
+            areas_claim="governance_areas",
+            admin_claim="governance_admin",
+            corporate_policy=corporate_policy(),
         )

@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from typing import Protocol
 
 from ai_governance_api.domain.identity import (
+    CorporateIdentityPolicy,
     IdentityMappingError,
     Principal,
     principal_from_claims,
@@ -40,12 +41,14 @@ class AuthenticateAccessToken:
         areas_claim: str,
         admin_claim: str,
         max_token_length: int,
+        corporate_policy: CorporateIdentityPolicy | None = None,
     ) -> None:
         """Initialize the use case with an external verifier and claim policy."""
         self._verifier = verifier
         self._areas_claim = areas_claim
         self._admin_claim = admin_claim
         self._max_token_length = max_token_length
+        self._corporate_policy = corporate_policy
 
     def execute(self, token: str) -> Principal:
         """Authenticate a non-empty token and return its least-privileged identity."""
@@ -59,6 +62,7 @@ class AuthenticateAccessToken:
                 claims,
                 areas_claim=self._areas_claim,
                 admin_claim=self._admin_claim,
+                corporate_policy=self._corporate_policy,
             )
         except IdentityMappingError as exc:
             raise InvalidAccessToken(str(exc)) from exc

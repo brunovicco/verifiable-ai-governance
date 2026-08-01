@@ -23,7 +23,13 @@ from ai_governance_api.domain.evidence import (
     ScanVerdict,
     StoredObject,
 )
-from ai_governance_api.domain.identity import IdentityMappingError, Principal
+from ai_governance_api.domain.identity import (
+    CorporateIdentityPolicy,
+    DirectoryAccountType,
+    DirectoryIdentity,
+    IdentityMappingError,
+    Principal,
+)
 from ai_governance_api.domain.reviews import (
     GateDecisionTransition,
     InitiativeReviewState,
@@ -42,6 +48,9 @@ __all__ = [
     "AssessmentNotEditable",
     "AssessmentRecord",
     "AssessmentTypeMismatch",
+    "CorporateIdentityPolicy",
+    "DirectoryAccountType",
+    "DirectoryIdentity",
     "EvidenceActor",
     "EvidenceKind",
     "EvidenceRecord",

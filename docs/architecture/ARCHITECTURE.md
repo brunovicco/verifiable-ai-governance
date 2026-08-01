@@ -68,11 +68,16 @@ destinado à API. Em modo Entra, o client remove headers de identidade simulada 
 somente bearer token; a API continua sendo a autoridade sobre autenticação e
 autorização. O modo local permanece explicitamente separado.
 
-Microsoft Graph via OBO, identidade `(tid, oid)`, perfil, `department` e associações
-transitivas continuam planejados. O domínio dependerá de portas próprias. Autorizações
-serão derivadas de App Roles ou object IDs mapeados, nunca de nomes ou de `department`.
-O plano detalhado está em `MICROSOFT_ENTRA_GRAPH_PLAN.md` e a decisão do portal no ADR
-0011.
+No modo corporativo, o domínio exige `tid` e `oid` como UUIDs e produz a identidade
+estável composta `(tenant_id, object_id)`. O tenant precisa estar na allowlist e
+coincidir com o issuer Entra tenant-specific. O claim opcional `acct` classifica membro
+ou guest; guest e classificação ausente/ambígua perdem áreas de aprovação e
+administração por padrão.
+
+Microsoft Graph via OBO, perfil, `department` e associações transitivas continuam
+planejados. O domínio dependerá de portas próprias. Autorizações serão derivadas de App
+Roles ou object IDs mapeados, nunca de nomes ou de `department`. O plano detalhado está
+em `MICROSOFT_ENTRA_GRAPH_PLAN.md`; as decisões estão nos ADRs 0011 e 0012.
 
 ### Assessments estruturados
 

@@ -171,11 +171,14 @@ assinatura adulterada. As senhas presentes no realm e em `.env.example` são som
 locais. O fluxo de senha direta existe apenas neste cliente de teste; autenticação
 interativa do portal com authorization code e PKCE permanece no backlog.
 
-A implementação corporativa planejada utilizará Microsoft Entra ID para o login e
-o adapter de login do portal já está implementado, aguardando validação em tenant real.
+A implementação corporativa usa Microsoft Entra ID para o login; o adapter do portal
+está implementado e aguarda validação em tenant real.
+No modo Entra, a API usa a identidade estável `(tid, oid)`, exige tenant allowlisted e
+remove capacidades de aprovação de guests ou contas sem classificação `acct` confiável.
 Microsoft Graph via OBO identificará automaticamente o perfil, o departamento e os
-grupos transitivos em uma fase posterior. Áreas de aprovação virão somente de App Roles ou object IDs
-explicitamente mapeados; departamento e nomes de grupos não concederão autorização.
+grupos transitivos em uma fase posterior. Áreas de aprovação virão somente de App Roles
+ou object IDs explicitamente mapeados; departamento e nomes de grupos não concederão
+autorização.
 Consulte o [plano Entra/Graph](docs/architecture/MICROSOFT_ENTRA_GRAPH_PLAN.md).
 
 ## Organização
