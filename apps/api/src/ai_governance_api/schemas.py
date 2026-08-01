@@ -1,3 +1,5 @@
+"""Validated HTTP request and response schemas."""
+
 from datetime import datetime
 from typing import Any
 
@@ -19,6 +21,8 @@ def _clean_strings(values: list[str]) -> list[str]:
 
 
 class ModelAssetCreate(BaseModel):
+    """Input for registering a model asset."""
+
     provider: str = Field(min_length=2, max_length=200)
     model_name: str = Field(min_length=2, max_length=200)
     model_version: str = Field(min_length=1, max_length=100)
@@ -32,10 +36,13 @@ class ModelAssetCreate(BaseModel):
     @field_validator("approved_use_cases", "prohibited_use_cases")
     @classmethod
     def clean_use_cases(cls, values: list[str]) -> list[str]:
+        """Normalize model use-case lists."""
         return _clean_strings(values)
 
 
 class ModelAssetUpdate(BaseModel):
+    """Partial update for a versioned model asset."""
+
     expected_version: int = Field(ge=1)
     provider: str | None = Field(default=None, min_length=2, max_length=200)
     model_name: str | None = Field(default=None, min_length=2, max_length=200)
@@ -50,16 +57,20 @@ class ModelAssetUpdate(BaseModel):
     @field_validator("approved_use_cases", "prohibited_use_cases")
     @classmethod
     def clean_optional_use_cases(cls, values: list[str] | None) -> list[str] | None:
+        """Normalize optional model use-case lists."""
         return _clean_strings(values) if values is not None else None
 
     @model_validator(mode="after")
     def require_change(self) -> "ModelAssetUpdate":
+        """Reject updates that contain only the concurrency version."""
         if self.model_fields_set == {"expected_version"}:
             raise ValueError("Informe ao menos um campo para atualizar.")
         return self
 
 
 class AgentCreate(BaseModel):
+    """Input for registering a governed agent."""
+
     name: str = Field(min_length=2, max_length=200)
     purpose: str = Field(min_length=10, max_length=5000)
     owner_id: str | None = Field(default=None, min_length=3, max_length=200)
@@ -75,10 +86,13 @@ class AgentCreate(BaseModel):
     @field_validator("allowed_models", "tools", "permissions", "human_approval_points")
     @classmethod
     def clean_lists(cls, values: list[str]) -> list[str]:
+        """Normalize agent capability and control lists."""
         return _clean_strings(values)
 
 
 class AgentUpdate(BaseModel):
+    """Partial update for a versioned agent."""
+
     expected_version: int = Field(ge=1)
     name: str | None = Field(default=None, min_length=2, max_length=200)
     purpose: str | None = Field(default=None, min_length=10, max_length=5000)
@@ -95,16 +109,20 @@ class AgentUpdate(BaseModel):
     @field_validator("allowed_models", "tools", "permissions", "human_approval_points")
     @classmethod
     def clean_optional_lists(cls, values: list[str] | None) -> list[str] | None:
+        """Normalize optional agent capability and control lists."""
         return _clean_strings(values) if values is not None else None
 
     @model_validator(mode="after")
     def require_change(self) -> "AgentUpdate":
+        """Reject updates that contain only the concurrency version."""
         if self.model_fields_set == {"expected_version"}:
             raise ValueError("Informe ao menos um campo para atualizar.")
         return self
 
 
 class AISystemCreate(BaseModel):
+    """Input for creating an AI system from an approved initiative."""
+
     name: str = Field(min_length=3, max_length=200)
     purpose: str = Field(min_length=20, max_length=5000)
     owner_id: str | None = Field(default=None, min_length=3, max_length=200)
@@ -113,6 +131,8 @@ class AISystemCreate(BaseModel):
 
 
 class AISystemUpdate(BaseModel):
+    """Partial update for a versioned AI system."""
+
     expected_version: int = Field(ge=1)
     name: str | None = Field(default=None, min_length=3, max_length=200)
     purpose: str | None = Field(default=None, min_length=20, max_length=5000)
@@ -122,17 +142,22 @@ class AISystemUpdate(BaseModel):
 
     @model_validator(mode="after")
     def require_change(self) -> "AISystemUpdate":
+        """Reject updates that contain only the concurrency version."""
         if self.model_fields_set == {"expected_version"}:
             raise ValueError("Informe ao menos um campo para atualizar.")
         return self
 
 
 class RetirementRequest(BaseModel):
+    """Versioned request to retire an inventory entity."""
+
     expected_version: int = Field(ge=1)
     reason: str = Field(min_length=10, max_length=2000)
 
 
 class ModelAssetRead(BaseModel):
+    """Serialized model asset returned by the API."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: str
@@ -153,6 +178,8 @@ class ModelAssetRead(BaseModel):
 
 
 class AgentRead(BaseModel):
+    """Serialized governed agent returned by the API."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: str
@@ -175,6 +202,8 @@ class AgentRead(BaseModel):
 
 
 class AISystemRead(BaseModel):
+    """Serialized AI system summary returned by the API."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: str
@@ -192,11 +221,15 @@ class AISystemRead(BaseModel):
 
 
 class AISystemDetail(AISystemRead):
+    """AI system summary including registered models and agents."""
+
     models: list[ModelAssetRead] = Field(default_factory=list)
     agents: list[AgentRead] = Field(default_factory=list)
 
 
 class InitiativeCreate(BaseModel):
+    """Input for creating and preliminarily evaluating an initiative."""
+
     name: str = Field(min_length=3, max_length=200)
     description: str = Field(min_length=20, max_length=5000)
     business_area: str = Field(min_length=2, max_length=200)
@@ -222,16 +255,20 @@ class InitiativeCreate(BaseModel):
     @field_validator("inference_countries")
     @classmethod
     def clean_countries(cls, countries: list[str]) -> list[str]:
+        """Normalize the list of inference countries."""
         return sorted({country.strip() for country in countries if country.strip()})
 
     @model_validator(mode="after")
     def validate_locations(self) -> "InitiativeCreate":
+        """Require locations for declared international processing."""
         if self.international_processing and not self.inference_countries:
             raise ValueError("Informe ao menos um país quando houver processamento internacional.")
         return self
 
 
 class ApprovalRead(BaseModel):
+    """Serialized governance approval gate."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: str
@@ -245,6 +282,8 @@ class ApprovalRead(BaseModel):
 
 
 class InitiativeRead(BaseModel):
+    """Serialized initiative summary returned by the API."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: str
@@ -265,6 +304,8 @@ class InitiativeRead(BaseModel):
 
 
 class InitiativeDetail(InitiativeRead):
+    """Initiative summary including policy inputs, gates, and systems."""
+
     decision_impact: DecisionImpact
     data_classification: DataClassification
     autonomy_level: AutonomyLevel
@@ -276,6 +317,8 @@ class InitiativeDetail(InitiativeRead):
 
 
 class ApprovalDecisionRequest(BaseModel):
+    """Input for an approval or rejection decision."""
+
     decision: ApprovalStatus
     comments: str = Field(min_length=5, max_length=4000)
     evidence_uri: str = Field(min_length=3, max_length=2000)
@@ -284,16 +327,21 @@ class ApprovalDecisionRequest(BaseModel):
     @field_validator("decision")
     @classmethod
     def validate_decision(cls, value: ApprovalStatus) -> ApprovalStatus:
+        """Accept only terminal approval decisions."""
         if value not in {ApprovalStatus.APPROVED, ApprovalStatus.REJECTED}:
             raise ValueError("A decisão deve ser approved ou rejected")
         return value
 
 
 class SubmissionRequest(BaseModel):
+    """Versioned request to submit a draft initiative."""
+
     expected_version: int = Field(ge=1)
 
 
 class AuditEventRead(BaseModel):
+    """Serialized tamper-evident audit event."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: str

@@ -59,7 +59,12 @@ make dev-web
 make test
 make lint
 make build
+make quality
 ```
+
+`make quality` executa o gate completo e reprodutível: lockfile, Ruff, mypy estrito,
+testes Python, testes/lint do portal e build de produção. Configuração de deploy é
+fornecida por variáveis de ambiente; `.env` é apenas uma conveniência local.
 
 ## Fluxo do MVP
 

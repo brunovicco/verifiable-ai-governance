@@ -31,6 +31,16 @@ FastAPI, SQLAlchemy assíncrono e Pydantic. A API é a autoridade sobre transiç
 estado, segregação de funções, autorização, versionamento e auditoria. Regras críticas
 não dependem de validações do frontend.
 
+Os routers são adaptadores HTTP finos. Serviços de aplicação coordenam casos de uso,
+transações e auditoria sem depender de exceções ou status do FastAPI. Dependências são
+ligadas no composition root: em especial, a avaliação de política depende do contrato
+`PolicyEvaluator`, permitindo substituir o motor determinístico por outra implementação
+compatível sem alterar o caso de uso (Dependency Inversion).
+
+Erros esperados usam categorias de aplicação estáveis e são traduzidos para HTTP apenas
+na borda. Configuração de deploy é imutável, fornecida pelo ambiente e validada de forma
+fail-closed antes de servir tráfego.
+
 ### Governance schemas
 
 Pacote compartilhado que define enums, contexto de política, decisão, breakdown de

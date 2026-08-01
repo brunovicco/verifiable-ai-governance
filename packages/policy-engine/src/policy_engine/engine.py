@@ -1,3 +1,5 @@
+"""Deterministic baseline governance policy implementation."""
+
 from governance_schemas import (
     ApprovalArea,
     ApprovalRequirement,
@@ -19,6 +21,7 @@ class GovernancePolicyEngine:
     policy_version = "1.0.0"
 
     def evaluate(self, context: PolicyContext) -> PolicyDecision:
+        """Return an explainable and versioned decision for the context."""
         breakdown = RiskBreakdown(
             impact=self._impact_score(context),
             data=self._data_score(context),

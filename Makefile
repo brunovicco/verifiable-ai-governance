@@ -1,4 +1,4 @@
-.PHONY: setup dev dev-api dev-web test lint format build migrate compose-up compose-down
+.PHONY: setup dev dev-api dev-web test lint format build quality migrate compose-up compose-down
 
 setup:
 	uv sync --all-packages
@@ -15,12 +15,12 @@ dev-web:
 	npm run dev:web
 
 test:
-	uv run pytest
+	uv run python -m pytest
 	npm run test:web
 
 lint:
-	uv run ruff check .
-	uv run mypy apps/api/src packages/governance-schemas/src packages/policy-engine/src
+	uv run python -m ruff check .
+	uv run python -m mypy apps/api/src packages/governance-schemas/src packages/policy-engine/src
 	npm run lint:web
 
 format:
@@ -29,6 +29,9 @@ format:
 
 build:
 	npm run build:web
+
+quality:
+	uv run python scripts/quality_gate.py
 
 migrate:
 	uv run alembic -c apps/api/alembic.ini upgrade head
