@@ -25,6 +25,10 @@ button { color: inherit; }
 .brand strong, .brand small { display: block; }
 .brand small { color: var(--muted); font-size: 11px; margin-top: 2px; letter-spacing: .08em; text-transform: uppercase; }
 .topbar nav { display: flex; align-items: center; gap: 24px; font-size: 14px; }
+.auth-local { color: var(--muted); font-size: 11px; font-weight: 700; }
+.auth-action { padding: 0; }
+.auth-account { display: flex; align-items: center; gap: 12px; }
+.auth-account > span { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 11px; font-weight: 700; }
 
 main { min-height: calc(100vh - 142px); }
 .page-shell { max-width: 1180px; margin: 0 auto; padding: 54px 24px 80px; }
@@ -81,6 +85,12 @@ td:last-child { text-align: right; color: var(--green); font-weight: 800; }
 .notice { padding: 14px 16px; border-radius: 7px; margin: 20px 0; font-size: 13px; line-height: 1.5; }
 .notice-error { color: var(--red); background: #fff0ef; border: 1px solid #f2cfcb; }
 .notice-success { color: var(--green); background: #e9f7ef; border: 1px solid #c9e8d5; }
+.auth-page { min-height: calc(100vh - 142px); display: grid; place-items: center; }
+.auth-panel { width: min(620px, 100%); padding: 48px; text-align: center; }
+.auth-panel h1 { margin-bottom: 18px; font-size: clamp(36px, 6vw, 52px); }
+.auth-panel > p:not(.eyebrow) { color: var(--muted); line-height: 1.6; }
+.auth-panel .button { margin-top: 12px; }
+.authenticated-reviewer { padding: 10px 12px; border-radius: 7px; background: var(--paper); color: var(--muted); font-size: 11px; line-height: 1.5; }
 .breadcrumb { display: flex; gap: 10px; color: var(--muted); font-size: 13px; margin-bottom: 48px; }
 .breadcrumb a { color: var(--green); font-weight: 700; }
 

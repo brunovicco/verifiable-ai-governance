@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import {
+  PortalAuthBoundary,
+  PortalAuthProvider,
+  PortalAuthStatus,
+} from "@/components/auth/PortalAuth";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,26 +18,31 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pt-BR">
       <body>
-        <header className="topbar">
-          <Link className="brand" href="/">
-            <span className="brand-mark">V</span>
-            <span>
-              <strong>Verifiable AI</strong>
-              <small>Governance workspace</small>
-            </span>
-          </Link>
-          <nav aria-label="Navegação principal">
-            <Link href="/">Portfólio</Link>
-            <Link className="button button-small" href="/initiatives/new">
-              Nova iniciativa
+        <PortalAuthProvider>
+          <header className="topbar">
+            <Link className="brand" href="/">
+              <span className="brand-mark">V</span>
+              <span>
+                <strong>Verifiable AI</strong>
+                <small>Governance workspace</small>
+              </span>
             </Link>
-          </nav>
-        </header>
-        <main>{children}</main>
-        <footer>
-          <span>Políticas verificáveis · Evidências · Decisões auditáveis</span>
-          <span>v0.1</span>
-        </footer>
+            <nav aria-label="Navegação principal">
+              <Link href="/">Portfólio</Link>
+              <Link className="button button-small" href="/initiatives/new">
+                Nova iniciativa
+              </Link>
+              <PortalAuthStatus />
+            </nav>
+          </header>
+          <PortalAuthBoundary>
+            <main>{children}</main>
+          </PortalAuthBoundary>
+          <footer>
+            <span>Políticas verificáveis · Evidências · Decisões auditáveis</span>
+            <span>v0.1</span>
+          </footer>
+        </PortalAuthProvider>
       </body>
     </html>
   );

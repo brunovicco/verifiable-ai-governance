@@ -7,6 +7,8 @@ governança em controles verificáveis, aprovações condicionais e evidências 
 ## O que já está disponível
 
 - portal Next.js voltado a solicitantes e aprovadores não técnicos;
+- login do portal preparado para Microsoft Entra ID com MSAL, PKCE, cache de sessão e
+  bearer token da API, mantendo modo local explicitamente separado;
 - API FastAPI com autenticação OIDC validada contra provedor real;
 - inventário navegável de iniciativas, sistemas, modelos e agentes, com ownership,
   versão, região, escopo de uso, autonomia, ferramentas e limites operacionais;
@@ -170,8 +172,9 @@ locais. O fluxo de senha direta existe apenas neste cliente de teste; autentica�
 interativa do portal com authorization code e PKCE permanece no backlog.
 
 A implementação corporativa planejada utilizará Microsoft Entra ID para o login e
-Microsoft Graph via OBO para identificar automaticamente o perfil, o departamento e os
-grupos transitivos. Áreas de aprovação virão somente de App Roles ou object IDs
+o adapter de login do portal já está implementado, aguardando validação em tenant real.
+Microsoft Graph via OBO identificará automaticamente o perfil, o departamento e os
+grupos transitivos em uma fase posterior. Áreas de aprovação virão somente de App Roles ou object IDs
 explicitamente mapeados; departamento e nomes de grupos não concederão autorização.
 Consulte o [plano Entra/Graph](docs/architecture/MICROSOFT_ENTRA_GRAPH_PLAN.md).
 

@@ -141,6 +141,11 @@ Evidências auditáveis mínimas:
 
 ## Entregas planejadas
 
+Status em 2026-08-01: o adapter MSAL do portal, PKCE, `sessionStorage`, login/logout,
+token silencioso da API e remoção dos headers manuais no modo Entra estão
+implementados. A validação contra tenant real e os itens das fases 3 a 5 permanecem
+pendentes.
+
 ### Fase 1 — Fundação Entra
 
 - app registrations separadas para portal e API;

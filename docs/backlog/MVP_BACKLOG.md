@@ -16,7 +16,8 @@
 
 ## P1 — Operação e assurance
 
-- [ ] Login do portal via Microsoft Entra ID, authorization code com PKCE e sessão segura.
+- [x] Adapter do portal via Microsoft Entra ID, authorization code com PKCE e cache de sessão.
+- [ ] Validação do login contra tenant Entra real e Conditional Access.
 - [ ] Identidade corporativa por `(tid, oid)`, tenant allowlist e política para guests.
 - [ ] Microsoft Graph via OBO para perfil, `department` e grupos transitivos do usuário.
 - [ ] Catálogo versionado de App Roles/object IDs Entra para áreas de aprovação.
