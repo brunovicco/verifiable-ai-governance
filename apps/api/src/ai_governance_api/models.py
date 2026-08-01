@@ -28,6 +28,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
+from ai_governance_api.domain.asset_registry import (
+    AssetReviewState,
+    asset_review_state,
+)
+
 
 def new_id() -> str:
     """Return a UUID string suitable for public entity identifiers."""
@@ -68,6 +73,20 @@ class ReviewableAssetMixin:
         index=True,
     )
     review_reference: Mapped[str | None] = mapped_column(String(100))
+
+    @property
+    def review_state(self) -> AssetReviewState:
+        """Return current review validity while preserving lifecycle status."""
+        deadline = self.next_review_at
+        if deadline is not None and (
+            deadline.tzinfo is None or deadline.utcoffset() is None
+        ):
+            deadline = deadline.replace(tzinfo=UTC)
+        return asset_review_state(
+            approved_scope_digest=self.approved_scope_digest,
+            next_review_at=deadline,
+            now=datetime.now(UTC),
+        )
 
 
 class Initiative(VersionedMixin, Base):

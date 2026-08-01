@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
 import { StatusPill } from "@/components/StatusPill";
+import { assetDisplayStatus } from "@/lib/asset-reviews";
 import {
   createAgent,
   createModel,
@@ -401,7 +402,7 @@ export default function AISystemPage() {
               <div className="asset-card" key={model.id}>
                 <div className="asset-card-heading">
                   <div><strong>{model.provider} · {model.model_name}</strong><small>{model.model_version} · {model.deployment_region}</small></div>
-                  <StatusPill value={model.status} />
+                  <StatusPill value={assetDisplayStatus(model.status, model.review_state)} />
                 </div>
                 <p>Dados: {model.allowed_data_classes.map(label).join(", ") || "não definidos"}</p>
                 {model.reviewed_at && (
@@ -431,7 +432,7 @@ export default function AISystemPage() {
               <div className="asset-card" key={agent.id}>
                 <div className="asset-card-heading">
                   <div><strong>{agent.name}</strong><small>{agent.agent_version} · {agent.deployment_region}</small><small>{label(agent.autonomy_level)} · {agent.owner_id}</small></div>
-                  <StatusPill value={agent.status} />
+                  <StatusPill value={assetDisplayStatus(agent.status, agent.review_state)} />
                 </div>
                 <p>{agent.purpose}</p>
                 {agent.reviewed_at && (

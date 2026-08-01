@@ -25,6 +25,18 @@ class RegistryAssetKind(StrEnum):
     AGENT = "agent"
 
 
+class AssetReviewState(StrEnum):
+    """Current validity of a persisted asset review projection."""
+
+    NOT_REVIEWED = "not_reviewed"
+    CURRENT = "current"
+    EXPIRED = "expired"
+
+
+MIGRATED_AGENT_VERSION = "unversioned"
+MIGRATED_DEPLOYMENT_REGION = "unspecified"
+
+
 MAX_REVIEW_INTERVAL = {
     RiskTier.LOW: timedelta(days=365),
     RiskTier.MEDIUM: timedelta(days=180),
@@ -143,9 +155,11 @@ def review_agent_scope(
 ) -> AssetReviewDecision:
     """Approve an explicit agent boundary after independent security review."""
     _validate_review_context(context, required_area=ApprovalArea.SECURITY)
-    if not candidate.agent_version.strip():
+    normalized_version = candidate.agent_version.strip().casefold()
+    normalized_region = candidate.deployment_region.strip().casefold()
+    if not normalized_version or normalized_version == MIGRATED_AGENT_VERSION:
         raise AssetReviewError("Agent review requires an explicit semantic version")
-    if not candidate.deployment_region.strip():
+    if not normalized_region or normalized_region == MIGRATED_DEPLOYMENT_REGION:
         raise AssetReviewError("Agent review requires an explicit deployment region")
     if not candidate.allowed_models:
         raise AssetReviewError("Agent review requires at least one approved model")
@@ -200,6 +214,23 @@ def review_is_current(*, next_review_at: datetime | None, now: datetime) -> bool
         return False
     _require_aware(next_review_at, "next_review_at")
     return now < next_review_at
+
+
+def asset_review_state(
+    *,
+    approved_scope_digest: str | None,
+    next_review_at: datetime | None,
+    now: datetime,
+) -> AssetReviewState:
+    """Classify current review validity without mutating lifecycle history."""
+    _require_aware(now, "now")
+    if not approved_scope_digest or next_review_at is None:
+        return AssetReviewState.NOT_REVIEWED
+    return (
+        AssetReviewState.CURRENT
+        if review_is_current(next_review_at=next_review_at, now=now)
+        else AssetReviewState.EXPIRED
+    )
 
 
 def _validate_review_context(

@@ -74,7 +74,7 @@ td:last-child { text-align: right; color: var(--green); font-weight: 800; }
 .status-low, .status-approved, .status-active { background: #dff5e8; color: #176044; }
 .status-medium, .status-under-review, .status-pending { background: #fff1cc; color: #865c12; }
 .status-high { background: #ffe2c7; color: #90460e; }
-.status-critical, .status-rejected { background: #fde0dd; color: #982d28; }
+.status-critical, .status-rejected, .status-expired { background: #fde0dd; color: #982d28; }
 .status-changes-requested { background: #ffe2c7; color: #90460e; }
 .status-not-required, .status-retired, .status-superseded { background: #eff1ee; color: #78827d; }
 .status-not-started { background: #eff1ee; color: #78827d; }

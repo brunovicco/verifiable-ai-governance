@@ -108,6 +108,52 @@ class InventoryService:
             raise ApplicationError(ErrorKind.NOT_FOUND, "AI system not found")
         return ai_system
 
+    async def _get_system_for_update(self, system_id: str) -> AISystem:
+        """Lock one system as the serialization boundary for inventory commands."""
+        ai_system = await self._session.scalar(
+            select(AISystem)
+            .where(AISystem.id == system_id)
+            .with_for_update(of=AISystem)
+            .options(selectinload(AISystem.models), selectinload(AISystem.agents))
+        )
+        if ai_system is None:
+            raise ApplicationError(ErrorKind.NOT_FOUND, "AI system not found")
+        return ai_system
+
+    async def _get_model_for_update(
+        self,
+        model_id: str,
+    ) -> tuple[AISystem, ModelAsset]:
+        """Lock the owning system before evaluating a model mutation."""
+        ai_system = await self._session.scalar(
+            select(AISystem)
+            .join(ModelAsset, ModelAsset.ai_system_id == AISystem.id)
+            .where(ModelAsset.id == model_id)
+            .with_for_update(of=AISystem)
+            .options(selectinload(AISystem.models), selectinload(AISystem.agents))
+        )
+        if ai_system is None:
+            raise ApplicationError(ErrorKind.NOT_FOUND, "Model not found")
+        model = next(item for item in ai_system.models if item.id == model_id)
+        return ai_system, model
+
+    async def _get_agent_for_update(
+        self,
+        agent_id: str,
+    ) -> tuple[AISystem, Agent]:
+        """Lock the owning system before evaluating an agent mutation."""
+        ai_system = await self._session.scalar(
+            select(AISystem)
+            .join(Agent, Agent.ai_system_id == AISystem.id)
+            .where(Agent.id == agent_id)
+            .with_for_update(of=AISystem)
+            .options(selectinload(AISystem.models), selectinload(AISystem.agents))
+        )
+        if ai_system is None:
+            raise ApplicationError(ErrorKind.NOT_FOUND, "Agent not found")
+        agent = next(item for item in ai_system.agents if item.id == agent_id)
+        return ai_system, agent
+
     async def update_system(
         self,
         system_id: str,
@@ -115,7 +161,7 @@ class InventoryService:
         principal: Principal,
     ) -> AISystem:
         """Update a mutable AI system using optimistic concurrency."""
-        ai_system = await self.get_system(system_id)
+        ai_system = await self._get_system_for_update(system_id)
         self._require_owner(ai_system, principal)
         self._require_mutable(ai_system)
         self._require_version(ai_system.version, request.expected_version)
@@ -163,7 +209,7 @@ class InventoryService:
         principal: Principal,
     ) -> AISystem:
         """Retire a system and cascade retirement to its active inventory."""
-        ai_system = await self.get_system(system_id)
+        ai_system = await self._get_system_for_update(system_id)
         self._require_owner(ai_system, principal)
         self._require_mutable(ai_system)
         self._require_version(ai_system.version, request.expected_version)
@@ -207,7 +253,7 @@ class InventoryService:
         principal: Principal,
     ) -> ModelAsset:
         """Register a model in a mutable AI system."""
-        ai_system = await self.get_system(system_id)
+        ai_system = await self._get_system_for_update(system_id)
         self._require_owner(ai_system, principal)
         self._require_mutable(ai_system)
         model = ModelAsset(
@@ -237,8 +283,7 @@ class InventoryService:
         principal: Principal,
     ) -> ModelAsset:
         """Update a registered model using optimistic concurrency."""
-        model = await self._load_model(model_id)
-        ai_system = await self.get_system(model.ai_system_id)
+        ai_system, model = await self._get_model_for_update(model_id)
         self._require_owner(ai_system, principal)
         self._require_mutable(ai_system)
         self._require_not_retired(model.status, "Model")
@@ -282,8 +327,7 @@ class InventoryService:
         principal: Principal,
     ) -> ModelAsset:
         """Approve a model scope through an independent architecture review."""
-        model = await self._load_model(model_id)
-        ai_system = await self.get_system(model.ai_system_id)
+        ai_system, model = await self._get_model_for_update(model_id)
         self._require_mutable(ai_system)
         self._require_not_retired(model.status, "Model")
         self._require_version(model.version, request.expected_version)
@@ -319,8 +363,7 @@ class InventoryService:
         principal: Principal,
     ) -> ModelAsset:
         """Retire a registered model without deleting its history."""
-        model = await self._load_model(model_id)
-        ai_system = await self.get_system(model.ai_system_id)
+        ai_system, model = await self._get_model_for_update(model_id)
         self._require_owner(ai_system, principal)
         self._require_mutable(ai_system)
         self._require_not_retired(model.status, "Model")
@@ -357,7 +400,7 @@ class InventoryService:
         principal: Principal,
     ) -> Agent:
         """Register an agent whose models belong to the same active system."""
-        ai_system = await self.get_system(system_id)
+        ai_system = await self._get_system_for_update(system_id)
         self._require_owner(ai_system, principal)
         self._require_mutable(ai_system)
         self._validate_allowed_models(ai_system, request.allowed_models)
@@ -390,8 +433,7 @@ class InventoryService:
         principal: Principal,
     ) -> Agent:
         """Update an agent while preserving system model boundaries."""
-        agent = await self._load_agent(agent_id)
-        ai_system = await self.get_system(agent.ai_system_id)
+        ai_system, agent = await self._get_agent_for_update(agent_id)
         self._require_owner(ai_system, principal)
         self._require_mutable(ai_system)
         self._require_not_retired(agent.status, "Agent")
@@ -429,8 +471,7 @@ class InventoryService:
         principal: Principal,
     ) -> Agent:
         """Approve an agent scope through an independent security review."""
-        agent = await self._load_agent(agent_id)
-        ai_system = await self.get_system(agent.ai_system_id)
+        ai_system, agent = await self._get_agent_for_update(agent_id)
         self._require_mutable(ai_system)
         self._require_not_retired(agent.status, "Agent")
         self._require_version(agent.version, request.expected_version)
@@ -473,8 +514,7 @@ class InventoryService:
         principal: Principal,
     ) -> Agent:
         """Retire an agent without deleting its history."""
-        agent = await self._load_agent(agent_id)
-        ai_system = await self.get_system(agent.ai_system_id)
+        ai_system, agent = await self._get_agent_for_update(agent_id)
         self._require_owner(ai_system, principal)
         self._require_mutable(ai_system)
         self._require_not_retired(agent.status, "Agent")

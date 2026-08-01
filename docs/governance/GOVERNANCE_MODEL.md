@@ -61,7 +61,10 @@ com segregação entre owner e revisor. A decisão vincula versão, região, cas
 classes de dados, baseline ou limites de autonomia a um digest canônico e a uma data de
 revisão proporcional ao risco. Alterações materiais removem a aprovação; mudanças em
 modelos também invalidam agentes dependentes. Agentes só podem ser aprovados quando
-todos os modelos permitidos possuem revisão vigente.
+todos os modelos permitidos possuem revisão vigente. O lifecycle histórico e a vigência
+são dimensões distintas: um ativo pode manter `status=approved`, mas consumidores devem
+exigir `review_state=current`. Marcadores transitórios de migração não constituem versão
+ou região válidas para aprovação.
 
 A exclusão física não faz parte do fluxo normal. Aposentar um sistema muda seu estado,
 desativa a indicação de produção, aposenta os ativos vinculados e registra evidência

@@ -16,6 +16,7 @@ from governance_schemas import (
 )
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from ai_governance_api.domain.asset_registry import AssetReviewState
 from ai_governance_api.domain.directory_access import (
     DirectoryAccessBlockReason,
     DirectoryAccessRestoreReason,
@@ -313,6 +314,7 @@ class ReviewableAssetRead(BaseModel):
     reviewed_at: datetime | None
     next_review_at: datetime | None
     review_reference: str | None
+    review_state: AssetReviewState
 
 
 class ModelAssetRead(ReviewableAssetRead):
