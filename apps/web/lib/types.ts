@@ -1,4 +1,10 @@
-export type ApprovalStatus = "not_required" | "pending" | "approved" | "rejected";
+export type ApprovalStatus =
+  | "not_required"
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "changes_requested"
+  | "superseded";
 
 export type AssessmentKind =
   | "ai-impact-assessment"
@@ -74,6 +80,8 @@ export interface Evidence {
 
 export interface Approval {
   id: string;
+  review_submission_id: string | null;
+  review_round: number;
   area: string;
   required: boolean;
   reason: string;
@@ -147,6 +155,7 @@ export interface Initiative {
   policy_id: string;
   policy_version: string;
   required_documents: string[];
+  current_review_round: number;
   version: number;
   created_at: string;
   updated_at: string;
@@ -154,10 +163,37 @@ export interface Initiative {
   data_classification?: string;
   autonomy_level?: string;
   hosting_model?: string;
+  affects_rights?: boolean;
+  executes_actions?: boolean;
+  personal_data?: boolean;
+  sensitive_data?: boolean;
+  children_data?: boolean;
+  external_facing?: boolean;
+  regulated_context?: boolean;
   international_processing?: boolean;
   inference_countries?: string[];
+  uses_rag?: boolean;
+  uses_agents?: boolean;
+  uses_mcp?: boolean;
+  uses_custom_model?: boolean;
   approvals?: Approval[];
   systems?: AISystem[];
+}
+
+export interface ReviewSubmission {
+  id: string;
+  initiative_id: string;
+  review_round: number;
+  status: string;
+  submitted_by: string;
+  submitted_at: string;
+  resolved_at: string | null;
+  revision_summary: string;
+  policy_id: string;
+  policy_version: string;
+  risk_score: number;
+  risk_tier: RiskTier;
+  approvals: Approval[];
 }
 
 export interface Identity {

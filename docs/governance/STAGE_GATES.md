@@ -17,3 +17,9 @@ Troca de modelo/versão, novo país, nova categoria de dados, ferramenta ou perm
 aumento de autonomia, mudança de finalidade, novo público afetado e alteração de
 threshold devem reabrir assessment. O sistema não reaproveitará aprovação anterior por
 similaridade implícita.
+
+Uma solicitação de ajuste em G2–G5 encerra a rodada corrente, preserva o snapshot
+avaliado e reabre os assessments existentes como rascunhos versionados. Depois das
+correções, o owner fornece um resumo, reenvia os assessments e cria uma nova rodada com
+política e gates recalculados. Rejeição definitiva não pode ser convertida em
+ressubmissão sem um novo processo formal.

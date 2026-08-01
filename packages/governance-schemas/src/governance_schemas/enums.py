@@ -71,6 +71,8 @@ class ApprovalStatus(StrEnum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
+    CHANGES_REQUESTED = "changes_requested"
+    SUPERSEDED = "superseded"
 
 
 class EntityStatus(StrEnum):
@@ -78,6 +80,7 @@ class EntityStatus(StrEnum):
 
     DRAFT = "draft"
     UNDER_REVIEW = "under_review"
+    CHANGES_REQUESTED = "changes_requested"
     APPROVED = "approved"
     REJECTED = "rejected"
     ACTIVE = "active"

@@ -102,6 +102,7 @@ class Initiative(VersionedMixin, Base):
     policy_version: Mapped[str] = mapped_column(String(50), nullable=False)
     required_documents: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    current_review_round: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     approvals: Mapped[list["Approval"]] = relationship(
         back_populates="initiative", cascade="all, delete-orphan", lazy="selectin"
@@ -110,6 +111,18 @@ class Initiative(VersionedMixin, Base):
     systems: Mapped[list["AISystem"]] = relationship(
         back_populates="initiative", lazy="selectin"
     )
+    review_submissions: Mapped[list["ReviewSubmission"]] = relationship(
+        back_populates="initiative", cascade="all, delete-orphan", lazy="selectin"
+    )
+
+    @property
+    def current_approvals(self) -> list["Approval"]:
+        """Return only gates belonging to the active review projection."""
+        return [
+            approval
+            for approval in self.approvals
+            if approval.review_round == self.current_review_round
+        ]
 
 
 class AISystem(VersionedMixin, Base):
@@ -228,13 +241,22 @@ class Approval(VersionedMixin, Base):
 
     __tablename__ = "approvals"
     __table_args__ = (
-        UniqueConstraint("initiative_id", "area", name="uq_approval_initiative_area"),
+        UniqueConstraint(
+            "initiative_id",
+            "review_round",
+            "area",
+            name="uq_approval_initiative_round_area",
+        ),
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     initiative_id: Mapped[str] = mapped_column(
         ForeignKey("initiatives.id"), nullable=False, index=True
     )
+    review_submission_id: Mapped[str | None] = mapped_column(
+        ForeignKey("review_submissions.id"), index=True
+    )
+    review_round: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     area: Mapped[ApprovalArea] = mapped_column(
         Enum(ApprovalArea, native_enum=False), nullable=False
     )
@@ -247,9 +269,48 @@ class Approval(VersionedMixin, Base):
     decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     decided_by: Mapped[str | None] = mapped_column(String(200))
     comments: Mapped[str | None] = mapped_column(Text)
+    superseded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     initiative: Mapped[Initiative] = relationship(back_populates="approvals")
+    review_submission: Mapped["ReviewSubmission | None"] = relationship(
+        back_populates="approvals"
+    )
     evidence: Mapped[list["Evidence"]] = relationship(back_populates="approval")
+
+
+class ReviewSubmission(VersionedMixin, Base):
+    """Immutable submitted snapshot plus the mutable outcome of one review round."""
+
+    __tablename__ = "review_submissions"
+    __table_args__ = (
+        UniqueConstraint(
+            "initiative_id",
+            "review_round",
+            name="uq_review_submission_initiative_round",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    initiative_id: Mapped[str] = mapped_column(
+        ForeignKey("initiatives.id"), nullable=False, index=True
+    )
+    review_round: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[EntityStatus] = mapped_column(
+        Enum(EntityStatus, native_enum=False), nullable=False
+    )
+    submitted_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    revision_summary: Mapped[str] = mapped_column(Text, nullable=False)
+    policy_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    policy_version: Mapped[str] = mapped_column(String(50), nullable=False)
+    risk_score: Mapped[int] = mapped_column(Integer, nullable=False)
+    risk_tier: Mapped[RiskTier] = mapped_column(Enum(RiskTier, native_enum=False), nullable=False)
+    initiative_snapshot: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    assessment_snapshots: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+
+    initiative: Mapped[Initiative] = relationship(back_populates="review_submissions")
+    approvals: Mapped[list[Approval]] = relationship(back_populates="review_submission")
 
 
 class Evidence(VersionedMixin, Base):

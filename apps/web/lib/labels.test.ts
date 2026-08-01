@@ -8,6 +8,7 @@ describe("governance labels", () => {
     expect(label("international-processing-assessment")).toContain("processamento");
     expect(label("a3_reversible_actions")).toContain("reversíveis");
     expect(label("retired")).toBe("Aposentado");
+    expect(label("changes_requested")).toBe("Ajustes solicitados");
   });
 
   it("creates a stable status class", () => {

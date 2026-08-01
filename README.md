@@ -20,6 +20,8 @@ governança em controles verificáveis, aprovações condicionais e evidências 
   explicável de aplicabilidade por iniciativa;
 - upload de evidências com allowlist, limite, validação de assinatura, SHA-256, scan
   ClamAV obrigatório, object storage privado e rollback compensatório;
+- rodadas imutáveis de revisão, solicitação de ajustes, reabertura de assessments e
+  ressubmissão com política e gates recalculados;
 - segregação de funções, versionamento otimista e trilha de auditoria encadeada por hash;
 - PostgreSQL local, migração inicial, testes e CI.
 
@@ -96,13 +98,17 @@ provedor em vez de variáveis estáticas.
 4. A submissão da iniciativa cria um gate para cada área; gates não aplicáveis ficam
    registrados.
 5. Um aprovador autorizado, diferente do owner, registra decisão e justificativa.
-6. Uma rejeição bloqueia a iniciativa. A aprovação só ocorre quando todos os gates
-   obrigatórios forem aprovados.
-7. O owner vincula sistemas de IA à iniciativa aprovada e registra seus modelos e
+6. Um revisor pode solicitar ajustes. A rodada e seus snapshots são preservados, os
+   assessments voltam a rascunho e gates pendentes são encerrados.
+7. O owner salva os fatos corrigidos para recalcular requisitos, conclui os assessments
+   aplicáveis e então cria uma nova rodada sem reaproveitar aprovações anteriores.
+8. Uma rejeição bloqueia a iniciativa. A aprovação só ocorre quando todos os gates
+   obrigatórios da rodada atual forem aprovados.
+9. O owner vincula sistemas de IA à iniciativa aprovada e registra seus modelos e
    agentes; ativos novos permanecem em rascunho até assurance posterior.
-8. Alterações usam concorrência otimista, e aposentadorias preservam o histórico.
-9. Toda mudança material gera evento de auditoria com versão e cadeia de hashes.
-10. Evidências anexadas são validadas, vinculadas ao hash, escaneadas e armazenadas sem
+10. Alterações usam concorrência otimista, e aposentadorias preservam o histórico.
+11. Toda mudança material gera evento de auditoria com versão e cadeia de hashes.
+12. Evidências anexadas são validadas, vinculadas ao hash, escaneadas e armazenadas sem
     copiar conteúdo para logs ou PostgreSQL.
 
 ## Autenticação OIDC

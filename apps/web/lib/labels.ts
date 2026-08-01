@@ -6,6 +6,8 @@ const LABELS: Record<string, string> = {
   suspended: "Suspenso",
   retired: "Aposentado",
   rejected: "Rejeitada",
+  changes_requested: "Ajustes solicitados",
+  superseded: "Substituída",
   not_required: "Não aplicável",
   pending: "Pendente",
   not_started: "Não iniciado",

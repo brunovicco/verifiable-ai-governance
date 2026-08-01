@@ -9,6 +9,7 @@ from governance_schemas import EntityStatus, RiskTier
 ASSESSABLE_INITIATIVE_STATUSES = {
     EntityStatus.DRAFT,
     EntityStatus.UNDER_REVIEW,
+    EntityStatus.CHANGES_REQUESTED,
     EntityStatus.APPROVED,
     EntityStatus.ACTIVE,
 }
@@ -210,6 +211,18 @@ def submit_draft(record: AssessmentRecord, occurred_at: datetime) -> AssessmentR
     return replace(
         record,
         status=EntityStatus.UNDER_REVIEW,
+        version=record.version + 1,
+        updated_at=occurred_at,
+    )
+
+
+def reopen_for_changes(record: AssessmentRecord, occurred_at: datetime) -> AssessmentRecord:
+    """Return a new editable version after an independent change request."""
+    if record.status is not EntityStatus.UNDER_REVIEW:
+        raise AssessmentNotEditable("Only assessments under review can be reopened")
+    return replace(
+        record,
+        status=EntityStatus.DRAFT,
         version=record.version + 1,
         updated_at=occurred_at,
     )
