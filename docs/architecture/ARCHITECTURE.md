@@ -81,12 +81,16 @@ idempotentes. `Retry-After` é respeitado somente dentro do orçamento interativ
 esse header, o adapter usa backoff exponencial com jitter. A troca OBO não é repetida
 automaticamente. O caso de uso vincula o resultado a `(tenant_id, object_id)`. O
 endpoint expõe apenas o perfil; quantidade e lista de grupos permanecem internas.
+Tokens Entra podem fornecer no máximo 200 object IDs no claim `groups`. O domínio
+distingue claim ausente, completo e overage; `_claim_sources` nunca controla rede. Um
+snapshot Graph confiável prevalece sobre o token, enquanto overage sem Graph nega
+somente capacidades baseadas em grupo e registra a fonte minimizada na provenance.
 Autorizações continuarão derivadas somente de App
 Roles ou object IDs presentes no catálogo YAML tenant-specific, nunca de nomes ou de
 `department`. A decisão retorna catálogo, versão, digest e mapping IDs; aprovações
 persistem essa provenance na cadeia de auditoria. O padrão empacotado é vazio e alterações podem
 ser fornecidas por configuração externa. O plano detalhado está em
-`MICROSOFT_ENTRA_GRAPH_PLAN.md`; as decisões estão nos ADRs 0011 a 0015.
+`MICROSOFT_ENTRA_GRAPH_PLAN.md`; as decisões estão nos ADRs 0011 a 0016.
 
 ### Assessments estruturados
 

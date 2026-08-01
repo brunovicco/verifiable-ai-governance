@@ -43,7 +43,11 @@ from ai_governance_api.domain.directory_authorization import (
     DirectoryAuthorizationCatalog,
     DirectoryAuthorizationError,
 )
-from ai_governance_api.domain.identity import Principal
+from ai_governance_api.domain.identity import (
+    DirectoryGroupClaimState,
+    DirectoryGroupResolutionSource,
+    Principal,
+)
 from ai_governance_api.services import InitiativeService, InventoryService, PolicyEvaluator
 
 DatabaseSession = Annotated[AsyncSession, Depends(get_db)]
@@ -184,14 +188,23 @@ async def get_authorized_principal(
     resolver: DirectoryAuthorizationResolverDependency,
 ) -> Principal:
     """Resolve catalog-derived capabilities for authorization-sensitive requests."""
+    if directory_profile is not None:
+        group_object_ids = directory_profile.group_object_ids
+        group_resolution_source = DirectoryGroupResolutionSource.MICROSOFT_GRAPH
+    elif principal.directory_group_claims.state is DirectoryGroupClaimState.COMPLETE:
+        group_object_ids = principal.directory_group_claims.object_ids
+        group_resolution_source = DirectoryGroupResolutionSource.TOKEN
+    elif principal.directory_group_claims.state is DirectoryGroupClaimState.OVERAGE:
+        group_object_ids = frozenset()
+        group_resolution_source = DirectoryGroupResolutionSource.OVERAGE_UNRESOLVED
+    else:
+        group_object_ids = frozenset()
+        group_resolution_source = DirectoryGroupResolutionSource.NONE
     try:
         return resolver.execute(
             principal,
-            group_object_ids=(
-                directory_profile.group_object_ids
-                if directory_profile is not None
-                else frozenset()
-            ),
+            group_object_ids=group_object_ids,
+            group_resolution_source=group_resolution_source,
         )
     except DirectoryAuthorizationError as exc:
         raise HTTPException(

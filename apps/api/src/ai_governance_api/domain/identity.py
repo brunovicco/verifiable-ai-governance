@@ -20,6 +20,38 @@ class DirectoryAccountType(StrEnum):
     UNKNOWN = "unknown"
 
 
+class DirectoryGroupClaimState(StrEnum):
+    """Trust state of group object IDs carried by a verified Entra token."""
+
+    ABSENT = "absent"
+    COMPLETE = "complete"
+    OVERAGE = "overage"
+
+
+class DirectoryGroupResolutionSource(StrEnum):
+    """Content-minimized source used to resolve corporate group membership."""
+
+    NONE = "none"
+    TOKEN = "token"
+    MICROSOFT_GRAPH = "microsoft_graph"
+    OVERAGE_UNRESOLVED = "overage_unresolved"
+
+
+@dataclass(frozen=True, slots=True)
+class DirectoryGroupClaims:
+    """Bounded group object IDs and their completeness state from one token."""
+
+    state: DirectoryGroupClaimState = DirectoryGroupClaimState.ABSENT
+    object_ids: frozenset[str] = field(default_factory=frozenset)
+
+    def __post_init__(self) -> None:
+        """Prevent incomplete claim states from carrying authorization inputs."""
+        if self.state is not DirectoryGroupClaimState.COMPLETE and self.object_ids:
+            raise IdentityMappingError(
+                "Incomplete OIDC group claims cannot contain object IDs"
+            )
+
+
 @dataclass(frozen=True, slots=True)
 class DirectoryIdentity:
     """Stable corporate directory identity scoped by tenant."""
@@ -53,6 +85,9 @@ class Principal:
     is_admin: bool = False
     directory_identity: DirectoryIdentity | None = None
     directory_role_values: frozenset[str] = field(default_factory=frozenset)
+    directory_group_claims: DirectoryGroupClaims = field(
+        default_factory=DirectoryGroupClaims
+    )
     authorization_provenance: "AuthorizationProvenance | None" = None
 
 
@@ -65,6 +100,9 @@ class AuthorizationProvenance:
     catalog_digest: str
     matched_mapping_ids: tuple[str, ...] = ()
     source_types: tuple[str, ...] = ()
+    group_resolution_source: DirectoryGroupResolutionSource = (
+        DirectoryGroupResolutionSource.NONE
+    )
 
 
 def principal_from_claims(
@@ -74,6 +112,7 @@ def principal_from_claims(
     admin_claim: str,
     corporate_policy: CorporateIdentityPolicy | None = None,
     corporate_roles_claim: str | None = None,
+    corporate_groups_claim: str | None = None,
 ) -> Principal:
     """Map verified OIDC claims into the least-privileged domain identity."""
     directory_identity = (
@@ -100,6 +139,11 @@ def principal_from_claims(
         if directory_identity is not None
         else frozenset()
     )
+    directory_group_claims = (
+        _directory_group_claims(claims, corporate_groups_claim)
+        if directory_identity is not None and corporate_groups_claim is not None
+        else DirectoryGroupClaims()
+    )
     is_admin = _claim_at_path(claims, admin_claim) is True
     if (
         directory_identity is not None
@@ -122,6 +166,7 @@ def principal_from_claims(
         is_admin=is_admin,
         directory_identity=directory_identity,
         directory_role_values=directory_role_values,
+        directory_group_claims=directory_group_claims,
     )
 
 
@@ -162,6 +207,63 @@ def _directory_role_values(raw_roles: object) -> frozenset[str]:
         if role:
             normalized.add(role)
     return frozenset(normalized)
+
+
+def _directory_group_claims(
+    claims: Mapping[str, object],
+    claim_path: str,
+) -> DirectoryGroupClaims:
+    """Return complete token groups or an explicit overage state without remote URLs."""
+    if _has_group_overage(claims):
+        return DirectoryGroupClaims(state=DirectoryGroupClaimState.OVERAGE)
+
+    raw_groups = _claim_at_path(claims, claim_path)
+    if raw_groups is None:
+        return DirectoryGroupClaims()
+    if not isinstance(raw_groups, list) or not all(
+        isinstance(value, str) for value in raw_groups
+    ):
+        raise IdentityMappingError("OIDC groups claim is invalid")
+    if len(raw_groups) > 200:
+        raise IdentityMappingError("OIDC groups claim exceeds the JWT item limit")
+
+    object_ids: set[str] = set()
+    for value in raw_groups:
+        try:
+            group_id = UUID(value.strip())
+        except (ValueError, AttributeError) as exc:
+            raise IdentityMappingError(
+                "OIDC groups claim contains an invalid object ID"
+            ) from exc
+        if group_id.int == 0:
+            raise IdentityMappingError(
+                "OIDC groups claim contains an invalid object ID"
+            )
+        object_ids.add(str(group_id))
+    return DirectoryGroupClaims(
+        state=DirectoryGroupClaimState.COMPLETE,
+        object_ids=frozenset(object_ids),
+    )
+
+
+def _has_group_overage(claims: Mapping[str, object]) -> bool:
+    """Detect Entra overage markers without reading or following claim-source URLs."""
+    if "hasgroups" in claims:
+        if claims["hasgroups"] is not True:
+            raise IdentityMappingError("OIDC hasgroups claim is invalid")
+        return True
+
+    claim_names = claims.get("_claim_names")
+    if claim_names is None:
+        return False
+    if not isinstance(claim_names, Mapping):
+        raise IdentityMappingError("OIDC distributed claim names are invalid")
+    group_source = claim_names.get("groups")
+    if group_source is None:
+        return False
+    if not isinstance(group_source, str) or not group_source.strip():
+        raise IdentityMappingError("OIDC groups overage source is invalid")
+    return True
 
 
 def _claim_at_path(claims: Mapping[str, object], path: str) -> object:

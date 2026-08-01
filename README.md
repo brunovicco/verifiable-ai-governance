@@ -153,6 +153,9 @@ Essa conversão direta vale apenas para o modo OIDC genérico. No modo Entra, Ap
 do claim `OIDC_ENTRA_APP_ROLES_CLAIM` e object IDs transitivos do Graph somente geram
 áreas quando constam no catálogo tenant-specific configurado por
 `DIRECTORY_AUTHORIZATION_CATALOG_PATH`. O catálogo empacotado é vazio por padrão.
+Object IDs completos do claim `OIDC_ENTRA_GROUPS_CLAIM` também podem alimentar o
+catálogo. Quando o token sinaliza group overage, esses valores são ignorados e a
+resolução usa apenas o endpoint Graph construído pela aplicação.
 
 Assinatura, issuer, audience, expiração, emissão e subject são obrigatoriamente
 validados. Algoritmos simétricos não são aceitos. A obtenção de JWKS possui timeout e

@@ -76,6 +76,7 @@ dedicado e publique um mapping tenant-specific no catálogo governado:
 
 ```dotenv
 OIDC_ENTRA_APP_ROLES_CLAIM=roles
+OIDC_ENTRA_GROUPS_CLAIM=groups
 DIRECTORY_AUTHORIZATION_CATALOG_PATH=/run/governance/entra-authorization.yaml
 ```
 
@@ -87,6 +88,12 @@ padrão. Se `acct` estiver ausente ou for inválido, a conta será classificada 
 `unknown` e também não receberá capacidades. Habilitar
 `OIDC_GUEST_APPROVALS_ENABLED=true` exige decisão formal de risco; essa opção não
 concede nada a contas `unknown` nem concede administração a guest.
+
+O claim `groups` deve conter somente object IDs UUID. A API aceita no máximo 200 itens,
+o limite documentado para JWT. A presença de `hasgroups=true` ou de
+`_claim_names.groups` marca overage: qualquer lista parcial é descartada e, quando o
+Graph está habilitado, as associações transitivas resolvidas por OBO prevalecem. A API
+nunca lê nem segue endpoints presentes em `_claim_sources`.
 
 ## 5. Validação
 

@@ -10,8 +10,16 @@ from ai_governance_api.application.corporate_directory import (
     CorporateDirectoryUnavailable,
 )
 from ai_governance_api.config import OidcIdentityMode, Settings
-from ai_governance_api.dependencies import get_corporate_directory_profile
-from ai_governance_api.domain.identity import Principal
+from ai_governance_api.dependencies import (
+    get_authorized_principal,
+    get_corporate_directory_profile,
+)
+from ai_governance_api.domain.identity import (
+    DirectoryGroupClaims,
+    DirectoryGroupClaimState,
+    DirectoryGroupResolutionSource,
+    Principal,
+)
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
@@ -43,7 +51,28 @@ class FixedDirectoryResolver:
         return self._result
 
 
+class CapturingAuthorizationResolver:
+    """Capture the group snapshot selected by the HTTP composition boundary."""
+
+    def __init__(self) -> None:
+        self.group_object_ids: frozenset[str] | None = None
+        self.group_resolution_source: DirectoryGroupResolutionSource | None = None
+
+    def execute(
+        self,
+        principal: Principal,
+        *,
+        group_object_ids: frozenset[str],
+        group_resolution_source: DirectoryGroupResolutionSource,
+    ) -> Principal:
+        """Return the principal after recording minimized authorization inputs."""
+        self.group_object_ids = group_object_ids
+        self.group_resolution_source = group_resolution_source
+        return principal
+
+
 TENANT_ID = "11111111-1111-4111-8111-111111111111"
+GROUP_ID = "22222222-2222-4222-8222-222222222222"
 
 
 def oidc_settings(**overrides: object) -> Settings:
@@ -146,6 +175,7 @@ async def test_oidc_http_adapter_propagates_corporate_identity_policy(
     assert captured["issuer_tenant_id"] == TENANT_ID
     assert captured["guest_approvals_enabled"] is True
     assert captured["entra_app_roles_claim"] == "roles"
+    assert captured["entra_groups_claim"] == "groups"
 
 
 async def test_disabled_directory_enrichment_does_not_require_bearer() -> None:
@@ -156,6 +186,47 @@ async def test_disabled_directory_enrichment_does_not_require_bearer() -> None:
     )
 
     assert result is None
+
+
+async def test_complete_token_groups_are_used_without_graph_snapshot() -> None:
+    resolver = CapturingAuthorizationResolver()
+    principal = Principal(
+        user_id="corporate-reviewer",
+        directory_group_claims=DirectoryGroupClaims(
+            state=DirectoryGroupClaimState.COMPLETE,
+            object_ids=frozenset({GROUP_ID}),
+        ),
+    )
+
+    result = await get_authorized_principal(principal, None, resolver)
+
+    assert result is principal
+    assert resolver.group_object_ids == frozenset({GROUP_ID})
+    assert resolver.group_resolution_source is DirectoryGroupResolutionSource.TOKEN
+
+
+async def test_graph_snapshot_supersedes_overage_token_groups() -> None:
+    resolver = CapturingAuthorizationResolver()
+    principal = Principal(
+        user_id="corporate-reviewer",
+        directory_group_claims=DirectoryGroupClaims(
+            state=DirectoryGroupClaimState.OVERAGE,
+        ),
+    )
+    profile = CorporateDirectoryProfile(
+        tenant_id=TENANT_ID,
+        object_id="33333333-3333-4333-8333-333333333333",
+        group_object_ids=frozenset({GROUP_ID}),
+    )
+
+    result = await get_authorized_principal(principal, profile, resolver)
+
+    assert result is principal
+    assert resolver.group_object_ids == frozenset({GROUP_ID})
+    assert (
+        resolver.group_resolution_source
+        is DirectoryGroupResolutionSource.MICROSOFT_GRAPH
+    )
 
 
 @pytest.mark.parametrize(

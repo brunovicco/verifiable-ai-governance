@@ -74,6 +74,7 @@ class Settings(BaseSettings):
     oidc_allowed_tenant_ids: str = ""
     oidc_guest_approvals_enabled: bool = False
     oidc_entra_app_roles_claim: str = "roles"
+    oidc_entra_groups_claim: str = "groups"
     oidc_jwks_timeout_seconds: float = Field(default=2.0, gt=0, le=10)
     oidc_jwks_cache_seconds: float = Field(default=300, ge=30, le=86400)
     oidc_clock_skew_seconds: float = Field(default=30, ge=0, le=300)
@@ -240,8 +241,11 @@ class Settings(BaseSettings):
 
     def _validate_entra_identity_boundary(self) -> None:
         """Require tenant-specific Entra trust coherent with the tenant allowlist."""
-        if not self.oidc_entra_app_roles_claim.strip():
-            raise ValueError("OIDC_ENTRA_APP_ROLES_CLAIM must not be empty")
+        if (
+            not self.oidc_entra_app_roles_claim.strip()
+            or not self.oidc_entra_groups_claim.strip()
+        ):
+            raise ValueError("OIDC Entra claim paths must not be empty")
         allowed_tenants = self.oidc_allowed_tenant_id_set
         if not allowed_tenants:
             raise ValueError("OIDC_ALLOWED_TENANT_IDS is required in Entra identity mode")
