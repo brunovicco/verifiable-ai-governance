@@ -2,12 +2,45 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from enum import StrEnum
+from uuid import UUID
 
 from governance_schemas import ApprovalArea
 
 
 class IdentityMappingError(Exception):
     """Raised when verified claims cannot produce a trusted principal."""
+
+
+class DirectoryAccountType(StrEnum):
+    """Account classifications relevant to corporate authorization."""
+
+    MEMBER = "member"
+    GUEST = "guest"
+    UNKNOWN = "unknown"
+
+
+@dataclass(frozen=True, slots=True)
+class DirectoryIdentity:
+    """Stable corporate directory identity scoped by tenant."""
+
+    tenant_id: str
+    object_id: str
+    account_type: DirectoryAccountType
+
+    @property
+    def key(self) -> str:
+        """Return the stable compound key used by audit and ownership policies."""
+        return f"{self.tenant_id}:{self.object_id}"
+
+
+@dataclass(frozen=True, slots=True)
+class CorporateIdentityPolicy:
+    """Trusted tenant and guest-capability policy for corporate claims."""
+
+    allowed_tenant_ids: frozenset[str]
+    issuer_tenant_id: str
+    guest_approvals_enabled: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,6 +51,7 @@ class Principal:
     email: str | None = None
     approval_areas: frozenset[ApprovalArea] = field(default_factory=frozenset)
     is_admin: bool = False
+    directory_identity: DirectoryIdentity | None = None
 
 
 def principal_from_claims(
@@ -25,18 +59,39 @@ def principal_from_claims(
     *,
     areas_claim: str,
     admin_claim: str,
+    corporate_policy: CorporateIdentityPolicy | None = None,
 ) -> Principal:
     """Map verified OIDC claims into the least-privileged domain identity."""
-    subject = claims.get("sub")
-    if not isinstance(subject, str) or not subject.strip():
-        raise IdentityMappingError("OIDC subject missing")
+    directory_identity = (
+        _directory_identity_from_claims(claims, corporate_policy)
+        if corporate_policy is not None
+        else None
+    )
+    user_id = directory_identity.key if directory_identity else _subject_from_claims(claims)
     email_value = claims.get("email")
     email = email_value.strip() if isinstance(email_value, str) else None
+    approval_areas = parse_approval_areas(_claim_at_path(claims, areas_claim))
+    is_admin = _claim_at_path(claims, admin_claim) is True
+    if (
+        directory_identity is not None
+        and corporate_policy is not None
+        and not _can_receive_approval_areas(
+            directory_identity.account_type,
+            corporate_policy,
+        )
+    ):
+        approval_areas = frozenset()
+    if (
+        directory_identity is not None
+        and directory_identity.account_type is not DirectoryAccountType.MEMBER
+    ):
+        is_admin = False
     return Principal(
-        user_id=subject.strip(),
+        user_id=user_id,
         email=email or None,
-        approval_areas=parse_approval_areas(_claim_at_path(claims, areas_claim)),
-        is_admin=_claim_at_path(claims, admin_claim) is True,
+        approval_areas=approval_areas,
+        is_admin=is_admin,
+        directory_identity=directory_identity,
     )
 
 
@@ -65,3 +120,62 @@ def _claim_at_path(claims: Mapping[str, object], path: str) -> object:
             return None
         current = current.get(segment)
     return current
+
+
+def _subject_from_claims(claims: Mapping[str, object]) -> str:
+    """Return the provider-neutral pairwise subject."""
+    subject = claims.get("sub")
+    if not isinstance(subject, str) or not subject.strip():
+        raise IdentityMappingError("OIDC subject missing")
+    return subject.strip()
+
+
+def _directory_identity_from_claims(
+    claims: Mapping[str, object],
+    policy: CorporateIdentityPolicy,
+) -> DirectoryIdentity:
+    """Build an allowlisted corporate identity from verified Entra claims."""
+    tenant_id = _uuid_claim(claims, "tid")
+    if tenant_id not in policy.allowed_tenant_ids:
+        raise IdentityMappingError("OIDC tenant is not allowed")
+    if tenant_id != policy.issuer_tenant_id:
+        raise IdentityMappingError("OIDC tenant does not match the verified issuer")
+    object_id = _uuid_claim(claims, "oid")
+    return DirectoryIdentity(
+        tenant_id=tenant_id,
+        object_id=object_id,
+        account_type=_account_type(claims.get("acct")),
+    )
+
+
+def _uuid_claim(claims: Mapping[str, object], name: str) -> str:
+    """Return a canonical non-nil UUID claim or reject the identity."""
+    value = claims.get(name)
+    if not isinstance(value, str):
+        raise IdentityMappingError(f"OIDC {name} claim missing or invalid")
+    try:
+        parsed = UUID(value.strip())
+    except (ValueError, AttributeError) as exc:
+        raise IdentityMappingError(f"OIDC {name} claim missing or invalid") from exc
+    if parsed.int == 0:
+        raise IdentityMappingError(f"OIDC {name} claim missing or invalid")
+    return str(parsed)
+
+
+def _account_type(value: object) -> DirectoryAccountType:
+    """Map the optional Entra acct claim without granting on ambiguity."""
+    if not isinstance(value, bool) and (value == 0 or value == "0"):
+        return DirectoryAccountType.MEMBER
+    if not isinstance(value, bool) and (value == 1 or value == "1"):
+        return DirectoryAccountType.GUEST
+    return DirectoryAccountType.UNKNOWN
+
+
+def _can_receive_approval_areas(
+    account_type: DirectoryAccountType,
+    policy: CorporateIdentityPolicy,
+) -> bool:
+    """Allow approval areas only to classified members or explicitly allowed guests."""
+    if account_type is DirectoryAccountType.MEMBER:
+        return True
+    return account_type is DirectoryAccountType.GUEST and policy.guest_approvals_enabled

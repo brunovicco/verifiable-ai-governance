@@ -4,6 +4,7 @@ from enum import StrEnum
 from functools import lru_cache
 from typing import Literal
 from urllib.parse import urlparse
+from uuid import UUID
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -31,6 +32,13 @@ class AppEnvironment(StrEnum):
     TEST = "test"
     STAGING = "staging"
     PRODUCTION = "production"
+
+
+class OidcIdentityMode(StrEnum):
+    """Supported verified-claim identity mapping strategies."""
+
+    SUBJECT = "subject"
+    ENTRA = "entra"
 
 
 class Settings(BaseSettings):
@@ -62,6 +70,9 @@ class Settings(BaseSettings):
     oidc_algorithms: str = "RS256"
     oidc_groups_claim: str = "governance_areas"
     oidc_admin_claim: str = "governance_admin"
+    oidc_identity_mode: OidcIdentityMode = OidcIdentityMode.SUBJECT
+    oidc_allowed_tenant_ids: str = ""
+    oidc_guest_approvals_enabled: bool = False
     oidc_jwks_timeout_seconds: float = Field(default=2.0, gt=0, le=10)
     oidc_jwks_cache_seconds: float = Field(default=300, ge=30, le=86400)
     oidc_clock_skew_seconds: float = Field(default=30, ge=0, le=300)
@@ -103,6 +114,48 @@ class Settings(BaseSettings):
         ]
 
     @property
+    def oidc_allowed_tenant_id_set(self) -> frozenset[str]:
+        """Return canonical non-nil tenant UUIDs from the deployment allowlist."""
+        tenant_ids: set[str] = set()
+        for raw_value in self.oidc_allowed_tenant_ids.split(","):
+            value = raw_value.strip()
+            if not value:
+                continue
+            try:
+                tenant_id = UUID(value)
+            except ValueError as exc:
+                raise ValueError("OIDC_ALLOWED_TENANT_IDS must contain only UUIDs") from exc
+            if tenant_id.int == 0:
+                raise ValueError("OIDC_ALLOWED_TENANT_IDS must contain only non-nil UUIDs")
+            tenant_ids.add(str(tenant_id))
+        return frozenset(tenant_ids)
+
+    @property
+    def oidc_entra_issuer_tenant_id(self) -> str:
+        """Return the canonical tenant UUID bound to the Entra issuer."""
+        parsed = urlparse(self.oidc_issuer)
+        path = [segment for segment in parsed.path.split("/") if segment]
+        if (
+            parsed.scheme != "https"
+            or parsed.netloc != "login.microsoftonline.com"
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.query
+            or parsed.fragment
+            or len(path) != 2
+            or path[1] != "v2.0"
+        ):
+            raise ValueError(
+                "OIDC_ISSUER must be a tenant-specific Microsoft Entra v2 issuer"
+            )
+        try:
+            return str(UUID(path[0]))
+        except ValueError as exc:
+            raise ValueError(
+                "OIDC_ISSUER must contain an explicit Microsoft Entra tenant UUID"
+            ) from exc
+
+    @property
     def evidence_allowed_content_type_set(self) -> frozenset[str]:
         """Return the normalized evidence media-type allowlist."""
         return frozenset(
@@ -132,6 +185,12 @@ class Settings(BaseSettings):
                 raise ValueError("OIDC_AUDIENCE must not be empty")
             if not self.oidc_groups_claim.strip() or not self.oidc_admin_claim.strip():
                 raise ValueError("OIDC claim paths must not be empty")
+            if self.oidc_identity_mode is OidcIdentityMode.ENTRA:
+                self._validate_entra_identity_boundary()
+            elif self.oidc_allowed_tenant_ids.strip() or self.oidc_guest_approvals_enabled:
+                raise ValueError(
+                    "Entra tenant and guest settings require OIDC_IDENTITY_MODE=entra"
+                )
         if not is_local and self.dev_auth_enabled:
             raise ValueError("DEV_AUTH_ENABLED must be false outside local and test environments")
         if not is_local and self.auto_create_schema:
@@ -159,6 +218,15 @@ class Settings(BaseSettings):
         ):
             raise ValueError("Explicit object-storage endpoints must use HTTPS outside local")
         return self
+
+    def _validate_entra_identity_boundary(self) -> None:
+        """Require tenant-specific Entra trust coherent with the tenant allowlist."""
+        allowed_tenants = self.oidc_allowed_tenant_id_set
+        if not allowed_tenants:
+            raise ValueError("OIDC_ALLOWED_TENANT_IDS is required in Entra identity mode")
+        issuer_tenant = self.oidc_entra_issuer_tenant_id
+        if issuer_tenant not in allowed_tenants:
+            raise ValueError("OIDC_ISSUER tenant must be present in OIDC_ALLOWED_TENANT_IDS")
 
     @staticmethod
     def _validate_oidc_url(name: str, value: str, *, require_tls: bool) -> None:

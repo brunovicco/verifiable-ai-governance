@@ -17,6 +17,8 @@ resource server separado e continua validando cada token.
 4. Registrar os owners de IAM e da plataforma.
 5. Confirmar que os access tokens são v2 e anotar client ID, tenant ID, issuer,
    audience e endpoint JWKS a partir do metadata oficial do tenant.
+6. Em **Token configuration**, adicionar o claim opcional `acct` ao access token da
+   API. O valor `0` classifica membro e `1` classifica guest.
 
 Configuração de referência da API:
 
@@ -28,10 +30,14 @@ OIDC_ISSUER=https://login.microsoftonline.com/<tenant-id>/v2.0
 OIDC_JWKS_URL=https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys
 OIDC_AUDIENCE=<api-client-id>
 OIDC_ALGORITHMS=RS256
+OIDC_IDENTITY_MODE=entra
+OIDC_ALLOWED_TENANT_IDS=<tenant-id>
+OIDC_GUEST_APPROVALS_ENABLED=false
 ```
 
 Não derive issuer, audience ou JWKS de claims recebidos. Confirme os valores no
-documento `openid-configuration` do tenant antes do deploy.
+documento `openid-configuration` do tenant antes do deploy. O modo Entra aceita somente
+issuer v2 tenant-specific do Azure público e exige que o mesmo UUID esteja na allowlist.
 
 ## 2. App registration do portal
 
@@ -74,7 +80,11 @@ OIDC_GROUPS_CLAIM=roles
 
 Somente valores já conhecidos pela API viram `ApprovalArea`; nomes desconhecidos são
 ignorados. `department`, e-mail, nome exibido ou texto de grupo nunca concedem
-autorização. Guest e grupos transitivos continuam fail-closed até as próximas fases.
+autorização. Guest perde áreas de aprovação e administração por padrão. Se `acct`
+estiver ausente ou for inválido, a conta será classificada como `unknown` e também não
+receberá capacidades. Habilitar `OIDC_GUEST_APPROVALS_ENABLED=true` exige decisão
+formal de risco; essa opção não concede nada a contas `unknown`.
+Ela também não concede administração a guest.
 
 ## 5. Validação
 
@@ -82,13 +92,15 @@ Executar em ambiente não produtivo:
 
 1. acessar o portal e confirmar redirect tenant-specific;
 2. concluir MFA/Conditional Access quando exigido;
-3. verificar que `/api/v1/auth/me` responde com a identidade do access token;
+3. verificar que `/api/v1/auth/me` responde com `tenant_id`, `object_id`,
+   `account_type` e a chave composta em `user_id`;
 4. confirmar ausência de `X-User-Id` e `X-User-Areas` nas requests do navegador;
 5. confirmar `Authorization: Bearer` destinado à audience da API;
 6. testar token expirado, logout, nova autenticação e fechamento da aba;
 7. testar usuário sem App Role e confirmar que não consegue aprovar;
-8. testar issuer/audience incorretos e confirmar HTTP 401;
-9. revisar logs e confirmar que token, code, claims integrais e PII não aparecem.
+8. testar guest e token sem `acct`, confirmando ausência de capacidades de aprovação;
+9. testar `tid` fora da allowlist, issuer ou audience incorretos e confirmar rejeição;
+10. revisar logs e confirmar que token, code, claims integrais e PII não aparecem.
 
 O cache padrão é `sessionStorage`. Fechar a aba encerra esse cache, embora a sessão do
 Entra no navegador possa permitir novo SSO conforme a política corporativa.
@@ -110,4 +122,5 @@ Entra no navegador possa permitir novo SSO conforme a política corporativa.
 - [Token para Web API em SPA](https://learn.microsoft.com/en-us/entra/identity-platform/scenario-spa-acquire-token)
 - [Aquisição e renovação de tokens](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/token-lifetimes)
 - [Configuração de cache do MSAL](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/configuration)
-
+- [Claims de access token](https://learn.microsoft.com/en-us/entra/identity-platform/access-token-claims-reference)
+- [Claims opcionais, incluindo acct](https://learn.microsoft.com/en-us/entra/identity-platform/optional-claims-reference)

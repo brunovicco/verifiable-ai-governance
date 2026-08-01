@@ -15,6 +15,8 @@ from governance_schemas import (
 )
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from ai_governance_api.domain.identity import DirectoryAccountType
+
 
 def _clean_strings(values: list[str]) -> list[str]:
     return sorted({value.strip() for value in values if value.strip()})
@@ -27,6 +29,9 @@ class PrincipalRead(BaseModel):
     email: str | None = None
     approval_areas: list[ApprovalArea] = Field(default_factory=list)
     is_admin: bool = False
+    tenant_id: str | None = None
+    object_id: str | None = None
+    account_type: DirectoryAccountType | None = None
 
 
 class ModelAssetCreate(BaseModel):

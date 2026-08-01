@@ -63,3 +63,19 @@ def test_web_authentication_build_configuration_is_explicit() -> None:
     for name, value in expected_public_configuration.items():
         assert web["build"]["args"][name] == value
         assert web["environment"][name] == value
+
+
+def test_api_corporate_identity_policy_is_environment_driven() -> None:
+    """Keep tenant and guest policy explicit at the API composition root."""
+    compose = cast(
+        dict[str, Any],
+        yaml.safe_load((ROOT / "docker-compose.yml").read_text(encoding="utf-8")),
+    )
+
+    environment = compose["x-api-environment"]
+
+    assert environment["OIDC_IDENTITY_MODE"] == "${OIDC_IDENTITY_MODE:-subject}"
+    assert environment["OIDC_ALLOWED_TENANT_IDS"] == "${OIDC_ALLOWED_TENANT_IDS:-}"
+    assert environment["OIDC_GUEST_APPROVALS_ENABLED"] == (
+        "${OIDC_GUEST_APPROVALS_ENABLED:-false}"
+    )

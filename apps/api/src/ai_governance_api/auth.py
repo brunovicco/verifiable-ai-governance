@@ -13,8 +13,12 @@ from ai_governance_api.application.authentication import (
     IdentityProviderUnavailable,
     InvalidAccessToken,
 )
-from ai_governance_api.config import AppEnvironment, Settings, get_settings
-from ai_governance_api.domain.identity import Principal, parse_approval_areas
+from ai_governance_api.config import AppEnvironment, OidcIdentityMode, Settings, get_settings
+from ai_governance_api.domain.identity import (
+    CorporateIdentityPolicy,
+    Principal,
+    parse_approval_areas,
+)
 
 bearer = HTTPBearer(auto_error=False)
 BearerCredentials = Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)]
@@ -34,6 +38,10 @@ def oidc_authenticator(
     groups_claim: str,
     admin_claim: str,
     max_token_length: int,
+    identity_mode: OidcIdentityMode,
+    allowed_tenant_ids: tuple[str, ...],
+    issuer_tenant_id: str | None,
+    guest_approvals_enabled: bool,
 ) -> AuthenticateAccessToken:
     """Compose and cache the OIDC authentication use case from immutable settings."""
     verifier = PyJwtOidcVerifier(
@@ -50,6 +58,15 @@ def oidc_authenticator(
         areas_claim=groups_claim,
         admin_claim=admin_claim,
         max_token_length=max_token_length,
+        corporate_policy=(
+            CorporateIdentityPolicy(
+                allowed_tenant_ids=frozenset(allowed_tenant_ids),
+                issuer_tenant_id=issuer_tenant_id or "",
+                guest_approvals_enabled=guest_approvals_enabled,
+            )
+            if identity_mode is OidcIdentityMode.ENTRA
+            else None
+        ),
     )
 
 
@@ -64,16 +81,28 @@ async def _oidc_principal(
             headers=BEARER_CHALLENGE,
         )
     authenticator = oidc_authenticator(
-        settings.oidc_issuer,
-        settings.oidc_audience,
-        tuple(settings.oidc_algorithm_list),
-        settings.oidc_jwks_url,
-        settings.oidc_jwks_timeout_seconds,
-        settings.oidc_jwks_cache_seconds,
-        settings.oidc_clock_skew_seconds,
-        settings.oidc_groups_claim,
-        settings.oidc_admin_claim,
-        settings.oidc_max_token_length,
+        issuer=settings.oidc_issuer,
+        audience=settings.oidc_audience,
+        algorithms=tuple(settings.oidc_algorithm_list),
+        jwks_url=settings.oidc_jwks_url,
+        jwks_timeout_seconds=settings.oidc_jwks_timeout_seconds,
+        jwks_cache_seconds=settings.oidc_jwks_cache_seconds,
+        clock_skew_seconds=settings.oidc_clock_skew_seconds,
+        groups_claim=settings.oidc_groups_claim,
+        admin_claim=settings.oidc_admin_claim,
+        max_token_length=settings.oidc_max_token_length,
+        identity_mode=settings.oidc_identity_mode,
+        allowed_tenant_ids=(
+            tuple(sorted(settings.oidc_allowed_tenant_id_set))
+            if settings.oidc_identity_mode is OidcIdentityMode.ENTRA
+            else ()
+        ),
+        issuer_tenant_id=(
+            settings.oidc_entra_issuer_tenant_id
+            if settings.oidc_identity_mode is OidcIdentityMode.ENTRA
+            else None
+        ),
+        guest_approvals_enabled=settings.oidc_guest_approvals_enabled,
     )
     try:
         return await run_in_threadpool(authenticator.execute, credentials.credentials)

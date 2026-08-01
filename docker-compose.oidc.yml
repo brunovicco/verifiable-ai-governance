@@ -21,6 +21,7 @@ services:
       OIDC_ALGORITHMS: RS256
       OIDC_GROUPS_CLAIM: governance_areas
       OIDC_ADMIN_CLAIM: governance_admin
+      OIDC_IDENTITY_MODE: subject
     depends_on: !override
       postgres:
         condition: service_healthy
