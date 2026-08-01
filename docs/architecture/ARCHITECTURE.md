@@ -79,6 +79,19 @@ Função determinística e versionada. Recebe um contexto completo e retorna sco
 documentos, bloqueios e a situação de cada gate. Não faz I/O e pode ser testada ou
 substituída por uma implementação compatível.
 
+### Catálogo de controles
+
+O catálogo baseline é um YAML versionado validado por contratos imutáveis do pacote
+`governance-schemas`. O `policy-engine` carrega o recurso uma vez e avalia seletores
+declarativos contra o mesmo contexto normalizado usado na classificação de risco. A
+aplicação consome apenas a porta `ControlCatalogPort`; FastAPI e SQLAlchemy permanecem
+nos adapters externos.
+
+O relatório contém os 25 controles, resultado e razões para cada um, além da versão do
+catálogo. Ele é derivado sob consulta, não persistido, evitando estado duplicado e
+permitindo reavaliação determinística. Um caminho alternativo pode ser injetado por
+`CONTROL_CATALOG_PATH`; falhas de leitura ou validação interrompem a inicialização.
+
 ### Persistência
 
 PostgreSQL mantém o estado transacional. Entidades mutáveis possuem `version`; comandos

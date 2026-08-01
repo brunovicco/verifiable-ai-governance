@@ -1,0 +1,422 @@
+catalog_id: verifiable-ai-governance-baseline
+version: 1.0.0
+controls:
+  - control_id: GOV-ORG-001
+    title: Responsabilidade e owner definidos
+    domain: organization
+    objective: Garantir accountability explícita por toda iniciativa e sistema de IA.
+    control_type: preventive
+    owner: AI Governance
+    review_frequency: semestral
+    requirements:
+      - Toda iniciativa deve possuir owner de negócio identificável.
+      - Papéis de decisão e escalonamento devem estar documentados.
+    evidence:
+      - Registro da iniciativa com owner
+      - RACI vigente
+    applicability:
+      always: true
+
+  - control_id: GOV-ORG-002
+    title: Inventário corporativo de IA
+    domain: organization
+    objective: Manter registro central, atual e pesquisável dos ativos e iniciativas de IA.
+    control_type: preventive
+    owner: AI Governance
+    review_frequency: trimestral
+    requirements:
+      - Iniciativas, sistemas, modelos e agentes devem possuir identificadores únicos.
+      - O inventário deve registrar status, risco, owner e versão.
+    evidence:
+      - Registro no inventário
+      - Histórico de versões
+    applicability:
+      always: true
+
+  - control_id: GOV-RSK-001
+    title: Avaliação de impacto de IA
+    domain: risk
+    objective: Identificar benefícios, pessoas afetadas, danos plausíveis e tratamentos de risco.
+    control_type: preventive
+    owner: AI Governance
+    review_frequency: por mudança material
+    requirements:
+      - A avaliação deve identificar grupos afetados e consequências de erro.
+      - Riscos inerentes e residuais devem ser documentados.
+    evidence:
+      - AI Impact Assessment versionado
+      - Decisão de risco residual
+    applicability:
+      always: true
+
+  - control_id: GOV-RSK-002
+    title: Classificação de risco explicável
+    domain: risk
+    objective: Classificar o risco por critérios consistentes, reproduzíveis e verificáveis.
+    control_type: preventive
+    owner: AI Governance
+    review_frequency: por mudança material
+    requirements:
+      - O tier deve considerar impacto, dados, autonomia, exposição e regulação.
+      - A política e sua versão devem acompanhar a decisão.
+    evidence:
+      - Score e breakdown de risco
+      - Identificador e versão da política
+    applicability:
+      always: true
+
+  - control_id: GOV-HUM-001
+    title: Plano de supervisão humana
+    domain: human_oversight
+    objective: Assegurar intervenção humana efetiva quando decisões ou ações tiverem impacto material.
+    control_type: preventive
+    owner: Negócio
+    review_frequency: trimestral
+    requirements:
+      - Pontos de intervenção e autoridade de interrupção devem estar definidos.
+      - O revisor deve receber contexto, tempo e competência adequados.
+    evidence:
+      - Human Oversight Plan
+      - Registros de aprovação humana
+    applicability:
+      match: any
+      risk_tiers: [medium, high, critical]
+      flags_any: [affects_rights, executes_actions, uses_agents]
+
+  - control_id: GOV-HUM-002
+    title: Contestação e correção
+    domain: human_oversight
+    objective: Permitir que pessoas afetadas questionem e obtenham correção de resultados materiais.
+    control_type: corrective
+    owner: Negócio
+    review_frequency: semestral
+    requirements:
+      - O canal de contestação deve ser acessível e possuir SLA.
+      - A decisão humana final e a correção devem ser rastreáveis.
+    evidence:
+      - Procedimento de contestação
+      - Registro de solicitações e correções
+    applicability:
+      match: any
+      decision_impacts: [material, rights_or_safety]
+      flags_any: [affects_rights, external_facing]
+
+  - control_id: GOV-DAT-001
+    title: Classificação dos dados
+    domain: data
+    objective: Impedir que dados sejam processados sob classificação incompatível com sua sensibilidade.
+    control_type: preventive
+    owner: Dados
+    review_frequency: anual
+    requirements:
+      - A maior classificação dos dados deve estar declarada.
+      - Dados sensíveis não podem ser tratados como públicos.
+    evidence:
+      - Data classification record
+      - Resultado da validação de política
+    applicability:
+      always: true
+
+  - control_id: GOV-DAT-002
+    title: Minimização e retenção de dados
+    domain: data
+    objective: Limitar dados enviados, armazenados e registrados ao mínimo necessário para a finalidade.
+    control_type: preventive
+    owner: Dados
+    review_frequency: semestral
+    requirements:
+      - Categorias de dados e prazos de retenção devem estar definidos.
+      - Prompts, respostas e documentos não devem ser logados por padrão.
+    evidence:
+      - Mapa de dados e retenção
+      - Configuração de logging sanitizado
+    applicability:
+      match: any
+      data_classifications: [internal, confidential, restricted]
+      flags_any: [personal_data, sensitive_data, children_data]
+
+  - control_id: GOV-DAT-003
+    title: Avaliação de impacto à proteção de dados
+    domain: data
+    objective: Avaliar riscos do tratamento de dados pessoais e registrar medidas de mitigação.
+    control_type: preventive
+    owner: Privacidade
+    review_frequency: por mudança material
+    requirements:
+      - Finalidade, necessidade, titulares, riscos e salvaguardas devem ser avaliados.
+      - A decisão da área de Privacidade deve preceder produção quando exigida.
+    evidence:
+      - RIPD versionado
+      - Aprovação de Privacidade
+    applicability:
+      flags_any: [personal_data, sensitive_data, children_data]
+
+  - control_id: GOV-DAT-004
+    title: Processamento internacional avaliado
+    domain: data
+    objective: Mapear e autorizar transferências, acessos e processamento de dados fora do país de origem.
+    control_type: preventive
+    owner: Privacidade
+    review_frequency: por mudança de fornecedor ou região
+    requirements:
+      - Inferência, storage, logs, suporte e suboperadores devem ser mapeados.
+      - Base legal, mecanismo de transferência e salvaguardas devem estar registrados.
+    evidence:
+      - International Processing Assessment
+      - Data flow e inventário de suboperadores
+    applicability:
+      flags_any: [international_processing]
+
+  - control_id: GOV-DAT-005
+    title: Proveniência de conhecimento RAG
+    domain: data
+    objective: Assegurar origem, autorização, atualização e rastreabilidade das fontes recuperadas.
+    control_type: preventive
+    owner: Dados
+    review_frequency: trimestral
+    requirements:
+      - Fontes e permissões devem ser versionadas e rastreáveis.
+      - Freshness e qualidade de recuperação devem possuir critérios mínimos.
+    evidence:
+      - Catálogo de fontes
+      - Métricas de recuperação e groundedness
+    implementation_reference: ragforge
+    applicability:
+      flags_any: [uses_rag]
+
+  - control_id: GOV-MOD-001
+    title: Registro de modelos aprovados
+    domain: model
+    objective: Permitir somente modelos com owner, versão, região, escopo e limitações conhecidos.
+    control_type: preventive
+    owner: AI Platform
+    review_frequency: trimestral
+    requirements:
+      - Todo modelo deve constar no registry antes do uso.
+      - Usos aprovados, proibidos e classes de dados permitidas devem ser explícitos.
+    evidence:
+      - Model registry
+      - Model card e decisão de aprovação
+    applicability:
+      always: true
+
+  - control_id: GOV-MOD-002
+    title: Baseline de avaliação do modelo
+    domain: model
+    objective: Estabelecer qualidade, segurança e limitações conhecidas antes da promoção de um modelo.
+    control_type: preventive
+    owner: Model Owner
+    review_frequency: por versão de modelo
+    requirements:
+      - Métricas e thresholds devem refletir o caso de uso e o risco.
+      - Mudanças de versão devem executar regressão contra a baseline.
+    evidence:
+      - Relatório de avaliação
+      - Dataset e thresholds versionados
+    applicability:
+      always: true
+
+  - control_id: GOV-MOD-003
+    title: Enforcement de modelo aprovado
+    domain: model
+    objective: Bloquear modelos incompatíveis com risco, dados, custo ou escopo autorizado.
+    control_type: preventive
+    owner: AI Platform
+    review_frequency: contínua
+    requirements:
+      - A seleção deve usar política declarativa e falhar de forma fechada.
+      - Decisões e candidatos rejeitados devem ser explicáveis.
+    evidence:
+      - Política de roteamento versionada
+      - Logs de decisão sanitizados
+    implementation_reference: policy-model-router
+    applicability:
+      always: true
+
+  - control_id: GOV-AGT-001
+    title: Registro e ownership de agentes
+    domain: agent
+    objective: Manter finalidade, autonomia, ferramentas, permissões e owner de cada agente.
+    control_type: preventive
+    owner: AI Platform
+    review_frequency: trimestral
+    requirements:
+      - Todo agente deve possuir ID, versão e owner.
+      - Modelos, ferramentas, limites e kill switch devem estar documentados.
+    evidence:
+      - Agent card
+      - Registro operacional do agente
+    applicability:
+      flags_any: [uses_agents]
+
+  - control_id: GOV-AGT-002
+    title: Allowlist de ferramentas e MCP
+    domain: agent
+    objective: Impedir que agentes invoquem ferramentas ou servidores não aprovados.
+    control_type: preventive
+    owner: Segurança
+    review_frequency: mensal
+    requirements:
+      - Ferramentas e servidores MCP devem usar allowlist por agente.
+      - Argumentos e destinos devem ser validados antes da execução.
+    evidence:
+      - Tool policy versionada
+      - Eventos de ações permitidas e bloqueadas
+    applicability:
+      flags_any: [uses_agents, uses_mcp]
+
+  - control_id: GOV-AGT-003
+    title: Menor privilégio para agentes
+    domain: agent
+    objective: Restringir permissões e alcance de agentes ao mínimo necessário para a tarefa.
+    control_type: preventive
+    owner: Segurança
+    review_frequency: mensal
+    requirements:
+      - Identidades e credenciais de agentes devem ser segregadas por finalidade.
+      - Permissões temporárias devem expirar e ser revisáveis.
+    evidence:
+      - Matriz de permissões
+      - Revisão periódica de acessos
+    implementation_reference: alicerce
+    applicability:
+      flags_any: [uses_agents, uses_mcp, executes_actions]
+
+  - control_id: GOV-AGT-004
+    title: Aprovação humana para ações materiais
+    domain: agent
+    objective: Exigir decisão humana antes de ações irreversíveis ou de impacto elevado.
+    control_type: preventive
+    owner: Negócio
+    review_frequency: por mudança de autonomia
+    requirements:
+      - Pontos de aprovação devem ser executáveis e não apenas documentais.
+      - Mudança do plano após aprovação deve exigir nova decisão.
+    evidence:
+      - Política de aprovação humana
+      - Evidência da aprovação vinculada à execução
+    applicability:
+      match: any
+      autonomy_levels: [a2_prepare_for_approval, a3_reversible_actions, a4_high_impact_actions, a5_high_autonomy]
+      flags_any: [affects_rights, executes_actions]
+
+  - control_id: GOV-SEC-001
+    title: Threat model de IA
+    domain: security
+    objective: Identificar ameaças de modelo, dados, supply chain, agentes, ferramentas e integrações.
+    control_type: preventive
+    owner: Segurança
+    review_frequency: por mudança material
+    requirements:
+      - O modelo de ameaças deve cobrir fronteiras de confiança e abuso plausível.
+      - Mitigações e riscos aceitos devem possuir responsáveis.
+    evidence:
+      - Threat model
+      - Registro de riscos de segurança
+    applicability:
+      match: any
+      risk_tiers: [high, critical]
+      data_classifications: [confidential, restricted]
+      flags_any: [uses_agents, uses_mcp, uses_custom_model]
+
+  - control_id: GOV-SEC-002
+    title: Defesa contra prompt injection
+    domain: security
+    objective: Reduzir instruções maliciosas, vazamento de dados e abuso de ferramentas em aplicações generativas.
+    control_type: preventive
+    owner: Segurança
+    review_frequency: mensal
+    requirements:
+      - Conteúdo recuperado e instruções externas devem ser tratados como não confiáveis.
+      - Testes devem cobrir extração de dados e ações indevidas.
+    evidence:
+      - Casos de teste de segurança
+      - Resultados de red team
+    applicability:
+      flags_any: [external_facing, uses_rag, uses_agents, uses_mcp]
+
+  - control_id: GOV-OPS-001
+    title: Monitoramento de modelos e agentes
+    domain: operations
+    objective: Detectar degradação, violação de política e comportamento operacional anômalo.
+    control_type: detective
+    owner: Operações
+    review_frequency: contínua
+    requirements:
+      - Qualidade, latência, erro, custo e violações devem possuir baseline e alertas.
+      - Agentes devem registrar ferramentas, aprovações, loops e resultado da tarefa.
+    evidence:
+      - Dashboard e alertas
+      - Traces e métricas sanitizados
+    implementation_reference: a2a-otel-kit
+    applicability:
+      match: any
+      risk_tiers: [high, critical]
+      flags_any: [external_facing, executes_actions, uses_agents, uses_rag]
+
+  - control_id: GOV-OPS-002
+    title: Limites de custo e recursos
+    domain: operations
+    objective: Conter consumo inesperado, loops e indisponibilidade causada por cargas de IA.
+    control_type: preventive
+    owner: Operações
+    review_frequency: mensal
+    requirements:
+      - Tokens, custo, tempo, passos e retries devem possuir limites explícitos.
+      - Excesso de limite deve bloquear ou escalar de forma segura.
+    evidence:
+      - Configuração de budgets e timeouts
+      - Alertas e ações bloqueadas
+    applicability:
+      flags_any: [uses_agents, uses_custom_model, executes_actions]
+
+  - control_id: GOV-EVD-001
+    title: Trilha de auditoria íntegra
+    domain: evidence
+    objective: Registrar decisões e mudanças materiais com integridade e minimização de conteúdo.
+    control_type: detective
+    owner: Compliance
+    review_frequency: contínua
+    requirements:
+      - Eventos devem conter ator, ação, entidade, versão e timestamp.
+      - Integridade deve ser verificável sem copiar conteúdo sensível por padrão.
+    evidence:
+      - Audit events encadeados
+      - Verificação de integridade
+    applicability:
+      always: true
+
+  - control_id: GOV-EVD-002
+    title: Evidência e avaliação independentes
+    domain: evidence
+    objective: Impedir que o próprio agente ou executor aprove seu resultado sem verificação independente.
+    control_type: detective
+    owner: Assurance
+    review_frequency: por execução material
+    requirements:
+      - Declaração do agente não deve ser tratada como evidência confiável.
+      - Evidência deve ser vinculada à política, artefato e ambiente avaliados.
+    evidence:
+      - Evidência produzida por fonte confiável
+      - Veredito independente
+    implementation_reference: engineering-loop-schemas
+    applicability:
+      match: any
+      risk_tiers: [high, critical]
+      flags_any: [regulated_context, affects_rights, executes_actions, uses_agents]
+
+  - control_id: GOV-CHG-001
+    title: Gestão de mudança e descontinuação
+    domain: change
+    objective: Reavaliar mudanças materiais e retirar ativos sem apagar histórico ou evidências.
+    control_type: corrective
+    owner: AI Governance
+    review_frequency: por mudança material
+    requirements:
+      - Modelo, dados, finalidade, região, ferramenta e autonomia devem reabrir avaliação.
+      - Retirada deve preservar histórico, owner e plano de saída.
+    evidence:
+      - Change assessment
+      - Registro de aposentadoria
+    applicability:
+      always: true

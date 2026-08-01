@@ -9,11 +9,20 @@ import {
   createAISystem,
   decideApproval,
   getInitiative,
+  getInitiativeControls,
   listAssessments,
   submitInitiative,
 } from "@/lib/api";
 import { label } from "@/lib/labels";
-import type { AISystem, Approval, Assessment, AssessmentKind, Initiative } from "@/lib/types";
+import type {
+  AISystem,
+  Approval,
+  Assessment,
+  AssessmentKind,
+  ControlEvaluation,
+  Initiative,
+  InitiativeControlReport,
+} from "@/lib/types";
 
 const ASSESSMENT_KINDS: AssessmentKind[] = [
   "ai-impact-assessment",
@@ -60,6 +69,70 @@ function AssessmentWorkspace({
             </Link>
           );
         })}
+      </div>
+    </section>
+  );
+}
+
+function ControlWorkspace({ report }: { report: InitiativeControlReport }) {
+  const [showAll, setShowAll] = useState(false);
+  const applicable = report.controls.filter((item) => item.applicable);
+  const visible = showAll ? report.controls : applicable;
+  const domainTotals = report.controls.reduce<Record<string, number>>((result, item) => {
+    result[item.control.domain] = (result[item.control.domain] ?? 0) + 1;
+    return result;
+  }, {});
+  const grouped = visible.reduce<Record<string, ControlEvaluation[]>>((result, item) => {
+    (result[item.control.domain] ??= []).push(item);
+    return result;
+  }, {});
+
+  return (
+    <section className="panel controls-panel">
+      <div className="panel-heading control-heading">
+        <div>
+          <p className="eyebrow">CATÁLOGO DE CONTROLES · V{report.catalog_version}</p>
+          <h2>{applicable.length} de {report.controls.length} controles aplicáveis</h2>
+        </div>
+        <button className="button button-small" onClick={() => setShowAll(!showAll)}>
+          {showAll ? "Mostrar somente aplicáveis" : "Ver catálogo completo"}
+        </button>
+      </div>
+      <div className="control-groups">
+        {Object.entries(grouped).map(([domain, controls]) => (
+          <section className="control-group" key={domain}>
+            <div className="control-domain-heading">
+              <strong>{label(domain)}</strong>
+              <span>{controls.filter((item) => item.applicable).length}/{domainTotals[domain]}</span>
+            </div>
+            <div className="control-list">
+              {controls.map((item) => (
+                <details className={`control-card ${item.applicable ? "is-applicable" : "is-not-applicable"}`} key={item.control.control_id}>
+                  <summary>
+                    <div>
+                      <small>{item.control.control_id} · {label(item.control.control_type)}</small>
+                      <strong>{item.control.title}</strong>
+                      <span>{item.reasons[0]}</span>
+                    </div>
+                    <StatusPill value={item.applicable ? "applicable" : "not_applicable"} />
+                  </summary>
+                  <div className="control-details">
+                    <p>{item.control.objective}</p>
+                    <dl>
+                      <div><dt>Responsável</dt><dd>{item.control.owner}</dd></div>
+                      <div><dt>Revisão</dt><dd>{item.control.review_frequency}</dd></div>
+                    </dl>
+                    <strong>Requisitos</strong>
+                    <ul>{item.control.requirements.map((value) => <li key={value}>{value}</li>)}</ul>
+                    <strong>Evidências esperadas</strong>
+                    <ul>{item.control.evidence.map((value) => <li key={value}>{value}</li>)}</ul>
+                    {item.control.implementation_reference && <small>Implementação de referência: {item.control.implementation_reference}</small>}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
     </section>
   );
@@ -204,14 +277,16 @@ export default function InitiativePage() {
   const { id } = useParams<{ id: string }>();
   const [initiative, setInitiative] = useState<Initiative | null>(null);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [controlReport, setControlReport] = useState<InitiativeControlReport | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    Promise.all([getInitiative(id), listAssessments(id)])
-      .then(([initiativeValue, assessmentValues]) => {
+    Promise.all([getInitiative(id), listAssessments(id), getInitiativeControls(id)])
+      .then(([initiativeValue, assessmentValues, controls]) => {
         setInitiative(initiativeValue);
         setAssessments(assessmentValues);
+        setControlReport(controls);
       })
       .catch((reason: Error) => setError(reason.message));
   }, [id]);
@@ -246,6 +321,7 @@ export default function InitiativePage() {
       <article className="panel documents-card"><p className="eyebrow">DOCUMENTAÇÃO REQUERIDA</p><h2>{initiative.required_documents.length} artefatos</h2><ul className="document-list">{initiative.required_documents.map((document) => <li key={document}><span>✓</span>{label(document)}</li>)}</ul></article>
     </section>
     <AssessmentWorkspace assessments={assessments} initiative={initiative} />
+    {controlReport && <ControlWorkspace report={controlReport} />}
     {initiative.status !== "draft" && <section className="panel approvals-panel"><div className="panel-heading"><div><p className="eyebrow">FLUXO DE APROVAÇÃO</p><h2>{approved} de {required.length} gates concluídos</h2></div><div className="progress"><span style={{ width: `${required.length ? (approved / required.length) * 100 : 0}%` }} /></div></div><div className="approval-grid">{initiative.approvals?.map((approval) => <ApprovalCard approval={approval} initiativeId={initiative.id} key={approval.id} onUpdated={setInitiative} />)}</div></section>}
     {(initiative.status === "approved" || (initiative.systems?.length ?? 0) > 0) && (
       <SystemInventory initiative={initiative} onCreated={addSystem} />

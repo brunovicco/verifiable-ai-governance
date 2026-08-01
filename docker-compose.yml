@@ -36,6 +36,7 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-true}
       AUDIT_HASH_SALT: ${AUDIT_HASH_SALT:-local-development-only}
+      CONTROL_CATALOG_PATH: ${CONTROL_CATALOG_PATH:-}
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:

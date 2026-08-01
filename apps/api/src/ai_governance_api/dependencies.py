@@ -4,16 +4,25 @@ from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends
-from policy_engine import GovernancePolicyEngine
+from policy_engine import GovernanceControlCatalog, GovernancePolicyEngine
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_governance_api.adapters import (
     SqlAlchemyAssessmentAudit,
     SqlAlchemyAssessmentStore,
+    SqlAlchemyInitiativeControlContextStore,
     SqlAlchemyTransaction,
 )
-from ai_governance_api.application import ListAssessments, SaveAssessment, SubmitAssessment
+from ai_governance_api.application import (
+    ControlCatalogPort,
+    EvaluateInitiativeControls,
+    ListAssessments,
+    ListControlCatalog,
+    SaveAssessment,
+    SubmitAssessment,
+)
 from ai_governance_api.auth import Principal, get_principal
+from ai_governance_api.config import get_settings
 from ai_governance_api.database import get_db
 from ai_governance_api.services import InitiativeService, InventoryService, PolicyEvaluator
 
@@ -27,7 +36,19 @@ def get_policy_evaluator() -> PolicyEvaluator:
     return GovernancePolicyEngine()
 
 
+@lru_cache
+def get_control_catalog() -> ControlCatalogPort:
+    """Load the packaged or explicitly configured control catalog once per process."""
+    path = get_settings().control_catalog_path
+    return (
+        GovernanceControlCatalog.from_path(path)
+        if path
+        else GovernanceControlCatalog.from_package()
+    )
+
+
 PolicyEvaluatorDependency = Annotated[PolicyEvaluator, Depends(get_policy_evaluator)]
+ControlCatalogDependency = Annotated[ControlCatalogPort, Depends(get_control_catalog)]
 
 
 def get_initiative_service(
@@ -73,3 +94,29 @@ def get_submit_assessment(session: DatabaseSession) -> SubmitAssessment:
 SaveAssessmentDependency = Annotated[SaveAssessment, Depends(get_save_assessment)]
 ListAssessmentsDependency = Annotated[ListAssessments, Depends(get_list_assessments)]
 SubmitAssessmentDependency = Annotated[SubmitAssessment, Depends(get_submit_assessment)]
+
+
+def get_list_control_catalog(catalog: ControlCatalogDependency) -> ListControlCatalog:
+    """Build the active control-catalog query."""
+    return ListControlCatalog(catalog)
+
+
+def get_evaluate_initiative_controls(
+    session: DatabaseSession,
+    catalog: ControlCatalogDependency,
+) -> EvaluateInitiativeControls:
+    """Build the initiative applicability query at the composition root."""
+    return EvaluateInitiativeControls(
+        SqlAlchemyInitiativeControlContextStore(session),
+        catalog,
+    )
+
+
+ListControlCatalogDependency = Annotated[
+    ListControlCatalog,
+    Depends(get_list_control_catalog),
+]
+EvaluateInitiativeControlsDependency = Annotated[
+    EvaluateInitiativeControls,
+    Depends(get_evaluate_initiative_controls),
+]
