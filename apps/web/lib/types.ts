@@ -12,6 +12,7 @@ export type AssessmentKind =
   | "international-processing-assessment";
 
 export type RiskTier = "low" | "medium" | "high" | "critical";
+export type AssetReviewState = "not_reviewed" | "current" | "expired";
 
 export interface Assessment {
   id: string;
@@ -108,6 +109,7 @@ export interface ModelAsset {
   reviewed_at: string | null;
   next_review_at: string | null;
   review_reference: string | null;
+  review_state: AssetReviewState;
   status: string;
   version: number;
 }
@@ -133,6 +135,7 @@ export interface AgentAsset {
   reviewed_at: string | null;
   next_review_at: string | null;
   review_reference: string | null;
+  review_state: AssetReviewState;
   status: string;
   version: number;
 }

@@ -55,8 +55,8 @@ fica nas tabelas operacionais; decisões e invalidações permanecem no log hash
 - o digest permite comparar a decisão com o escopo corrente sem registrar o conteúdo
   inteiro na auditoria;
 - agentes não permanecem aprovados sobre modelos alterados, aposentados ou vencidos;
-- datas vencidas não mudam fisicamente o status, mas deixam de satisfazer a política de
-  revisão e impedem dependências novas até renovação;
+- datas vencidas não mudam fisicamente o status, mas produzem `review_state=expired`,
+  deixam de satisfazer a política e impedem dependências novas até renovação;
 - registros de agentes migrados recebem `unversioned` e `unspecified` apenas como
   marcadores de transição e não conseguem aprovação sem atualização explícita;
 - enforcement no runtime continua fora deste adapter e será integrado em entrega

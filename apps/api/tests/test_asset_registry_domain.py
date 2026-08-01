@@ -6,7 +6,9 @@ from ai_governance_api.domain.asset_registry import (
     AssetReviewContext,
     AssetReviewError,
     AssetReviewForbidden,
+    AssetReviewState,
     ModelReviewCandidate,
+    asset_review_state,
     review_agent_scope,
     review_is_current,
     review_model_scope,
@@ -153,9 +155,50 @@ def test_action_capable_agent_requires_human_and_runtime_boundaries() -> None:
         review_agent_scope(without_limits, context)
 
 
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("agent_version", "unversioned", "semantic version"),
+        ("deployment_region", "unspecified", "deployment region"),
+    ],
+)
+def test_agent_review_rejects_migration_markers(
+    field: str,
+    value: str,
+    message: str,
+) -> None:
+    """Prevent transitional migration values from becoming approved scope."""
+    with pytest.raises(AssetReviewError, match=message):
+        review_agent_scope(
+            agent_candidate(**{field: value}),
+            review_context(area=ApprovalArea.SECURITY),
+        )
+
+
 def test_review_currentness_expires_at_the_deadline() -> None:
     deadline = NOW + timedelta(days=30)
 
     assert review_is_current(next_review_at=deadline, now=deadline - timedelta(seconds=1))
     assert not review_is_current(next_review_at=deadline, now=deadline)
     assert not review_is_current(next_review_at=None, now=NOW)
+
+
+def test_asset_review_state_distinguishes_missing_current_and_expired() -> None:
+    """Expose review validity independently from persisted lifecycle status."""
+    deadline = NOW + timedelta(days=30)
+
+    assert asset_review_state(
+        approved_scope_digest=None,
+        next_review_at=None,
+        now=NOW,
+    ) is AssetReviewState.NOT_REVIEWED
+    assert asset_review_state(
+        approved_scope_digest="a" * 64,
+        next_review_at=deadline,
+        now=NOW,
+    ) is AssetReviewState.CURRENT
+    assert asset_review_state(
+        approved_scope_digest="a" * 64,
+        next_review_at=deadline,
+        now=deadline,
+    ) is AssetReviewState.EXPIRED

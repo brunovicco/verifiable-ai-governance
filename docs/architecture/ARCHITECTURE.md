@@ -226,6 +226,13 @@ aplicação verifica ainda que cada modelo permitido pelo agente esteja aprovado
 revisão vigente. Routers apenas traduzem contratos e erros para HTTP. Consulte o ADR
 0019.
 
+Todos os comandos mutáveis do inventário usam a linha do sistema como mutex
+transacional no PostgreSQL. O lock é adquirido antes de validar versão ou dependências,
+serializando alterações e revisões dentro do mesmo sistema sem bloquear sistemas
+distintos. A vigência é exposta separadamente como `review_state`, calculada no momento
+da leitura, para que uma aprovação expirada não seja apresentada como corrente. Consulte
+o ADR 0020.
+
 ## Modelo lógico inicial
 
 ```mermaid

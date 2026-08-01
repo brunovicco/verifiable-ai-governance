@@ -150,6 +150,7 @@ async def test_inventory_lifecycle_is_versioned_authorized_and_audited(
     assert model_response.status_code == 201
     model = model_response.json()
     assert model["status"] == "draft"
+    assert model["review_state"] == "not_reviewed"
 
     invalid_agent = await client.post(
         f"/api/v1/systems/{ai_system['id']}/agents",
@@ -223,6 +224,7 @@ async def test_inventory_lifecycle_is_versioned_authorized_and_audited(
     assert model_review.status_code == 200
     model = model_review.json()
     assert model["status"] == "approved"
+    assert model["review_state"] == "current"
     assert len(model["approved_scope_digest"]) == 64
     assert model["reviewed_by"] == "architecture-reviewer"
 
@@ -251,6 +253,7 @@ async def test_inventory_lifecycle_is_versioned_authorized_and_audited(
     assert agent_review.status_code == 200
     agent = agent_review.json()
     assert agent["status"] == "approved"
+    assert agent["review_state"] == "current"
     assert len(agent["approved_scope_digest"]) == 64
 
     model_conflict = await client.patch(
@@ -272,6 +275,7 @@ async def test_inventory_lifecycle_is_versioned_authorized_and_audited(
     model = updated_model.json()
     assert model["status"] == "draft"
     assert model["approved_scope_digest"] is None
+    assert model["review_state"] == "not_reviewed"
 
     detail_after_model_change = await client.get(
         f"/api/v1/systems/{ai_system['id']}",

@@ -4,6 +4,7 @@ const LABELS: Record<string, string> = {
   approved: "Aprovada",
   active: "Ativo",
   suspended: "Suspenso",
+  expired: "Revisão vencida",
   retired: "Aposentado",
   rejected: "Rejeitada",
   changes_requested: "Ajustes solicitados",
