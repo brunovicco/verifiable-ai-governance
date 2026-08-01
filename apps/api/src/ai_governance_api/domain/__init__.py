@@ -23,6 +23,14 @@ from ai_governance_api.domain.evidence import (
     ScanVerdict,
     StoredObject,
 )
+from ai_governance_api.domain.reviews import (
+    GateDecisionTransition,
+    InitiativeReviewState,
+    ReviewActor,
+    ReviewConflict,
+    ReviewForbidden,
+    ReviewGateState,
+)
 
 __all__ = [
     "AIImpactAnswers",
@@ -36,11 +44,17 @@ __all__ = [
     "EvidenceActor",
     "EvidenceKind",
     "EvidenceRecord",
+    "GateDecisionTransition",
     "InitiativeAssessmentContext",
     "InternationalProcessingAnswers",
     "InitiativeEvidenceContext",
+    "InitiativeReviewState",
     "MalwareScanResult",
     "RIPDAnswers",
+    "ReviewActor",
+    "ReviewConflict",
+    "ReviewForbidden",
+    "ReviewGateState",
     "ScanVerdict",
     "StoredObject",
     "Subprocessor",

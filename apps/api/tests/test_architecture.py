@@ -109,6 +109,7 @@ def test_production_accepts_explicit_fail_closed_configuration() -> None:
     "relative_path",
     [
         "domain/assessments.py",
+        "domain/reviews.py",
         "application/assessments.py",
         "application/controls.py",
         "domain/evidence.py",

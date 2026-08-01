@@ -9,6 +9,7 @@ import type {
   Identity,
   Initiative,
   ModelAsset,
+  ReviewSubmission,
 } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -70,6 +71,30 @@ export function submitInitiative(id: string, version: number): Promise<Initiativ
   });
 }
 
+export function resubmitInitiative(
+  id: string,
+  payload: Record<string, unknown>,
+): Promise<Initiative> {
+  return request(`/api/v1/initiatives/${id}/resubmit`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function saveInitiativeRevision(
+  id: string,
+  payload: Record<string, unknown>,
+): Promise<Initiative> {
+  return request(`/api/v1/initiatives/${id}/revision`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function listReviewHistory(id: string): Promise<ReviewSubmission[]> {
+  return request(`/api/v1/initiatives/${id}/review-history`);
+}
+
 export function listAssessments(initiativeId: string): Promise<Assessment[]> {
   return request(`/api/v1/initiatives/${initiativeId}/assessments`);
 }
@@ -119,7 +144,7 @@ export function decideApproval(
   initiativeId: string,
   approvalId: string,
   payload: {
-    decision: "approved" | "rejected";
+    decision: "approved" | "rejected" | "changes_requested";
     comments: string;
     evidence_uri: string;
     expected_version: number;

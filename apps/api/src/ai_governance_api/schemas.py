@@ -272,6 +272,8 @@ class ApprovalRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
+    review_submission_id: str | None
+    review_round: int
     area: ApprovalArea
     required: bool
     reason: str
@@ -298,6 +300,7 @@ class InitiativeRead(BaseModel):
     policy_id: str
     policy_version: str
     required_documents: list[str]
+    current_review_round: int
     version: int
     created_at: datetime
     updated_at: datetime
@@ -312,7 +315,21 @@ class InitiativeDetail(InitiativeRead):
     hosting_model: HostingModel
     international_processing: bool
     inference_countries: list[str]
-    approvals: list[ApprovalRead] = Field(default_factory=list)
+    affects_rights: bool
+    executes_actions: bool
+    personal_data: bool
+    sensitive_data: bool
+    children_data: bool
+    external_facing: bool
+    regulated_context: bool
+    uses_rag: bool
+    uses_agents: bool
+    uses_mcp: bool
+    uses_custom_model: bool
+    approvals: list[ApprovalRead] = Field(
+        default_factory=list,
+        validation_alias="current_approvals",
+    )
     systems: list[AISystemRead] = Field(default_factory=list)
 
 
@@ -328,8 +345,12 @@ class ApprovalDecisionRequest(BaseModel):
     @classmethod
     def validate_decision(cls, value: ApprovalStatus) -> ApprovalStatus:
         """Accept only terminal approval decisions."""
-        if value not in {ApprovalStatus.APPROVED, ApprovalStatus.REJECTED}:
-            raise ValueError("A decisão deve ser approved ou rejected")
+        if value not in {
+            ApprovalStatus.APPROVED,
+            ApprovalStatus.REJECTED,
+            ApprovalStatus.CHANGES_REQUESTED,
+        }:
+            raise ValueError("A decisão deve ser approved, rejected ou changes_requested")
         return value
 
 
@@ -337,6 +358,87 @@ class SubmissionRequest(BaseModel):
     """Versioned request to submit a draft initiative."""
 
     expected_version: int = Field(ge=1)
+    revision_summary: str | None = Field(default=None, min_length=5, max_length=2000)
+
+
+class InitiativeRevisionRequest(BaseModel):
+    """Versioned proposal adjustments saved before a new review round."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    expected_version: int = Field(ge=1)
+    change_reason: str = Field(min_length=5, max_length=2000)
+    name: str | None = Field(default=None, min_length=3, max_length=200)
+    description: str | None = Field(default=None, min_length=20, max_length=5000)
+    business_area: str | None = Field(default=None, min_length=2, max_length=200)
+    intended_users: str | None = Field(default=None, min_length=3, max_length=2000)
+    decision_impact: DecisionImpact | None = None
+    data_classification: DataClassification | None = None
+    autonomy_level: AutonomyLevel | None = None
+    hosting_model: HostingModel | None = None
+    affects_rights: bool | None = None
+    executes_actions: bool | None = None
+    personal_data: bool | None = None
+    sensitive_data: bool | None = None
+    children_data: bool | None = None
+    external_facing: bool | None = None
+    regulated_context: bool | None = None
+    international_processing: bool | None = None
+    inference_countries: list[str] | None = None
+    uses_rag: bool | None = None
+    uses_agents: bool | None = None
+    uses_mcp: bool | None = None
+    uses_custom_model: bool | None = None
+
+    @field_validator("inference_countries")
+    @classmethod
+    def clean_optional_countries(cls, countries: list[str] | None) -> list[str] | None:
+        """Normalize an explicitly supplied country list."""
+        return _clean_strings(countries) if countries is not None else None
+
+    @model_validator(mode="after")
+    def require_change(self) -> "InitiativeRevisionRequest":
+        """Reject revision commands that do not change proposal facts."""
+        if self.model_fields_set <= {"expected_version", "change_reason"}:
+            raise ValueError("Informe ao menos um campo da proposta para atualizar.")
+        return self
+
+    def changes(self) -> dict[str, object]:
+        """Return only explicitly supplied proposal fields."""
+        return self.model_dump(
+            exclude={"expected_version", "change_reason"},
+            exclude_unset=True,
+            exclude_none=True,
+        )
+
+
+class InitiativeResubmissionRequest(BaseModel):
+    """Versioned request to create a new immutable review round."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    expected_version: int = Field(ge=1)
+    revision_summary: str = Field(min_length=10, max_length=2000)
+
+
+class ReviewSubmissionRead(BaseModel):
+    """Content-minimized history of one immutable review submission."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    initiative_id: str
+    review_round: int
+    status: EntityStatus
+    submitted_by: str
+    submitted_at: datetime
+    resolved_at: datetime | None
+    revision_summary: str
+    policy_id: str
+    policy_version: str
+    risk_score: int
+    risk_tier: RiskTier
+    approvals: list[ApprovalRead] = Field(default_factory=list)
 
 
 class AuditEventRead(BaseModel):

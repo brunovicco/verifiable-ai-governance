@@ -8,7 +8,7 @@
 - [x] Assessment estruturado para AIA, RIPD e processamento internacional.
 - [x] Catálogo inicial de 25 controles em YAML e visualização de aplicabilidade.
 - [x] Upload seguro de evidências com object storage, checksum do arquivo e malware scan.
-- [ ] Workflow de revisão, solicitação de ajuste e resubmissão sem apagar histórico.
+- [x] Workflow de revisão, solicitação de ajuste e resubmissão sem apagar histórico.
 - [ ] Integração OIDC validada com ao menos um provedor e mapeamento de grupos.
 - [ ] Migrações explícitas e política de backup/restauração testada.
 

@@ -71,7 +71,8 @@ td:last-child { text-align: right; color: var(--green); font-weight: 800; }
 .status-medium, .status-under-review, .status-pending { background: #fff1cc; color: #865c12; }
 .status-high { background: #ffe2c7; color: #90460e; }
 .status-critical, .status-rejected { background: #fde0dd; color: #982d28; }
-.status-not-required, .status-retired { background: #eff1ee; color: #78827d; }
+.status-changes-requested { background: #ffe2c7; color: #90460e; }
+.status-not-required, .status-retired, .status-superseded { background: #eff1ee; color: #78827d; }
 .status-not-started { background: #eff1ee; color: #78827d; }
 .status-applicable { background: #dff5e8; color: #176044; }
 .status-not-applicable { background: #eff1ee; color: #78827d; }
@@ -135,6 +136,26 @@ dd { margin: 0; text-align: right; font-size: 12px; font-weight: 700; }
 .decision-form { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 14px; }
 .decision-form label { font-size: 11px; margin-bottom: 12px; }
 .decision-form input, .decision-form select, .decision-form textarea { padding: 9px 10px; margin-top: 5px; font-size: 12px; }
+
+.revision-panel, .history-panel { margin-top: 24px; }
+.revision-form { padding: 28px 30px; }
+.resubmission-form { padding: 26px 30px 30px; border-top: 1px solid var(--line); background: #fafbf8; }
+.resubmission-form > div:first-child strong, .resubmission-form > div:first-child small { display: block; }
+.resubmission-form > div:first-child small { margin-top: 6px; color: var(--muted); }
+.resubmission-form > label { max-width: 720px; margin-top: 22px; }
+.revision-notice { color: var(--amber); background: #fff8e8; border: 1px solid #f0dfb5; }
+.revision-checks { grid-template-columns: repeat(3, 1fr); }
+.history-panel .panel-heading > small { color: var(--muted); }
+.history-list { padding: 4px 30px 24px; }
+.history-round { padding: 24px 0; border-bottom: 1px solid var(--line); }
+.history-round:last-child { border-bottom: 0; }
+.history-round-heading { display: flex; justify-content: space-between; align-items: start; gap: 24px; }
+.history-round-heading strong, .history-round-heading small { display: block; }
+.history-round-heading small, .history-round > small { margin-top: 6px; color: var(--muted); font-size: 11px; }
+.history-round-heading .status-row { margin: 0; }
+.history-round > p { margin: 16px 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.history-gates { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 14px; }
+.history-gates > span { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; }
 
 .inventory-panel { margin-top: 24px; }
 .inventory-form { padding: 26px 30px; border-bottom: 1px solid var(--line); }
@@ -230,7 +251,7 @@ footer { max-width: 1180px; height: 66px; padding: 0 24px; margin: 0 auto; borde
   .metrics { grid-template-columns: 1fr 1fr; }
   .metrics article:nth-child(2) { border-right: 0; }
   .metrics article:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
-  .field-grid, .check-grid, .detail-grid, .document-list, .approval-grid, .asset-columns, .asset-summary, .assessment-intro { grid-template-columns: 1fr; }
+  .field-grid, .check-grid, .detail-grid, .document-list, .approval-grid, .asset-columns, .asset-summary, .assessment-intro, .revision-checks { grid-template-columns: 1fr; }
   .detail-header { display: block; }
   .detail-header .button { margin-top: 16px; }
   .panel-heading { align-items: start; }
@@ -242,5 +263,6 @@ footer { max-width: 1180px; height: 66px; padding: 0 24px; margin: 0 auto; borde
   .control-card summary .status { width: fit-content; }
   .progress { width: 100px; }
   .evidence-row, .evidence-integrity { align-items: flex-start; flex-direction: column; text-align: left; }
+  .history-round-heading { display: grid; }
   th, td { padding: 14px 16px; }
 }

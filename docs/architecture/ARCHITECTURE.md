@@ -65,6 +65,22 @@ versão esperada para mutações e, quando submetidos, tornam-se imutáveis até
 workflow explícito de revisão e ressubmissão. A auditoria registra tipo, versão, risco e
 campos alterados, sem duplicar respostas potencialmente sensíveis.
 
+### Rodadas de revisão
+
+Transições críticas de revisão e segregação de funções vivem em um domínio puro,
+independente de FastAPI, Pydantic e SQLAlchemy. Cada submissão materializa um snapshot
+imutável da proposta e dos assessments e cria gates exclusivos daquela rodada. A
+projeção `Initiative` aponta para a rodada corrente, enquanto o histórico permanece
+consultável de forma minimizada por participantes autorizados.
+
+Comandos de submissão, revisão, ressubmissão e decisão bloqueiam a iniciativa na
+transação e validam versões esperadas. Uma solicitação de ajuste encerra a rodada,
+substitui gates pendentes e reabre assessments. O owner salva os novos fatos primeiro;
+a política recalcula documentos e gates para permitir criar assessments recém-exigidos.
+A nova rodada só nasce depois que todos os assessments estruturados aplicáveis foram
+enviados. Snapshots completos não são expostos pela API de histórico nem copiados para
+auditoria.
+
 O desenho também preserva propriedades dos Twelve-Factor Apps: configuração vem do
 ambiente, processos de API permanecem stateless, PostgreSQL é um backing service
 substituível por configuração, logs são eventos e dependências são declaradas e
@@ -126,6 +142,8 @@ alterações, preservando os registros e eventos de auditoria.
 ```mermaid
 erDiagram
   INITIATIVE ||--o{ APPROVAL : requires
+  INITIATIVE ||--o{ REVIEW_SUBMISSION : submitted_as
+  REVIEW_SUBMISSION ||--o{ APPROVAL : contains
   INITIATIVE ||--o{ ASSESSMENT : evaluated_by
   INITIATIVE ||--o{ EVIDENCE : supported_by
   INITIATIVE ||--o{ INTERNATIONAL_PROCESSING : maps
@@ -147,6 +165,8 @@ erDiagram
 - referências de evidência informadas por humanos começam como `trusted_source=false`;
 - uploads só se tornam `trusted_source=true` depois de validação e scan limpo;
 - conteúdo de prompts e documentos não deve entrar na trilha operacional por padrão.
+- snapshots de revisão herdam retenção e proteção do banco e não são retornados no
+  histórico resumido.
 
 ## Portas de integração futuras
 
