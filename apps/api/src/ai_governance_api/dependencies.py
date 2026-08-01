@@ -1,5 +1,7 @@
 """FastAPI dependency wiring for application services."""
 
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from functools import lru_cache
 from typing import Annotated
 
@@ -13,6 +15,10 @@ from ai_governance_api.adapters import (
     S3ObjectStorage,
     SqlAlchemyAssessmentAudit,
     SqlAlchemyAssessmentStore,
+    SqlAlchemyDirectoryAuthorizationCache,
+    SqlAlchemyDirectoryAuthorizationCacheAudit,
+    SqlAlchemyDirectoryAuthorizationCacheReader,
+    SqlAlchemyDirectoryAuthorizationCacheTransaction,
     SqlAlchemyEvidenceAudit,
     SqlAlchemyEvidenceStore,
     SqlAlchemyInitiativeControlContextStore,
@@ -20,28 +26,35 @@ from ai_governance_api.adapters import (
     YamlDirectoryAuthorizationCatalog,
 )
 from ai_governance_api.application import (
+    CacheResolvedDirectoryAuthorization,
     ControlCatalogPort,
     CorporateDirectoryIdentityMismatch,
     CorporateDirectoryNotApplicable,
     CorporateDirectoryProfile,
     CorporateDirectoryResponseInvalid,
     CorporateDirectoryUnavailable,
+    DirectoryAuthorizationCacheUnavailable,
     EvaluateInitiativeControls,
+    InvalidateDirectoryAuthorization,
     ListAssessments,
     ListControlCatalog,
     ListEvidence,
     ResolveCorporateDirectory,
     ResolveDirectoryAuthorization,
+    ReuseDirectoryAuthorization,
     SaveAssessment,
     SubmitAssessment,
     UploadEvidence,
 )
 from ai_governance_api.auth import BEARER_CHALLENGE, BearerCredentials, get_principal
 from ai_governance_api.config import Settings, get_settings
-from ai_governance_api.database import get_db
+from ai_governance_api.database import SessionFactory, get_db
 from ai_governance_api.domain.directory_authorization import (
     DirectoryAuthorizationCatalog,
     DirectoryAuthorizationError,
+)
+from ai_governance_api.domain.directory_authorization_cache import (
+    DirectoryAuthorizationCacheError,
 )
 from ai_governance_api.domain.identity import (
     DirectoryGroupClaimState,
@@ -110,6 +123,52 @@ DirectoryAuthorizationResolverDependency = Annotated[
 ]
 
 
+def get_reuse_directory_authorization() -> ReuseDirectoryAuthorization:
+    """Build the shared authorization-cache query."""
+    return ReuseDirectoryAuthorization(
+        SqlAlchemyDirectoryAuthorizationCacheReader(SessionFactory)
+    )
+
+
+def get_cache_resolved_directory_authorization(
+    session: DatabaseSession,
+    settings: SettingsDependency,
+) -> CacheResolvedDirectoryAuthorization:
+    """Build the shared authorization-cache command with deployment TTL."""
+    return CacheResolvedDirectoryAuthorization(
+        SqlAlchemyDirectoryAuthorizationCache(session),
+        SqlAlchemyDirectoryAuthorizationCacheTransaction(session),
+        ttl_seconds=settings.directory_authorization_cache_ttl_seconds,
+    )
+
+
+def get_invalidate_directory_authorization(
+    session: DatabaseSession,
+    settings: SettingsDependency,
+) -> InvalidateDirectoryAuthorization:
+    """Build the audited administrative invalidation command."""
+    return InvalidateDirectoryAuthorization(
+        SqlAlchemyDirectoryAuthorizationCache(session),
+        SqlAlchemyDirectoryAuthorizationCacheAudit(session),
+        SqlAlchemyDirectoryAuthorizationCacheTransaction(session),
+        allowed_tenant_ids=settings.oidc_allowed_tenant_id_set,
+    )
+
+
+ReuseDirectoryAuthorizationDependency = Annotated[
+    ReuseDirectoryAuthorization,
+    Depends(get_reuse_directory_authorization),
+]
+CacheResolvedDirectoryAuthorizationDependency = Annotated[
+    CacheResolvedDirectoryAuthorization,
+    Depends(get_cache_resolved_directory_authorization),
+]
+InvalidateDirectoryAuthorizationDependency = Annotated[
+    InvalidateDirectoryAuthorization,
+    Depends(get_invalidate_directory_authorization),
+]
+
+
 def get_corporate_directory_resolver(
     settings: SettingsDependency,
 ) -> ResolveCorporateDirectory | None:
@@ -138,14 +197,51 @@ CorporateDirectoryResolverDependency = Annotated[
 ]
 
 
+@dataclass(slots=True)
+class CorporateDirectoryRequestSnapshot:
+    """Memoize one Graph result only for the lifetime of an HTTP request."""
+
+    resolved: bool = False
+    profile: CorporateDirectoryProfile | None = None
+
+
+def get_corporate_directory_request_snapshot() -> CorporateDirectoryRequestSnapshot:
+    """Create a request-scoped Graph snapshot shared by dependent routes."""
+    return CorporateDirectoryRequestSnapshot()
+
+
+CorporateDirectoryRequestSnapshotDependency = Annotated[
+    CorporateDirectoryRequestSnapshot,
+    Depends(get_corporate_directory_request_snapshot),
+]
+
+
 async def get_corporate_directory_profile(
     principal: CurrentPrincipal,
     credentials: BearerCredentials,
     resolver: CorporateDirectoryResolverDependency,
+    request_snapshot: CorporateDirectoryRequestSnapshotDependency,
 ) -> CorporateDirectoryProfile | None:
     """Enrich the current identity while mapping dependency failures safely."""
     if resolver is None:
         return None
+    return await _resolve_corporate_directory_profile(
+        principal,
+        credentials,
+        resolver,
+        request_snapshot,
+    )
+
+
+async def _resolve_corporate_directory_profile(
+    principal: Principal,
+    credentials: BearerCredentials,
+    resolver: ResolveCorporateDirectory,
+    request_snapshot: CorporateDirectoryRequestSnapshot,
+) -> CorporateDirectoryProfile:
+    """Resolve Graph once per request and map all failures to safe HTTP responses."""
+    if request_snapshot.resolved and request_snapshot.profile is not None:
+        return request_snapshot.profile
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -153,7 +249,10 @@ async def get_corporate_directory_profile(
             headers=BEARER_CHALLENGE,
         )
     try:
-        return await resolver.execute(principal, credentials.credentials)
+        profile = await resolver.execute(principal, credentials.credentials)
+        request_snapshot.profile = profile
+        request_snapshot.resolved = True
+        return profile
     except CorporateDirectoryUnavailable as exc:
         headers = (
             {"Retry-After": str(exc.retry_after_seconds)}
@@ -184,10 +283,39 @@ CurrentCorporateDirectoryProfile = Annotated[
 
 async def get_authorized_principal(
     principal: CurrentPrincipal,
-    directory_profile: CurrentCorporateDirectoryProfile,
+    credentials: BearerCredentials,
+    directory_resolver: CorporateDirectoryResolverDependency,
+    request_snapshot: CorporateDirectoryRequestSnapshotDependency,
     resolver: DirectoryAuthorizationResolverDependency,
+    cache_query: ReuseDirectoryAuthorizationDependency,
+    cache_command: CacheResolvedDirectoryAuthorizationDependency,
+    catalog: DirectoryAuthorizationCatalogDependency,
 ) -> Principal:
     """Resolve catalog-derived capabilities for authorization-sensitive requests."""
+    try:
+        cached = await cache_query.execute(
+            principal,
+            catalog_digest=catalog.catalog_digest,
+        )
+    except (DirectoryAuthorizationCacheError, DirectoryAuthorizationCacheUnavailable) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Directory authorization cache could not be trusted",
+        ) from exc
+    if cached is not None:
+        return cached
+
+    resolution_started_at = datetime.now(UTC)
+    directory_profile = (
+        await _resolve_corporate_directory_profile(
+            principal,
+            credentials,
+            directory_resolver,
+            request_snapshot,
+        )
+        if directory_resolver is not None
+        else None
+    )
     if directory_profile is not None:
         group_object_ids = directory_profile.group_object_ids
         group_resolution_source = DirectoryGroupResolutionSource.MICROSOFT_GRAPH
@@ -201,12 +329,20 @@ async def get_authorized_principal(
         group_object_ids = frozenset()
         group_resolution_source = DirectoryGroupResolutionSource.NONE
     try:
-        return resolver.execute(
+        authorized = resolver.execute(
             principal,
             group_object_ids=group_object_ids,
             group_resolution_source=group_resolution_source,
         )
-    except DirectoryAuthorizationError as exc:
+        return await cache_command.execute(
+            authorized,
+            resolved_at=resolution_started_at,
+        )
+    except (
+        DirectoryAuthorizationCacheError,
+        DirectoryAuthorizationCacheUnavailable,
+        DirectoryAuthorizationError,
+    ) as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Directory authorization could not be trusted",

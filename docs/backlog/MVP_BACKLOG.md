@@ -24,7 +24,8 @@
 - [ ] Group overage, paginação, throttling, cache, revogação e stale identity fail-closed.
   - [x] Paginação confiável, retry limitado, jitter e eventos de throttling sem conteúdo.
   - [x] Group overage explícito sem seguir URLs controladas pelo token.
-  - [ ] Cache, invalidação distribuída, revogação e stale identity.
+  - [x] Cache PostgreSQL com TTL, freshness, binding ao catálogo e invalidação distribuída.
+  - [ ] Revogação emergencial de sessão/acesso e validação contra tenant real.
 - [ ] Model/agent registry com approved scope, região, versão e datas de revisão.
 - [ ] Adapter de decisão do `policy-model-router`.
 - [ ] Ingestão sanitizada de telemetria do `a2a-otel-kit`.

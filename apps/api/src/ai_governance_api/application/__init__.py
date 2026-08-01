@@ -34,6 +34,17 @@ from ai_governance_api.application.corporate_directory import (
 from ai_governance_api.application.directory_authorization import (
     ResolveDirectoryAuthorization,
 )
+from ai_governance_api.application.directory_authorization_cache import (
+    CacheResolvedDirectoryAuthorization,
+    DirectoryAuthorizationCacheAuditPort,
+    DirectoryAuthorizationCacheInvalidationPort,
+    DirectoryAuthorizationCacheReaderPort,
+    DirectoryAuthorizationCacheTransactionPort,
+    DirectoryAuthorizationCacheUnavailable,
+    DirectoryAuthorizationCacheWriterPort,
+    InvalidateDirectoryAuthorization,
+    ReuseDirectoryAuthorization,
+)
 from ai_governance_api.application.evidence import (
     BinaryContent,
     BinaryStaging,
@@ -63,6 +74,13 @@ __all__ = [
     "CorporateDirectoryProfile",
     "CorporateDirectoryResponseInvalid",
     "CorporateDirectoryUnavailable",
+    "CacheResolvedDirectoryAuthorization",
+    "DirectoryAuthorizationCacheAuditPort",
+    "DirectoryAuthorizationCacheInvalidationPort",
+    "DirectoryAuthorizationCacheReaderPort",
+    "DirectoryAuthorizationCacheTransactionPort",
+    "DirectoryAuthorizationCacheUnavailable",
+    "DirectoryAuthorizationCacheWriterPort",
     "EvaluateInitiativeControls",
     "EvidenceAuditPort",
     "EvidenceDependencyError",
@@ -72,6 +90,7 @@ __all__ = [
     "InitiativeControlContextStore",
     "IdentityProviderUnavailable",
     "InvalidAccessToken",
+    "InvalidateDirectoryAuthorization",
     "ListAssessments",
     "ListControlCatalog",
     "ListEvidence",
@@ -79,6 +98,7 @@ __all__ = [
     "ObjectStoragePort",
     "ResolveCorporateDirectory",
     "ResolveDirectoryAuthorization",
+    "ReuseDirectoryAuthorization",
     "SaveAssessment",
     "SubmitAssessment",
     "TransactionPort",

@@ -11,6 +11,7 @@ from ai_governance_api.application.corporate_directory import (
 )
 from ai_governance_api.config import OidcIdentityMode, Settings
 from ai_governance_api.dependencies import (
+    CorporateDirectoryRequestSnapshot,
     get_authorized_principal,
     get_corporate_directory_profile,
 )
@@ -69,6 +70,33 @@ class CapturingAuthorizationResolver:
         self.group_object_ids = group_object_ids
         self.group_resolution_source = group_resolution_source
         return principal
+
+
+class CacheMiss:
+    """Return no reusable authorization snapshot."""
+
+    async def execute(self, principal: Principal, *, catalog_digest: str) -> None:
+        assert catalog_digest == "a" * 64
+        return None
+
+
+class PassThroughCacheCommand:
+    """Return the live authorization result unchanged."""
+
+    async def execute(
+        self,
+        principal: Principal,
+        *,
+        resolved_at: object = None,
+    ) -> Principal:
+        assert resolved_at is not None
+        return principal
+
+
+class FixedCatalog:
+    """Expose the digest required by the dependency orchestration."""
+
+    catalog_digest = "a" * 64
 
 
 TENANT_ID = "11111111-1111-4111-8111-111111111111"
@@ -183,6 +211,7 @@ async def test_disabled_directory_enrichment_does_not_require_bearer() -> None:
         Principal(user_id="local-user"),
         None,
         None,
+        CorporateDirectoryRequestSnapshot(),
     )
 
     assert result is None
@@ -198,7 +227,16 @@ async def test_complete_token_groups_are_used_without_graph_snapshot() -> None:
         ),
     )
 
-    result = await get_authorized_principal(principal, None, resolver)
+    result = await get_authorized_principal(
+        principal,
+        None,
+        None,
+        CorporateDirectoryRequestSnapshot(),
+        resolver,
+        CacheMiss(),
+        PassThroughCacheCommand(),
+        FixedCatalog(),
+    )
 
     assert result is principal
     assert resolver.group_object_ids == frozenset({GROUP_ID})
@@ -219,7 +257,16 @@ async def test_graph_snapshot_supersedes_overage_token_groups() -> None:
         group_object_ids=frozenset({GROUP_ID}),
     )
 
-    result = await get_authorized_principal(principal, profile, resolver)
+    result = await get_authorized_principal(
+        principal,
+        HTTPAuthorizationCredentials(scheme="Bearer", credentials="access-token"),
+        FixedDirectoryResolver(profile),
+        CorporateDirectoryRequestSnapshot(),
+        resolver,
+        CacheMiss(),
+        PassThroughCacheCommand(),
+        FixedCatalog(),
+    )
 
     assert result is principal
     assert resolver.group_object_ids == frozenset({GROUP_ID})
@@ -242,6 +289,7 @@ async def test_directory_errors_have_safe_http_mapping(error: Exception) -> None
             Principal(user_id="corporate-reviewer"),
             HTTPAuthorizationCredentials(scheme="Bearer", credentials="access-token"),
             FixedDirectoryResolver(error),
+            CorporateDirectoryRequestSnapshot(),
         )
 
     assert caught.value.status_code == 503

@@ -81,12 +81,13 @@ validar cenários abaixo e acima de 200 grupos. Alertas devem distinguir
 `overage_unresolved` de ausência legítima de mapping.
 
 Se a organização depende de grupos e usuários podem exceder o limite, Graph OBO deve
-estar habilitado. Cache e revogação ainda não existem; o snapshot Graph é obtido nas
-rotas sensíveis conforme o comportamento atual.
+estar habilitado. O cache compartilhado posterior está definido pelo ADR 0017;
+revogação definitiva de sessão e acesso permanece uma responsabilidade separada.
 
 ## Follow-up
 
-- Implementar cache curto com freshness explícita e invalidação entre réplicas.
+- Cache curto com freshness explícita e invalidação entre réplicas: concluído no ADR
+  0017.
 - Definir revogação emergencial e stale identity fail-closed.
 - Validar group overage em tenant Entra não produtivo.
 - Exportar métricas agregadas por fonte de resolução, sem IDs de grupos.

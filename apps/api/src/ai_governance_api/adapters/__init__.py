@@ -6,6 +6,12 @@ from ai_governance_api.adapters.assessment_persistence import (
     SqlAlchemyTransaction,
 )
 from ai_governance_api.adapters.control_context import SqlAlchemyInitiativeControlContextStore
+from ai_governance_api.adapters.directory_authorization_cache import (
+    SqlAlchemyDirectoryAuthorizationCache,
+    SqlAlchemyDirectoryAuthorizationCacheAudit,
+    SqlAlchemyDirectoryAuthorizationCacheReader,
+    SqlAlchemyDirectoryAuthorizationCacheTransaction,
+)
 from ai_governance_api.adapters.directory_authorization_catalog import (
     DirectoryAuthorizationCatalogError,
     YamlDirectoryAuthorizationCatalog,
@@ -22,6 +28,10 @@ from ai_governance_api.adapters.oidc import PyJwtOidcVerifier
 __all__ = [
     "SqlAlchemyAssessmentAudit",
     "SqlAlchemyAssessmentStore",
+    "SqlAlchemyDirectoryAuthorizationCache",
+    "SqlAlchemyDirectoryAuthorizationCacheAudit",
+    "SqlAlchemyDirectoryAuthorizationCacheReader",
+    "SqlAlchemyDirectoryAuthorizationCacheTransaction",
     "SqlAlchemyEvidenceAudit",
     "SqlAlchemyEvidenceStore",
     "SqlAlchemyInitiativeControlContextStore",

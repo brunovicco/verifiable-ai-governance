@@ -90,7 +90,14 @@ Roles ou object IDs presentes no catálogo YAML tenant-specific, nunca de nomes 
 `department`. A decisão retorna catálogo, versão, digest e mapping IDs; aprovações
 persistem essa provenance na cadeia de auditoria. O padrão empacotado é vazio e alterações podem
 ser fornecidas por configuração externa. O plano detalhado está em
-`MICROSOFT_ENTRA_GRAPH_PLAN.md`; as decisões estão nos ADRs 0011 a 0016.
+`MICROSOFT_ENTRA_GRAPH_PLAN.md`.
+
+Snapshots de autorização já derivados usam o PostgreSQL como cache compartilhado entre
+réplicas. O núcleo exige TTL não expirado, digest do catálogo atual e ausência de uma
+invalidação posterior à resolução. O cache contém somente áreas, mapping IDs e
+provenance; token, perfil e object IDs de grupos nunca são armazenados. Uma invalidação
+administrativa limpa o snapshot e grava evidência hash-chained na mesma transação. As
+decisões estão nos ADRs 0011 a 0017.
 
 ### Assessments estruturados
 
@@ -236,6 +243,8 @@ erDiagram
 - conteúdo de prompts e documentos não deve entrar na trilha operacional por padrão.
 - snapshots de revisão herdam retenção e proteção do banco e não são retornados no
   histórico resumido.
+- snapshots de autorização são derivados, têm TTL máximo de cinco minutos e não
+  contêm perfil, token ou associações brutas de grupos.
 
 ## Portas de integração futuras
 

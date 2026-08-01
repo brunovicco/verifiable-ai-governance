@@ -117,7 +117,8 @@ estático. Nenhuma credencial Entra será armazenada no repositório.
 ## Disponibilidade e comportamento fail-closed
 
 - autenticação e validação do token não dependem de uma chamada ao Graph por request;
-- perfil e associações usam cache com TTL curto e invalidação auditável;
+- capacidades derivadas de perfil e associações usam cache compartilhado com TTL curto
+  e invalidação auditável;
 - throttling respeita `Retry-After`, com retry limitado e jitter;
 - aprovação de gate falha de forma fechada quando a capacidade não puder ser resolvida
   com dados suficientemente recentes;
@@ -148,8 +149,10 @@ implementados. O adapter Graph possui `$select` mínimo, grupos transitivos, pag
 com destino validado, timeout, retry limitado para leituras idempotentes, jitter e
 eventos operacionais sem conteúdo. O catálogo versionado App Role/object ID também está
 implementado com provenance auditável. Claims completos de grupos e os indicadores de
-group overage são tratados sem seguir `_claim_sources`. Validação contra tenant real,
-cache, revogação e assurance permanecem pendentes.
+group overage são tratados sem seguir `_claim_sources`. O cache PostgreSQL de
+capacidades derivadas possui TTL explícito, binding ao digest do catálogo e invalidação
+administrativa distribuída. Validação contra tenant real, revogação de sessão/acesso e
+assurance permanecem pendentes.
 
 ### Fase 1 — Fundação Entra
 
@@ -172,7 +175,7 @@ cache, revogação e assurance permanecem pendentes.
 - [x] perfil `/me` com `$select` mínimo;
 - [x] associações transitivas de grupos;
 - [x] retry limitado com jitter e monitoramento básico de throttling;
-- [ ] cache curto com freshness explícita e invalidação distribuída.
+- [x] cache curto com freshness explícita e invalidação distribuída.
 
 ### Fase 4 — Mapeamento governado
 
@@ -180,14 +183,16 @@ cache, revogação e assurance permanecem pendentes.
 - [x] workflow de alteração como código com IAM, Segurança e Governança de IA;
 - [x] endpoint de identidade com área organizacional, capacidades e provenance;
 - [x] provenance do catálogo no evento auditável de decisão;
-- [ ] auditoria de sincronização, cache e revogação.
+- [x] auditoria minimizada de invalidação do cache.
+- [ ] auditoria de sincronização e revogação no provedor.
 
 ### Fase 5 — Assurance
 
 - [x] testes de group overage e grupos aninhados;
 - [ ] testes de guest e usuário desabilitado contra tenant real;
 - [x] testes determinísticos de Graph `429/5xx` e esgotamento do retry;
-- [ ] testes de remoção de grupo, cache expirado e rotação de chave;
+- [x] testes determinísticos de cache expirado e invalidação concorrente;
+- [ ] testes de remoção de grupo e rotação de chave contra tenant real;
 - revisão de consentimentos e least privilege;
 - monitoramento de falhas, latência, stale identity e mappings sem owner.
 

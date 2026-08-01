@@ -5,14 +5,42 @@ from fastapi import APIRouter
 from ai_governance_api.dependencies import (
     CurrentAuthorizedPrincipal,
     CurrentCorporateDirectoryProfile,
+    CurrentPrincipal,
+    InvalidateDirectoryAuthorizationDependency,
 )
 from ai_governance_api.schemas import (
     AuthorizationProvenanceRead,
     CorporateDirectoryProfileRead,
+    DirectoryAuthorizationCacheInvalidationRead,
+    DirectoryAuthorizationCacheInvalidationRequest,
     PrincipalRead,
 )
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
+
+
+@router.post(
+    "/directory-authorization-cache/invalidate",
+    response_model=DirectoryAuthorizationCacheInvalidationRead,
+)
+async def invalidate_directory_authorization_cache(
+    request: DirectoryAuthorizationCacheInvalidationRequest,
+    principal: CurrentPrincipal,
+    command: InvalidateDirectoryAuthorizationDependency,
+) -> DirectoryAuthorizationCacheInvalidationRead:
+    """Invalidate one Entra authorization snapshot through an audited admin action."""
+    invalidation = await command.execute(
+        tenant_id=str(request.tenant_id),
+        object_id=str(request.object_id),
+        reason=request.reason,
+        reference=request.reference,
+        actor=principal,
+    )
+    return DirectoryAuthorizationCacheInvalidationRead(
+        cache_entry_id=invalidation.key.entry_id,
+        invalidated_at=invalidation.invalidated_at,
+        version=invalidation.version,
+    )
 
 
 @router.get("/me", response_model=PrincipalRead)

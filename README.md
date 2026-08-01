@@ -156,6 +156,11 @@ do claim `OIDC_ENTRA_APP_ROLES_CLAIM` e object IDs transitivos do Graph somente 
 Object IDs completos do claim `OIDC_ENTRA_GROUPS_CLAIM` também podem alimentar o
 catálogo. Quando o token sinaliza group overage, esses valores são ignorados e a
 resolução usa apenas o endpoint Graph construído pela aplicação.
+Decisões corporativas derivadas usam cache compartilhado no PostgreSQL por no máximo
+`DIRECTORY_AUTHORIZATION_CACHE_TTL_SECONDS` (60 segundos por padrão). O snapshot é
+reutilizado somente quando não expirou, não foi invalidado e continua vinculado ao
+digest do catálogo carregado. Tokens, perfil e object IDs de grupos não são persistidos
+nesse cache.
 
 Assinatura, issuer, audience, expiração, emissão e subject são obrigatoriamente
 validados. Algoritmos simétricos não são aceitos. A obtenção de JWKS possui timeout e
@@ -192,6 +197,10 @@ podem convertê-los em capacidades.
 catálogo versionado produz provenance no endpoint e na auditoria de decisões.
 Departamento e nomes de grupos não concedem autorização. Consulte também o
 [runbook Graph OBO](docs/operations/MICROSOFT_GRAPH_OBO_SETUP.md).
+Administradores podem descartar o snapshot de uma identidade em todas as réplicas pelo
+endpoint auditado `POST /api/v1/auth/directory-authorization-cache/invalidate`; essa
+operação força nova resolução, mas não substitui a revogação da conta, sessão, App Role
+ou grupo no Microsoft Entra ID.
 Consulte o [plano Entra/Graph](docs/architecture/MICROSOFT_ENTRA_GRAPH_PLAN.md).
 
 ## Organização

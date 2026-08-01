@@ -100,12 +100,20 @@ Para revogar capacidade:
 2. incremente as versões;
 3. conclua revisão emergencial conforme o processo de acesso;
 4. publique e reinicie o deployment;
-5. valide que a área desapareceu e a decisão é negada.
+5. o novo digest torna os snapshots anteriores inelegíveis;
+6. valide que a área desapareceu e a decisão é negada.
 
 Rollback significa republicar uma versão anteriormente aprovada do arquivo, nunca
-editar a trilha Git. Até existir cache de identidade, a aplicação reavalia o catálogo
-carregado pelo processo e o Graph nas rotas sensíveis. Cache, invalidação urgente e SLA
-de revogação pertencem à próxima etapa.
+editar a trilha Git.
+
+Para forçar revalidação imediata de uma única identidade, um administrador chama
+`POST /api/v1/auth/directory-authorization-cache/invalidate` com `tenant_id`,
+`object_id`, um motivo enumerado e uma referência opcional de ticket. A operação limpa
+o snapshot no PostgreSQL e grava evento auditável na mesma transação, sem copiar os IDs
+do alvo para o payload do evento. O tenant deve constar em
+`OIDC_ALLOWED_TENANT_IDS`. A próxima operação sensível precisa obter um novo resultado
+confiável. Isso não remove App Role, grupo, sessão ou conta no Entra; a revogação
+definitiva continua sob responsabilidade de IAM.
 
 ## Validação mínima
 
