@@ -61,3 +61,14 @@ Contexto → Risco → Controles → Aprovações → Evidências → Operação
 - nenhuma iniciativa é aprovada com gate obrigatório pendente ou rejeitado;
 - cada decisão possui justificativa, evidência referenciada e evento de auditoria;
 - uma alteração concorrente com versão desatualizada é rejeitada.
+
+## Direção de identidade corporativa
+
+O primeiro adapter corporativo planejado usará Microsoft Entra ID para login e
+Microsoft Graph para identificar automaticamente perfil, departamento e associações de
+grupo do usuário. A capacidade de aprovar continuará governada por um catálogo
+versionado de App Roles/object IDs para áreas, preservando menor privilégio e
+independência do domínio em relação ao fornecedor.
+
+O desenho, fases e critérios de aceite estão em
+`docs/architecture/MICROSOFT_ENTRA_GRAPH_PLAN.md`.

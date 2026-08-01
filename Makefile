@@ -1,4 +1,4 @@
-.PHONY: setup dev dev-api dev-web test lint format build quality migrate compose-up compose-down
+.PHONY: setup dev dev-api dev-web test lint format build quality migrate compose-up compose-down oidc-up oidc-verify oidc-down
 
 setup:
 	uv sync --all-packages
@@ -41,3 +41,12 @@ compose-up:
 
 compose-down:
 	docker compose down
+
+oidc-up:
+	docker compose -f docker-compose.yml -f docker-compose.oidc.yml up --build -d postgres keycloak api
+
+oidc-verify:
+	uv run python scripts/validate_oidc.py
+
+oidc-down:
+	docker compose -f docker-compose.yml -f docker-compose.oidc.yml down

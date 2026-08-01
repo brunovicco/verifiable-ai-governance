@@ -11,6 +11,8 @@ flowchart LR
   A --> S[("Object storage privado")]
   A --> C["ClamAV"]
   A --> O["Provedor OIDC"]
+  O -. "implementação corporativa planejada" .-> E["Microsoft Entra ID"]
+  A -. "perfil e grupos via OBO" .-> G["Microsoft Graph"]
   A -. futuro .-> R["Runtime governance adapters"]
   R -.-> PMR["policy-model-router"]
   R -.-> OTEL["a2a-otel-kit"]
@@ -42,6 +44,29 @@ compatível sem alterar o caso de uso (Dependency Inversion).
 Erros esperados usam categorias de aplicação estáveis e são traduzidos para HTTP apenas
 na borda. Configuração de deploy é imutável, fornecida pelo ambiente e validada de forma
 fail-closed antes de servir tráfego.
+
+### Identidade e autenticação
+
+O domínio contém apenas a identidade imutável e as regras de mapeamento de claims. O
+caso de uso depende de uma porta `TokenVerifier`; o adapter PyJWT implementa validação
+criptográfica por JWKS; FastAPI apenas converte bearer credentials e erros tipados para
+HTTP. A busca síncrona e cacheada de chaves executa fora do event loop.
+
+Issuer, audience, JWKS URL, algoritmos, claims, timeouts e limites vêm do ambiente. A
+configuração aceita somente algoritmos assimétricos conhecidos, exige TLS fora de local
+e teste e não deriva endpoints do provedor. Tokens precisam conter `exp`, `iat` e `sub`.
+Somente o booleano JSON `true` concede administração; papéis desconhecidos não se
+transformam em áreas de aprovação.
+
+O compose OIDC opcional importa um realm Keycloak declarativo para validar emissão real,
+audience, grupos e rejeição de credenciais ausentes ou adulteradas. Essa implementação
+de teste não acopla o runtime ao Keycloak.
+
+A implementação corporativa planejada usa Microsoft Entra ID no login e Microsoft
+Graph via OBO para identificar perfil, departamento e associações transitivas. O
+domínio continuará dependente de portas próprias. Autorizações serão derivadas de App
+Roles ou object IDs de grupos mapeados, nunca de nomes ou do atributo `department`. O
+plano detalhado está em `MICROSOFT_ENTRA_GRAPH_PLAN.md`.
 
 ### Assessments estruturados
 
@@ -116,6 +141,12 @@ PostgreSQL mantém o estado transacional. Entidades mutáveis possuem `version`;
 de decisão exigem `expected_version`. Eventos de auditoria são append-only e encadeados
 por hash para tornar alterações posteriores detectáveis.
 
+No Compose, um processo one-shot executa `alembic upgrade head` depois que PostgreSQL
+fica saudável. A API depende da conclusão bem-sucedida desse processo e usa
+`AUTO_CREATE_SCHEMA=false`; falha ou drift interrompem o startup em vez de permitir que
+um modelo ORM mais novo consulte um schema persistente antigo. `create_all` permanece
+apenas como conveniência local explicitamente opt-in, nunca como mecanismo de upgrade.
+
 ### Evidências anexadas
 
 Uploads passam por um pipeline fail-closed independente do transporte: leitura
@@ -161,6 +192,7 @@ erDiagram
 - o navegador não é confiável para autorização ou transição de estado;
 - identidade local só existe quando `APP_ENV=local` e exige header explícito;
 - fora de local, a configuração sem OIDC é recusada na inicialização;
+- tokens OIDC são limitados, validados contra issuer/audience/assinatura e nunca logados;
 - uma declaração de agente não equivale a evidência confiável;
 - referências de evidência informadas por humanos começam como `trusted_source=false`;
 - uploads só se tornam `trusted_source=true` depois de validação e scan limpo;
@@ -172,6 +204,7 @@ erDiagram
 
 | Integração | Entrada esperada | Evidência produzida |
 |---|---|---|
+| Microsoft Entra ID/Graph | token, perfil e object IDs delegados | identidade, área e provenance do mapeamento |
 | `policy-model-router` | contexto de risco e classe de dado | decisão, policy digest e rejeições |
 | `a2a-otel-kit` | spans/eventos sanitizados | correlação de modelos, agentes, A2A e MCP |
 | `engineering-loop-schemas` | contrato, execução e veredito | evidência independente vinculada ao artefato |

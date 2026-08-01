@@ -27,9 +27,10 @@ from ai_governance_api.application import (
     SubmitAssessment,
     UploadEvidence,
 )
-from ai_governance_api.auth import Principal, get_principal
+from ai_governance_api.auth import get_principal
 from ai_governance_api.config import get_settings
 from ai_governance_api.database import get_db
+from ai_governance_api.domain.identity import Principal
 from ai_governance_api.services import InitiativeService, InventoryService, PolicyEvaluator
 
 DatabaseSession = Annotated[AsyncSession, Depends(get_db)]

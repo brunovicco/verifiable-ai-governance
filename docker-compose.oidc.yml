@@ -1,0 +1,30 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.0@sha256:0f198be292568439d700cdbfb893e69a6009bb43a94a06a945b1d3d506c76b13
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-local-only-admin}
+      KC_HOSTNAME: http://localhost:${KEYCLOAK_PORT:-8081}
+    ports:
+      - "127.0.0.1:${KEYCLOAK_PORT:-8081}:8080"
+    volumes:
+      - ./ops/keycloak/ai-governance-realm.json:/opt/keycloak/data/import/ai-governance-realm.json:ro
+
+  api:
+    environment:
+      DEV_AUTH_ENABLED: "false"
+      OIDC_ENABLED: "true"
+      OIDC_ISSUER: http://localhost:${KEYCLOAK_PORT:-8081}/realms/ai-governance
+      OIDC_JWKS_URL: http://keycloak:8080/realms/ai-governance/protocol/openid-connect/certs
+      OIDC_AUDIENCE: ai-governance-api
+      OIDC_ALGORITHMS: RS256
+      OIDC_GROUPS_CLAIM: governance_areas
+      OIDC_ADMIN_CLAIM: governance_admin
+    depends_on: !override
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      keycloak:
+        condition: service_started

@@ -1,0 +1,46 @@
+from pathlib import Path
+from typing import Any, cast
+
+import yaml
+
+ROOT = Path(__file__).resolve().parents[3]
+CLAMAV_MULTI_ARCH_IMAGE = (
+    "clamav/clamav-debian:1.4.5@"
+    "sha256:50296b62b23764b474be18310521f64a720524d69334ea5236aab5fac44ff993"
+)
+
+
+def test_clamav_image_is_pinned_to_official_multi_arch_index() -> None:
+    compose = cast(
+        dict[str, Any],
+        yaml.safe_load((ROOT / "docker-compose.yml").read_text(encoding="utf-8")),
+    )
+
+    scanner = compose["services"]["malware-scanner"]
+
+    assert scanner["image"] == CLAMAV_MULTI_ARCH_IMAGE
+    assert scanner["ports"] == ["127.0.0.1:${CLAMAV_PORT:-3310}:3310"]
+    assert scanner["volumes"] == ["governance-clamav:/var/lib/clamav"]
+
+
+def test_api_waits_for_explicit_successful_migration() -> None:
+    compose = cast(
+        dict[str, Any],
+        yaml.safe_load((ROOT / "docker-compose.yml").read_text(encoding="utf-8")),
+    )
+
+    migration = compose["services"]["migrate"]
+    api = compose["services"]["api"]
+
+    assert migration["command"] == [
+        "alembic",
+        "-c",
+        "/workspace/alembic.ini",
+        "upgrade",
+        "head",
+    ]
+    assert migration["environment"]["AUTO_CREATE_SCHEMA"] == "false"
+    assert api["environment"]["AUTO_CREATE_SCHEMA"] == "false"
+    assert api["depends_on"]["migrate"] == {
+        "condition": "service_completed_successfully"
+    }

@@ -27,6 +27,8 @@ obrigações aplicáveis; não os substitui nem declara conformidade automaticam
 - supervisão humana efetiva, com autoridade e tempo para intervir;
 - contestabilidade e remediação quando houver impacto material;
 - menor privilégio para modelos, agentes, ferramentas e integrações;
+- identidade corporativa automática com autorização derivada de mapeamentos explícitos,
+  versionados e auditáveis do diretório;
 - decisões versionadas, explicáveis e apoiadas por evidência;
 - promoção fail-closed e reversão segura;
 - monitoramento proporcional ao risco durante todo o ciclo de vida.

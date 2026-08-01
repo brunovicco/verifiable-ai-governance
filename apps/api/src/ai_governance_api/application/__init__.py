@@ -8,6 +8,13 @@ from ai_governance_api.application.assessments import (
     SubmitAssessment,
     TransactionPort,
 )
+from ai_governance_api.application.authentication import (
+    AuthenticateAccessToken,
+    AuthenticationError,
+    IdentityProviderUnavailable,
+    InvalidAccessToken,
+    TokenVerifier,
+)
 from ai_governance_api.application.controls import (
     ControlCatalogPort,
     EvaluateInitiativeControls,
@@ -29,6 +36,8 @@ from ai_governance_api.application.evidence import (
 )
 
 __all__ = [
+    "AuthenticateAccessToken",
+    "AuthenticationError",
     "AssessmentAuditPort",
     "AssessmentStore",
     "BinaryContent",
@@ -41,6 +50,8 @@ __all__ = [
     "EvidenceStore",
     "EvidenceTransactionPort",
     "InitiativeControlContextStore",
+    "IdentityProviderUnavailable",
+    "InvalidAccessToken",
     "ListAssessments",
     "ListControlCatalog",
     "ListEvidence",
@@ -49,5 +60,6 @@ __all__ = [
     "SaveAssessment",
     "SubmitAssessment",
     "TransactionPort",
+    "TokenVerifier",
     "UploadEvidence",
 ]
