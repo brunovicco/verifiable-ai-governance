@@ -8,6 +8,8 @@ flowchart LR
   W --> A["API FastAPI"]
   A --> P["Policy engine determinístico"]
   A --> D[(PostgreSQL)]
+  A --> S[("Object storage privado")]
+  A --> C["ClamAV"]
   A --> O["Provedor OIDC"]
   A -. futuro .-> R["Runtime governance adapters"]
   R -.-> PMR["policy-model-router"]
@@ -98,6 +100,19 @@ PostgreSQL mantém o estado transacional. Entidades mutáveis possuem `version`;
 de decisão exigem `expected_version`. Eventos de auditoria são append-only e encadeados
 por hash para tornar alterações posteriores detectáveis.
 
+### Evidências anexadas
+
+Uploads passam por um pipeline fail-closed independente do transporte: leitura
+limitada, validação de tipo e assinatura, SHA-256, scan ClamAV, storage S3 privado e
+persistência transacional dos metadados e evento de auditoria. O nome original é apenas
+metadado de exibição; a chave do objeto é gerada pela aplicação. Se a transação falhar,
+o objeto é removido por compensação. A API não expõe coordenadas internas do storage.
+
+Referências URI informadas durante uma decisão continuam separadas e não recebem o
+status de artefato verificado. Configuração de tamanho, tipos, serviços, timeouts,
+bucket e criptografia vem do ambiente; fora de local, criação automática de bucket é
+recusada e criptografia server-side é obrigatória.
+
 ### Inventário operacional
 
 Uma iniciativa em estado `approved` pode originar um ou mais sistemas. A criação é
@@ -130,6 +145,7 @@ erDiagram
 - fora de local, a configuração sem OIDC é recusada na inicialização;
 - uma declaração de agente não equivale a evidência confiável;
 - referências de evidência informadas por humanos começam como `trusted_source=false`;
+- uploads só se tornam `trusted_source=true` depois de validação e scan limpo;
 - conteúdo de prompts e documentos não deve entrar na trilha operacional por padrão.
 
 ## Portas de integração futuras

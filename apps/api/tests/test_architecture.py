@@ -96,6 +96,9 @@ def test_production_accepts_explicit_fail_closed_configuration() -> None:
         auto_create_schema=False,
         audit_hash_salt="production-secret",
         cors_origins="https://governance.example.com",
+        object_storage_auto_create_bucket=False,
+        object_storage_server_side_encryption="AES256",
+        object_storage_endpoint_url="https://s3.example.com",
     )
 
     assert settings.app_version == "2026.07.31"
@@ -108,9 +111,11 @@ def test_production_accepts_explicit_fail_closed_configuration() -> None:
         "domain/assessments.py",
         "application/assessments.py",
         "application/controls.py",
+        "domain/evidence.py",
+        "application/evidence.py",
     ],
 )
-def test_assessment_core_does_not_import_delivery_or_persistence_frameworks(
+def test_application_core_does_not_import_delivery_or_persistence_frameworks(
     relative_path: str,
 ) -> None:
     source = (API_SOURCE / relative_path).read_text(encoding="utf-8")

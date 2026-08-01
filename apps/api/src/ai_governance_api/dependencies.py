@@ -8,8 +8,12 @@ from policy_engine import GovernanceControlCatalog, GovernancePolicyEngine
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_governance_api.adapters import (
+    ClamAVScanner,
+    S3ObjectStorage,
     SqlAlchemyAssessmentAudit,
     SqlAlchemyAssessmentStore,
+    SqlAlchemyEvidenceAudit,
+    SqlAlchemyEvidenceStore,
     SqlAlchemyInitiativeControlContextStore,
     SqlAlchemyTransaction,
 )
@@ -18,8 +22,10 @@ from ai_governance_api.application import (
     EvaluateInitiativeControls,
     ListAssessments,
     ListControlCatalog,
+    ListEvidence,
     SaveAssessment,
     SubmitAssessment,
+    UploadEvidence,
 )
 from ai_governance_api.auth import Principal, get_principal
 from ai_governance_api.config import get_settings
@@ -120,3 +126,63 @@ EvaluateInitiativeControlsDependency = Annotated[
     EvaluateInitiativeControls,
     Depends(get_evaluate_initiative_controls),
 ]
+
+
+@lru_cache
+def get_malware_scanner() -> ClamAVScanner:
+    """Build the process-wide mandatory malware scanner adapter."""
+    settings = get_settings()
+    return ClamAVScanner(
+        host=settings.malware_scanner_host,
+        port=settings.malware_scanner_port,
+        connect_timeout_seconds=settings.malware_scanner_connect_timeout_seconds,
+        scan_timeout_seconds=settings.malware_scanner_scan_timeout_seconds,
+    )
+
+
+@lru_cache
+def get_object_storage() -> S3ObjectStorage:
+    """Build the process-wide S3-compatible evidence storage adapter."""
+    settings = get_settings()
+    return S3ObjectStorage(
+        bucket=settings.object_storage_bucket,
+        region=settings.object_storage_region,
+        endpoint_url=settings.object_storage_endpoint_url,
+        access_key=settings.object_storage_access_key,
+        secret_key=settings.object_storage_secret_key,
+        auto_create_bucket=settings.object_storage_auto_create_bucket,
+        server_side_encryption=settings.object_storage_server_side_encryption,
+        connect_timeout_seconds=settings.object_storage_connect_timeout_seconds,
+        read_timeout_seconds=settings.object_storage_read_timeout_seconds,
+    )
+
+
+MalwareScannerDependency = Annotated[ClamAVScanner, Depends(get_malware_scanner)]
+ObjectStorageDependency = Annotated[S3ObjectStorage, Depends(get_object_storage)]
+
+
+def get_upload_evidence(
+    session: DatabaseSession,
+    scanner: MalwareScannerDependency,
+    object_storage: ObjectStorageDependency,
+) -> UploadEvidence:
+    """Build the secure upload use case at the composition root."""
+    settings = get_settings()
+    return UploadEvidence(
+        SqlAlchemyEvidenceStore(session),
+        scanner,
+        object_storage,
+        SqlAlchemyEvidenceAudit(session),
+        SqlAlchemyTransaction(session),
+        max_bytes=settings.evidence_max_bytes,
+        allowed_content_types=settings.evidence_allowed_content_type_set,
+    )
+
+
+def get_list_evidence(session: DatabaseSession) -> ListEvidence:
+    """Build the uploaded evidence metadata query."""
+    return ListEvidence(SqlAlchemyEvidenceStore(session))
+
+
+UploadEvidenceDependency = Annotated[UploadEvidence, Depends(get_upload_evidence)]
+ListEvidenceDependency = Annotated[ListEvidence, Depends(get_list_evidence)]

@@ -132,7 +132,7 @@ class SqlAlchemyAssessmentAudit:
 
 
 class SqlAlchemyTransaction:
-    """Commit assessment state and audit events atomically."""
+    """Manage an application transaction through a request-scoped session."""
 
     def __init__(self, session: AsyncSession) -> None:
         """Initialize the transaction adapter with a request-scoped session."""
@@ -141,6 +141,10 @@ class SqlAlchemyTransaction:
     async def commit(self) -> None:
         """Commit all pending changes in the request transaction."""
         await self._session.commit()
+
+    async def rollback(self) -> None:
+        """Discard pending changes after a failed multi-resource operation."""
+        await self._session.rollback()
 
 
 def _serialize_answers(answers: AssessmentAnswers) -> dict[str, Any]:

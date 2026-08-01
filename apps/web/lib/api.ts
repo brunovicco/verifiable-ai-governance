@@ -3,6 +3,8 @@ import type {
   AISystem,
   Assessment,
   AssessmentKind,
+  Evidence,
+  EvidenceKind,
   InitiativeControlReport,
   Identity,
   Initiative,
@@ -26,15 +28,16 @@ async function request<T>(
   options: RequestInit = {},
   identity: Identity = DEMO_REQUESTER,
 ): Promise<T> {
+  const headers = new Headers(options.headers);
+  if (!(options.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
+  headers.set("X-User-Id", identity.userId);
+  headers.set("X-User-Areas", identity.areas?.join(",") ?? "");
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     cache: "no-store",
-    headers: {
-      "Content-Type": "application/json",
-      "X-User-Id": identity.userId,
-      "X-User-Areas": identity.areas?.join(",") ?? "",
-      ...options.headers,
-    },
+    headers,
   });
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as { detail?: unknown };
@@ -73,6 +76,24 @@ export function listAssessments(initiativeId: string): Promise<Assessment[]> {
 
 export function getInitiativeControls(initiativeId: string): Promise<InitiativeControlReport> {
   return request(`/api/v1/initiatives/${initiativeId}/controls`);
+}
+
+export function listEvidence(initiativeId: string): Promise<Evidence[]> {
+  return request(`/api/v1/initiatives/${initiativeId}/evidence`);
+}
+
+export function uploadEvidence(
+  initiativeId: string,
+  kind: EvidenceKind,
+  file: File,
+): Promise<Evidence> {
+  const body = new FormData();
+  body.set("kind", kind);
+  body.set("file", file);
+  return request(`/api/v1/initiatives/${initiativeId}/evidence`, {
+    method: "POST",
+    body,
+  });
 }
 
 export function saveAssessment(

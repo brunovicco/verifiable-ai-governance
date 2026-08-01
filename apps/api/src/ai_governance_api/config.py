@@ -48,6 +48,26 @@ class Settings(BaseSettings):
     audit_hash_salt: str = Field(default="local-development-only", repr=False)
     control_catalog_path: str = ""
 
+    evidence_max_bytes: int = Field(default=10 * 1024 * 1024, ge=1, le=50 * 1024 * 1024)
+    evidence_request_overhead_bytes: int = Field(default=64 * 1024, ge=4096, le=1024 * 1024)
+    evidence_allowed_content_types: str = (
+        "application/pdf,image/png,image/jpeg,text/plain,text/csv,application/json"
+    )
+    malware_scanner_host: str = "localhost"
+    malware_scanner_port: int = Field(default=3310, ge=1, le=65535)
+    malware_scanner_connect_timeout_seconds: float = Field(default=2.0, gt=0, le=30)
+    malware_scanner_scan_timeout_seconds: float = Field(default=30.0, gt=0, le=120)
+
+    object_storage_endpoint_url: str = "http://localhost:9000"
+    object_storage_region: str = "us-east-1"
+    object_storage_bucket: str = "governance-evidence"
+    object_storage_access_key: str = Field(default="", repr=False)
+    object_storage_secret_key: str = Field(default="", repr=False)
+    object_storage_auto_create_bucket: bool = True
+    object_storage_server_side_encryption: str = ""
+    object_storage_connect_timeout_seconds: float = Field(default=2.0, gt=0, le=30)
+    object_storage_read_timeout_seconds: float = Field(default=30.0, gt=0, le=120)
+
     @property
     def cors_origin_list(self) -> list[str]:
         """Return normalized CORS origins from the comma-separated setting."""
@@ -59,6 +79,15 @@ class Settings(BaseSettings):
         return [
             algorithm.strip() for algorithm in self.oidc_algorithms.split(",") if algorithm.strip()
         ]
+
+    @property
+    def evidence_allowed_content_type_set(self) -> frozenset[str]:
+        """Return the normalized evidence media-type allowlist."""
+        return frozenset(
+            content_type.strip().lower()
+            for content_type in self.evidence_allowed_content_types.split(",")
+            if content_type.strip()
+        )
 
     @model_validator(mode="after")
     def validate_authentication(self) -> "Settings":
@@ -84,6 +113,20 @@ class Settings(BaseSettings):
             raise ValueError("Wildcard CORS origins are not allowed outside local environments")
         if self.cors_allow_credentials and "*" in self.cors_origin_list:
             raise ValueError("Credentialed CORS cannot use a wildcard origin")
+        if not self.evidence_allowed_content_type_set:
+            raise ValueError("EVIDENCE_ALLOWED_CONTENT_TYPES must not be empty")
+        if bool(self.object_storage_access_key) != bool(self.object_storage_secret_key):
+            raise ValueError("Object-storage access and secret keys must be configured together")
+        if not is_local and self.object_storage_auto_create_bucket:
+            raise ValueError("OBJECT_STORAGE_AUTO_CREATE_BUCKET must be false outside local")
+        if not is_local and not self.object_storage_server_side_encryption:
+            raise ValueError("Object-storage encryption is required outside local")
+        if (
+            not is_local
+            and self.object_storage_endpoint_url
+            and not self.object_storage_endpoint_url.startswith("https://")
+        ):
+            raise ValueError("Explicit object-storage endpoints must use HTTPS outside local")
         return self
 
 
