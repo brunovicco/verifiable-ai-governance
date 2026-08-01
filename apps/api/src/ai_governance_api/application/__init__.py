@@ -21,6 +21,16 @@ from ai_governance_api.application.controls import (
     InitiativeControlContextStore,
     ListControlCatalog,
 )
+from ai_governance_api.application.corporate_directory import (
+    CorporateDirectoryError,
+    CorporateDirectoryIdentityMismatch,
+    CorporateDirectoryNotApplicable,
+    CorporateDirectoryPort,
+    CorporateDirectoryProfile,
+    CorporateDirectoryResponseInvalid,
+    CorporateDirectoryUnavailable,
+    ResolveCorporateDirectory,
+)
 from ai_governance_api.application.evidence import (
     BinaryContent,
     BinaryStaging,
@@ -43,6 +53,13 @@ __all__ = [
     "BinaryContent",
     "BinaryStaging",
     "ControlCatalogPort",
+    "CorporateDirectoryError",
+    "CorporateDirectoryIdentityMismatch",
+    "CorporateDirectoryNotApplicable",
+    "CorporateDirectoryPort",
+    "CorporateDirectoryProfile",
+    "CorporateDirectoryResponseInvalid",
+    "CorporateDirectoryUnavailable",
     "EvaluateInitiativeControls",
     "EvidenceAuditPort",
     "EvidenceDependencyError",
@@ -57,6 +74,7 @@ __all__ = [
     "ListEvidence",
     "MalwareScannerPort",
     "ObjectStoragePort",
+    "ResolveCorporateDirectory",
     "SaveAssessment",
     "SubmitAssessment",
     "TransactionPort",

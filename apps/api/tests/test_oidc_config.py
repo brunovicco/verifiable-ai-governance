@@ -1,4 +1,5 @@
 import pytest
+from ai_governance_api.application.corporate_directory import CorporateDirectoryProfile
 from ai_governance_api.config import AppEnvironment, Settings
 from ai_governance_api.domain.identity import (
     DirectoryAccountType,
@@ -137,6 +138,7 @@ async def test_current_identity_exposes_local_mapping(client: AsyncClient) -> No
         "tenant_id": None,
         "object_id": None,
         "account_type": None,
+        "directory_profile": None,
     }
 
 
@@ -152,8 +154,80 @@ async def test_current_identity_exposes_minimal_directory_provenance() -> None:
         ),
     )
 
-    response = await current_identity(principal)
+    response = await current_identity(principal, None)
 
     assert response.tenant_id == TENANT_ID
     assert response.object_id == "22222222-2222-4222-8222-222222222222"
     assert response.account_type is DirectoryAccountType.MEMBER
+
+
+async def test_current_identity_exposes_minimized_graph_profile() -> None:
+    principal = Principal(
+        user_id=f"{TENANT_ID}:22222222-2222-4222-8222-222222222222",
+        directory_identity=DirectoryIdentity(
+            tenant_id=TENANT_ID,
+            object_id="22222222-2222-4222-8222-222222222222",
+            account_type=DirectoryAccountType.MEMBER,
+        ),
+    )
+    graph_profile = CorporateDirectoryProfile(
+        tenant_id=TENANT_ID,
+        object_id="22222222-2222-4222-8222-222222222222",
+        display_name="Revisora de Segurança",
+        email_or_upn="reviewer@example.com",
+        department="Cyber Security",
+        user_type="Member",
+        group_object_ids=frozenset(
+            {
+                "33333333-3333-4333-8333-333333333333",
+                "44444444-4444-4444-8444-444444444444",
+            }
+        ),
+    )
+
+    response = await current_identity(principal, graph_profile)
+
+    assert response.directory_profile is not None
+    assert response.directory_profile.department == "Cyber Security"
+    assert "33333333-3333-4333-8333-333333333333" not in response.model_dump_json()
+    assert "group_count" not in response.model_dump_json()
+
+
+def test_graph_enrichment_requires_entra_oidc_and_confidential_client() -> None:
+    with pytest.raises(ValidationError, match="OIDC_ENABLED=true"):
+        Settings(microsoft_graph_enabled=True)
+
+    entra_values = {
+        "oidc_enabled": True,
+        "oidc_identity_mode": "entra",
+        "oidc_allowed_tenant_ids": TENANT_ID,
+        "oidc_issuer": f"https://login.microsoftonline.com/{TENANT_ID}/v2.0",
+        "oidc_jwks_url": (
+            f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
+        ),
+    }
+    with pytest.raises(ValidationError, match="CLIENT_ID must be a UUID"):
+        Settings(**entra_values, microsoft_graph_enabled=True)
+    with pytest.raises(ValidationError, match="CLIENT_SECRET is required"):
+        Settings(
+            **entra_values,
+            microsoft_graph_enabled=True,
+            microsoft_graph_client_id="55555555-5555-4555-8555-555555555555",
+        )
+
+
+def test_graph_secret_is_excluded_from_settings_representation() -> None:
+    settings = Settings(
+        oidc_enabled=True,
+        oidc_identity_mode="entra",
+        oidc_allowed_tenant_ids=TENANT_ID,
+        oidc_issuer=f"https://login.microsoftonline.com/{TENANT_ID}/v2.0",
+        oidc_jwks_url=(
+            f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
+        ),
+        microsoft_graph_enabled=True,
+        microsoft_graph_client_id="55555555-5555-4555-8555-555555555555",
+        microsoft_graph_client_secret="super-secret-value",
+    )
+
+    assert "super-secret-value" not in repr(settings)

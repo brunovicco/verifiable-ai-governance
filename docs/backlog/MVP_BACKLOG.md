@@ -19,7 +19,7 @@
 - [x] Adapter do portal via Microsoft Entra ID, authorization code com PKCE e cache de sessão.
 - [ ] Validação do login contra tenant Entra real e Conditional Access.
 - [x] Identidade corporativa por `(tid, oid)`, tenant allowlist e política para guests.
-- [ ] Microsoft Graph via OBO para perfil, `department` e grupos transitivos do usuário.
+- [x] Microsoft Graph via OBO para perfil, `department` e grupos transitivos do usuário.
 - [ ] Catálogo versionado de App Roles/object IDs Entra para áreas de aprovação.
 - [ ] Group overage, paginação, throttling, cache, revogação e stale identity fail-closed.
 - [ ] Model/agent registry com approved scope, região, versão e datas de revisão.

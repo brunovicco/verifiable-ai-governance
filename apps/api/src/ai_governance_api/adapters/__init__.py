@@ -11,6 +11,7 @@ from ai_governance_api.adapters.evidence_persistence import (
     SqlAlchemyEvidenceStore,
 )
 from ai_governance_api.adapters.malware import ClamAVScanner
+from ai_governance_api.adapters.microsoft_graph import MicrosoftGraphCorporateDirectory
 from ai_governance_api.adapters.object_storage import S3ObjectStorage
 from ai_governance_api.adapters.oidc import PyJwtOidcVerifier
 
@@ -22,6 +23,7 @@ __all__ = [
     "SqlAlchemyInitiativeControlContextStore",
     "SqlAlchemyTransaction",
     "ClamAVScanner",
+    "MicrosoftGraphCorporateDirectory",
     "PyJwtOidcVerifier",
     "S3ObjectStorage",
 ]

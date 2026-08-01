@@ -22,6 +22,16 @@ def _clean_strings(values: list[str]) -> list[str]:
     return sorted({value.strip() for value in values if value.strip()})
 
 
+class CorporateDirectoryProfileRead(BaseModel):
+    """Minimal Graph profile safe to expose to the authenticated user."""
+
+    display_name: str | None = None
+    email_or_upn: str | None = None
+    department: str | None = None
+    user_type: str | None = None
+    source: str = "microsoft_graph"
+
+
 class PrincipalRead(BaseModel):
     """Authenticated identity information safe to expose to its owner."""
 
@@ -32,6 +42,7 @@ class PrincipalRead(BaseModel):
     tenant_id: str | None = None
     object_id: str | None = None
     account_type: DirectoryAccountType | None = None
+    directory_profile: CorporateDirectoryProfileRead | None = None
 
 
 class ModelAssetCreate(BaseModel):

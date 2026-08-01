@@ -4,7 +4,13 @@ from ai_governance_api.application.authentication import (
     IdentityProviderUnavailable,
     InvalidAccessToken,
 )
+from ai_governance_api.application.corporate_directory import (
+    CorporateDirectoryProfile,
+    CorporateDirectoryResponseInvalid,
+    CorporateDirectoryUnavailable,
+)
 from ai_governance_api.config import OidcIdentityMode, Settings
+from ai_governance_api.dependencies import get_corporate_directory_profile
 from ai_governance_api.domain.identity import Principal
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
@@ -16,6 +22,22 @@ class FixedAuthenticator:
 
     def execute(self, token: str) -> Principal:
         assert token == "access-token"
+        if isinstance(self._result, Exception):
+            raise self._result
+        return self._result
+
+
+class FixedDirectoryResolver:
+    def __init__(self, result: CorporateDirectoryProfile | Exception) -> None:
+        self._result = result
+
+    async def execute(
+        self,
+        principal: Principal,
+        user_assertion: str,
+    ) -> CorporateDirectoryProfile:
+        assert principal.user_id == "corporate-reviewer"
+        assert user_assertion == "access-token"
         if isinstance(self._result, Exception):
             raise self._result
         return self._result
@@ -123,3 +145,36 @@ async def test_oidc_http_adapter_propagates_corporate_identity_policy(
     assert captured["allowed_tenant_ids"] == (TENANT_ID,)
     assert captured["issuer_tenant_id"] == TENANT_ID
     assert captured["guest_approvals_enabled"] is True
+
+
+async def test_disabled_directory_enrichment_does_not_require_bearer() -> None:
+    result = await get_corporate_directory_profile(
+        Principal(user_id="local-user"),
+        None,
+        None,
+    )
+
+    assert result is None
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        CorporateDirectoryUnavailable(retry_after_seconds=45),
+        CorporateDirectoryResponseInvalid("sensitive Graph response"),
+    ],
+)
+async def test_directory_errors_have_safe_http_mapping(error: Exception) -> None:
+    with pytest.raises(HTTPException) as caught:
+        await get_corporate_directory_profile(
+            Principal(user_id="corporate-reviewer"),
+            HTTPAuthorizationCredentials(scheme="Bearer", credentials="access-token"),
+            FixedDirectoryResolver(error),
+        )
+
+    assert caught.value.status_code == 503
+    if isinstance(error, CorporateDirectoryUnavailable):
+        assert caught.value.detail == "Corporate directory unavailable"
+        assert caught.value.headers == {"Retry-After": "45"}
+    else:
+        assert "sensitive Graph response" not in str(caught.value.detail)
