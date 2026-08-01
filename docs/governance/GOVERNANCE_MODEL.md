@@ -56,6 +56,13 @@ atribui um responsável identificável ao sistema; esse responsável controla o 
 de modelos e agentes. Modelos e agentes novos começam em `draft`, pois a aprovação da
 iniciativa não substitui avaliação, escopo aprovado ou baseline técnico do ativo.
 
+Arquitetura aprova o escopo de modelos e Segurança aprova o escopo de agentes, sempre
+com segregação entre owner e revisor. A decisão vincula versão, região, casos de uso,
+classes de dados, baseline ou limites de autonomia a um digest canônico e a uma data de
+revisão proporcional ao risco. Alterações materiais removem a aprovação; mudanças em
+modelos também invalidam agentes dependentes. Agentes só podem ser aprovados quando
+todos os modelos permitidos possuem revisão vigente.
+
 A exclusão física não faz parte do fluxo normal. Aposentar um sistema muda seu estado,
 desativa a indicação de produção, aposenta os ativos vinculados e registra evidência
 auditável. Alterações posteriores ficam bloqueadas.

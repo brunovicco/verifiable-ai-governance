@@ -138,6 +138,32 @@ class DirectoryAccessStateRead(BaseModel):
     version: int = Field(ge=1)
 
 
+class AssetReviewRequest(BaseModel):
+    """Versioned request for an independent operational-asset review."""
+
+    expected_version: int = Field(ge=1)
+    next_review_at: datetime
+    reference: str = Field(
+        min_length=1,
+        max_length=100,
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+    )
+
+    @field_validator("next_review_at")
+    @classmethod
+    def require_aware_next_review(cls, value: datetime) -> datetime:
+        """Reject timezone-dependent review deadlines."""
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("A próxima revisão deve incluir fuso horário.")
+        return value
+
+    @field_validator("reference")
+    @classmethod
+    def clean_reference(cls, value: str) -> str:
+        """Normalize the bounded ticket or decision reference."""
+        return value.strip()
+
+
 class ModelAssetCreate(BaseModel):
     """Input for registering a model asset."""
 
@@ -192,6 +218,8 @@ class AgentCreate(BaseModel):
     name: str = Field(min_length=2, max_length=200)
     purpose: str = Field(min_length=10, max_length=5000)
     owner_id: str | None = Field(default=None, min_length=3, max_length=200)
+    agent_version: str = Field(min_length=1, max_length=100)
+    deployment_region: str = Field(min_length=2, max_length=100)
     autonomy_level: AutonomyLevel
     allowed_models: list[str] = Field(default_factory=list)
     tools: list[str] = Field(default_factory=list)
@@ -215,6 +243,8 @@ class AgentUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=2, max_length=200)
     purpose: str | None = Field(default=None, min_length=10, max_length=5000)
     owner_id: str | None = Field(default=None, min_length=3, max_length=200)
+    agent_version: str | None = Field(default=None, min_length=1, max_length=100)
+    deployment_region: str | None = Field(default=None, min_length=2, max_length=100)
     autonomy_level: AutonomyLevel | None = None
     allowed_models: list[str] | None = None
     tools: list[str] | None = None
@@ -273,10 +303,20 @@ class RetirementRequest(BaseModel):
     reason: str = Field(min_length=10, max_length=2000)
 
 
-class ModelAssetRead(BaseModel):
-    """Serialized model asset returned by the API."""
+class ReviewableAssetRead(BaseModel):
+    """Shared current-review evidence exposed for registry assets."""
 
     model_config = ConfigDict(from_attributes=True)
+
+    approved_scope_digest: str | None
+    reviewed_by: str | None
+    reviewed_at: datetime | None
+    next_review_at: datetime | None
+    review_reference: str | None
+
+
+class ModelAssetRead(ReviewableAssetRead):
+    """Serialized model asset returned by the API."""
 
     id: str
     ai_system_id: str
@@ -295,16 +335,16 @@ class ModelAssetRead(BaseModel):
     updated_at: datetime
 
 
-class AgentRead(BaseModel):
+class AgentRead(ReviewableAssetRead):
     """Serialized governed agent returned by the API."""
-
-    model_config = ConfigDict(from_attributes=True)
 
     id: str
     ai_system_id: str
     name: str
     purpose: str
     owner_id: str
+    agent_version: str
+    deployment_region: str
     autonomy_level: AutonomyLevel
     allowed_models: list[str]
     tools: list[str]

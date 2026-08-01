@@ -1,3 +1,5 @@
+from datetime import UTC, datetime, timedelta
+
 from httpx import AsyncClient
 
 INITIATIVE_OWNER = {"X-User-Id": "initiative-owner"}
@@ -138,6 +140,10 @@ async def test_inventory_lifecycle_is_versioned_authorized_and_audited(
             "approved_use_cases": ["enterprise knowledge assistance"],
             "prohibited_use_cases": ["automated employment decisions"],
             "allowed_data_classes": ["public", "internal"],
+            "evaluation_baseline": {
+                "dataset": "enterprise-knowledge-eval-v1",
+                "groundedness": 0.92,
+            },
         },
         headers=SYSTEM_OWNER,
     )
@@ -150,6 +156,8 @@ async def test_inventory_lifecycle_is_versioned_authorized_and_audited(
         json={
             "name": "Unbound agent",
             "purpose": "Tenta usar um modelo que não pertence ao inventário do sistema.",
+            "agent_version": "1.0.0",
+            "deployment_region": "Brazil South",
             "autonomy_level": "a0_information",
             "allowed_models": ["unknown-model"],
         },
@@ -163,6 +171,8 @@ async def test_inventory_lifecycle_is_versioned_authorized_and_audited(
             "name": "Knowledge retrieval agent",
             "purpose": "Recuperar fontes aprovadas e preparar respostas com citações.",
             "owner_id": "agent-owner",
+            "agent_version": "1.0.0",
+            "deployment_region": "Brazil South",
             "autonomy_level": "a1_recommendation",
             "allowed_models": [model["id"]],
             "tools": ["enterprise-search"],
@@ -177,6 +187,71 @@ async def test_inventory_lifecycle_is_versioned_authorized_and_audited(
     assert agent_response.status_code == 201
     agent = agent_response.json()
     assert agent["status"] == "draft"
+
+    next_review_at = (datetime.now(UTC) + timedelta(days=30)).isoformat()
+    premature_agent_review = await client.post(
+        f"/api/v1/agents/{agent['id']}/review",
+        json={
+            "expected_version": agent["version"],
+            "next_review_at": next_review_at,
+            "reference": "SEC-2026-184",
+        },
+        headers={"X-User-Id": "security-reviewer", "X-User-Areas": "security"},
+    )
+    assert premature_agent_review.status_code == 422
+
+    owner_model_review = await client.post(
+        f"/api/v1/models/{model['id']}/review",
+        json={
+            "expected_version": model["version"],
+            "next_review_at": next_review_at,
+            "reference": "ARCH-2026-184",
+        },
+        headers={"X-User-Id": "system-owner", "X-User-Areas": "architecture"},
+    )
+    assert owner_model_review.status_code == 403
+
+    model_review = await client.post(
+        f"/api/v1/models/{model['id']}/review",
+        json={
+            "expected_version": model["version"],
+            "next_review_at": next_review_at,
+            "reference": "ARCH-2026-184",
+        },
+        headers={"X-User-Id": "architecture-reviewer", "X-User-Areas": "architecture"},
+    )
+    assert model_review.status_code == 200
+    model = model_review.json()
+    assert model["status"] == "approved"
+    assert len(model["approved_scope_digest"]) == 64
+    assert model["reviewed_by"] == "architecture-reviewer"
+
+    overlong_agent_review = await client.post(
+        f"/api/v1/agents/{agent['id']}/review",
+        json={
+            "expected_version": agent["version"],
+            "next_review_at": (
+                datetime.fromisoformat(next_review_at) + timedelta(days=1)
+            ).isoformat(),
+            "reference": "SEC-2026-184",
+        },
+        headers={"X-User-Id": "security-reviewer", "X-User-Areas": "security"},
+    )
+    assert overlong_agent_review.status_code == 422
+
+    agent_review = await client.post(
+        f"/api/v1/agents/{agent['id']}/review",
+        json={
+            "expected_version": agent["version"],
+            "next_review_at": next_review_at,
+            "reference": "SEC-2026-184",
+        },
+        headers={"X-User-Id": "security-reviewer", "X-User-Areas": "security"},
+    )
+    assert agent_review.status_code == 200
+    agent = agent_review.json()
+    assert agent["status"] == "approved"
+    assert len(agent["approved_scope_digest"]) == 64
 
     model_conflict = await client.patch(
         f"/api/v1/models/{model['id']}",
@@ -195,10 +270,23 @@ async def test_inventory_lifecycle_is_versioned_authorized_and_audited(
     )
     assert updated_model.status_code == 200
     model = updated_model.json()
+    assert model["status"] == "draft"
+    assert model["approved_scope_digest"] is None
+
+    detail_after_model_change = await client.get(
+        f"/api/v1/systems/{ai_system['id']}",
+        headers=SYSTEM_OWNER,
+    )
+    agent = detail_after_model_change.json()["agents"][0]
+    assert agent["status"] == "draft"
+    assert agent["approved_scope_digest"] is None
 
     updated_agent = await client.patch(
         f"/api/v1/agents/{agent['id']}",
-        json={"tools": ["enterprise-search", "citation-check"], "expected_version": 1},
+        json={
+            "tools": ["enterprise-search", "citation-check"],
+            "expected_version": agent["version"],
+        },
         headers=SYSTEM_OWNER,
     )
     assert updated_agent.status_code == 200
@@ -212,7 +300,16 @@ async def test_inventory_lifecycle_is_versioned_authorized_and_audited(
     model_audit = await client.get(f"/api/v1/models/{model['id']}/audit", headers=SYSTEM_OWNER)
     assert [event["action"] for event in model_audit.json()] == [
         "model.created",
+        "model.reviewed",
         "model.updated",
+    ]
+
+    agent_audit = await client.get(f"/api/v1/agents/{agent['id']}/audit", headers=SYSTEM_OWNER)
+    assert [event["action"] for event in agent_audit.json()] == [
+        "agent.created",
+        "agent.reviewed",
+        "agent.review_invalidated",
+        "agent.updated",
     ]
 
     retired_system = await client.post(

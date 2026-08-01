@@ -2,7 +2,11 @@
 
 from fastapi import APIRouter, status
 
-from ai_governance_api.dependencies import CurrentPrincipal, InventoryServiceDependency
+from ai_governance_api.dependencies import (
+    CurrentAuthorizedPrincipal,
+    CurrentPrincipal,
+    InventoryServiceDependency,
+)
 from ai_governance_api.models import Agent, AISystem, AuditEvent, ModelAsset
 from ai_governance_api.schemas import (
     AgentCreate,
@@ -12,6 +16,7 @@ from ai_governance_api.schemas import (
     AISystemDetail,
     AISystemRead,
     AISystemUpdate,
+    AssetReviewRequest,
     AuditEventRead,
     ModelAssetCreate,
     ModelAssetRead,
@@ -104,6 +109,17 @@ async def update_model(
     return await service.update_model(model_id, request, principal)
 
 
+@router.post("/models/{model_id}/review", response_model=ModelAssetRead)
+async def review_model(
+    model_id: str,
+    request: AssetReviewRequest,
+    service: InventoryServiceDependency,
+    principal: CurrentAuthorizedPrincipal,
+) -> ModelAsset:
+    """Approve one model scope through an independent architecture review."""
+    return await service.review_model(model_id, request, principal)
+
+
 @router.post("/models/{model_id}/retire", response_model=ModelAssetRead)
 async def retire_model(
     model_id: str,
@@ -139,6 +155,17 @@ async def update_agent(
 ) -> Agent:
     """Update a registered agent."""
     return await service.update_agent(agent_id, request, principal)
+
+
+@router.post("/agents/{agent_id}/review", response_model=AgentRead)
+async def review_agent(
+    agent_id: str,
+    request: AssetReviewRequest,
+    service: InventoryServiceDependency,
+    principal: CurrentAuthorizedPrincipal,
+) -> Agent:
+    """Approve one agent scope through an independent security review."""
+    return await service.review_agent(agent_id, request, principal)
 
 
 @router.post("/agents/{agent_id}/retire", response_model=AgentRead)

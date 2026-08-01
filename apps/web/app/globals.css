@@ -246,6 +246,13 @@ fieldset:disabled { opacity: .76; }
 .asset-card small { color: var(--muted); margin-top: 5px; font-size: 11px; }
 .asset-card p { color: var(--muted); margin: 14px 0 4px; font-size: 12px; line-height: 1.5; }
 .asset-card .link-button:disabled { opacity: .5; cursor: wait; }
+.asset-review-meta { display: grid; gap: 6px; margin: 12px 0; padding: 10px 12px; border-left: 3px solid var(--green-2); background: var(--paper); }
+.asset-review-meta code { color: var(--green); font-size: 11px; overflow-wrap: anywhere; }
+.asset-review { margin-top: 10px; border-top: 1px solid var(--line); }
+.asset-review summary { padding-top: 10px; color: var(--green); cursor: pointer; font-size: 12px; font-weight: 800; }
+.asset-review-form { display: grid; gap: 12px; padding: 14px 0 4px; }
+.asset-review-form > small { color: var(--muted); line-height: 1.45; }
+.asset-review-form .notice { margin: 0; }
 .asset-form { border-top: 1px solid var(--line); padding: 26px 24px 30px; }
 .asset-form h3 { margin: 0 0 24px; font-family: Georgia, serif; font-size: 24px; font-weight: 500; }
 .field-label { display: block; font-size: 13px; font-weight: 800; margin-bottom: 10px; }

@@ -57,6 +57,19 @@ class VersionedMixin:
     )
 
 
+class ReviewableAssetMixin:
+    """Add current review evidence to a governed operational asset."""
+
+    approved_scope_digest: Mapped[str | None] = mapped_column(String(64))
+    reviewed_by: Mapped[str | None] = mapped_column(String(200))
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    next_review_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        index=True,
+    )
+    review_reference: Mapped[str | None] = mapped_column(String(100))
+
+
 class Initiative(VersionedMixin, Base):
     """Business proposal evaluated by the governance policy."""
 
@@ -153,7 +166,7 @@ class AISystem(VersionedMixin, Base):
     )
 
 
-class ModelAsset(VersionedMixin, Base):
+class ModelAsset(ReviewableAssetMixin, VersionedMixin, Base):
     """Versioned model registered within an AI system."""
 
     __tablename__ = "model_assets"
@@ -178,7 +191,7 @@ class ModelAsset(VersionedMixin, Base):
     ai_system: Mapped[AISystem] = relationship(back_populates="models")
 
 
-class Agent(VersionedMixin, Base):
+class Agent(ReviewableAssetMixin, VersionedMixin, Base):
     """Governed agent with explicit tools, permissions, and limits."""
 
     __tablename__ = "agents"
@@ -190,6 +203,8 @@ class Agent(VersionedMixin, Base):
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     purpose: Mapped[str] = mapped_column(Text, nullable=False)
     owner_id: Mapped[str] = mapped_column(String(200), nullable=False)
+    agent_version: Mapped[str] = mapped_column(String(100), nullable=False)
+    deployment_region: Mapped[str] = mapped_column(String(100), nullable=False)
     autonomy_level: Mapped[AutonomyLevel] = mapped_column(
         Enum(AutonomyLevel, native_enum=False), nullable=False
     )
