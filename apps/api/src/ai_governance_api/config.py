@@ -84,6 +84,9 @@ class Settings(BaseSettings):
     microsoft_graph_client_secret: str = Field(default="", repr=False)
     microsoft_graph_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
     microsoft_graph_max_pages: int = Field(default=20, ge=1, le=100)
+    microsoft_graph_max_attempts: int = Field(default=3, ge=1, le=5)
+    microsoft_graph_backoff_base_seconds: float = Field(default=0.25, gt=0, le=5)
+    microsoft_graph_max_retry_delay_seconds: float = Field(default=2.0, gt=0, le=30)
     microsoft_graph_max_retry_after_seconds: int = Field(default=300, ge=0, le=3600)
     microsoft_graph_max_response_bytes: int = Field(
         default=1024 * 1024,

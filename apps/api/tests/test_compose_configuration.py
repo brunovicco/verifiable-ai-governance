@@ -101,6 +101,15 @@ def test_api_graph_obo_configuration_is_environment_driven() -> None:
     assert environment["MICROSOFT_GRAPH_CLIENT_SECRET"] == (
         "${MICROSOFT_GRAPH_CLIENT_SECRET:-}"
     )
+    assert environment["MICROSOFT_GRAPH_MAX_ATTEMPTS"] == (
+        "${MICROSOFT_GRAPH_MAX_ATTEMPTS:-3}"
+    )
+    assert environment["MICROSOFT_GRAPH_BACKOFF_BASE_SECONDS"] == (
+        "${MICROSOFT_GRAPH_BACKOFF_BASE_SECONDS:-0.25}"
+    )
+    assert environment["MICROSOFT_GRAPH_MAX_RETRY_DELAY_SECONDS"] == (
+        "${MICROSOFT_GRAPH_MAX_RETRY_DELAY_SECONDS:-2}"
+    )
     assert environment["MICROSOFT_GRAPH_MAX_RESPONSE_BYTES"] == (
         "${MICROSOFT_GRAPH_MAX_RESPONSE_BYTES:-1048576}"
     )

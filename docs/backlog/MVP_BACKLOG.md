@@ -22,6 +22,8 @@
 - [x] Microsoft Graph via OBO para perfil, `department` e grupos transitivos do usuário.
 - [x] Catálogo versionado de App Roles/object IDs Entra para áreas de aprovação.
 - [ ] Group overage, paginação, throttling, cache, revogação e stale identity fail-closed.
+  - [x] Paginação confiável, retry limitado, jitter e eventos de throttling sem conteúdo.
+  - [ ] Group overage explícito, cache, invalidação, revogação e stale identity.
 - [ ] Model/agent registry com approved scope, região, versão e datas de revisão.
 - [ ] Adapter de decisão do `policy-model-router`.
 - [ ] Ingestão sanitizada de telemetria do `a2a-otel-kit`.

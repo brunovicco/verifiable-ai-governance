@@ -1,7 +1,10 @@
 """Microsoft Graph adapter using OAuth 2.0 On-Behalf-Of delegation."""
 
+import asyncio
 import json
-from collections.abc import Mapping
+import logging
+import random
+from collections.abc import Awaitable, Callable, Mapping
 from typing import Any
 from urllib.parse import urlparse
 from uuid import UUID
@@ -22,6 +25,9 @@ GRAPH_SCOPE = "https://graph.microsoft.com/.default"
 OBO_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:jwt-bearer"
 PROFILE_SELECT = "id,displayName,mail,userPrincipalName,department,userType"
 GROUPS_PATH_PREFIX = "/v1.0/me/transitiveMemberOf/microsoft.graph.group"
+RETRYABLE_GRAPH_STATUS_CODES = frozenset({429, 500, 502, 503, 504})
+
+logger = logging.getLogger(__name__)
 
 
 class MicrosoftGraphCorporateDirectory:
@@ -35,9 +41,14 @@ class MicrosoftGraphCorporateDirectory:
         client_secret: str,
         timeout_seconds: float,
         max_pages: int,
+        max_attempts: int,
+        backoff_base_seconds: float,
+        max_retry_delay_seconds: float,
         max_retry_after_seconds: int,
         max_response_bytes: int,
         transport: httpx.AsyncBaseTransport | None = None,
+        sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+        jitter: Callable[[], float] = random.random,
     ) -> None:
         """Initialize fixed Microsoft endpoints and bounded network behavior."""
         self._tenant_id = _canonical_uuid(tenant_id, field="tenant ID")
@@ -48,6 +59,12 @@ class MicrosoftGraphCorporateDirectory:
             raise ValueError("Microsoft Graph timeout must be positive")
         if max_pages < 1:
             raise ValueError("Microsoft Graph max pages must be positive")
+        if max_attempts < 1:
+            raise ValueError("Microsoft Graph max attempts must be positive")
+        if backoff_base_seconds <= 0:
+            raise ValueError("Microsoft Graph backoff base must be positive")
+        if max_retry_delay_seconds <= 0:
+            raise ValueError("Microsoft Graph retry delay bound must be positive")
         if max_retry_after_seconds < 0:
             raise ValueError("Microsoft Graph retry bound must not be negative")
         if max_response_bytes < 1:
@@ -55,9 +72,14 @@ class MicrosoftGraphCorporateDirectory:
         self._client_secret = client_secret
         self._timeout_seconds = timeout_seconds
         self._max_pages = max_pages
+        self._max_attempts = max_attempts
+        self._backoff_base_seconds = backoff_base_seconds
+        self._max_retry_delay_seconds = max_retry_delay_seconds
         self._max_retry_after_seconds = max_retry_after_seconds
         self._max_response_bytes = max_response_bytes
         self._transport = transport
+        self._sleep = sleep
+        self._jitter = jitter
         self._token_url = (
             f"https://login.microsoftonline.com/{self._tenant_id}/oauth2/v2.0/token"
         )
@@ -131,6 +153,8 @@ class MicrosoftGraphCorporateDirectory:
                 "scope": GRAPH_SCOPE,
             },
             headers={"Accept": "application/json"},
+            operation="obo_token",
+            retryable=False,
         )
         access_token = body.get("access_token")
         if not isinstance(access_token, str) or not access_token.strip():
@@ -149,6 +173,8 @@ class MicrosoftGraphCorporateDirectory:
             GRAPH_ME_URL,
             params={"$select": PROFILE_SELECT},
             headers=self._graph_headers(graph_token),
+            operation="profile",
+            retryable=True,
         )
 
     async def _get_group_object_ids(
@@ -172,6 +198,8 @@ class MicrosoftGraphCorporateDirectory:
                 url,
                 params=params,
                 headers=self._graph_headers(graph_token, consistency_level="eventual"),
+                operation="groups",
+                retryable=True,
             )
             values = body.get("value")
             if not isinstance(values, list):
@@ -200,29 +228,93 @@ class MicrosoftGraphCorporateDirectory:
         data: Mapping[str, str] | None = None,
         params: Mapping[str, str] | None = None,
         headers: Mapping[str, str] | None = None,
+        operation: str,
+        retryable: bool,
     ) -> Mapping[str, Any]:
-        """Read a bounded successful JSON object without exposing remote content."""
-        async with client.stream(
-            method,
-            url,
-            data=data,
-            params=params,
-            headers=headers,
-        ) as response:
-            if response.status_code == 429:
-                raise CorporateDirectoryUnavailable(
-                    retry_after_seconds=self._retry_after_seconds(response)
-                )
-            if response.status_code < 200 or response.status_code >= 300:
-                raise CorporateDirectoryUnavailable()
-
-            content = bytearray()
-            async for chunk in response.aiter_bytes():
-                content.extend(chunk)
-                if len(content) > self._max_response_bytes:
-                    raise CorporateDirectoryResponseInvalid(
-                        "Corporate directory response exceeds its size limit"
+        """Read bounded JSON and retry only explicitly safe transient operations."""
+        for attempt in range(1, self._max_attempts + 1):
+            try:
+                async with client.stream(
+                    method,
+                    url,
+                    data=data,
+                    params=params,
+                    headers=headers,
+                ) as response:
+                    if 200 <= response.status_code < 300:
+                        return await self._read_json_object(response)
+                    status_code = response.status_code
+                    retry_after_hint_seconds = self._numeric_retry_after_seconds(
+                        response
                     )
+                    retry_after_seconds = self._bounded_retry_after_seconds(
+                        retry_after_hint_seconds
+                    )
+            except (httpx.TimeoutException, httpx.TransportError):
+                if not retryable or attempt >= self._max_attempts:
+                    raise
+                transport_delay_seconds = self._fallback_retry_delay(attempt)
+                self._log_retry(
+                    operation=operation,
+                    status="transport_error",
+                    attempt=attempt,
+                    delay_seconds=transport_delay_seconds,
+                )
+                await self._sleep(transport_delay_seconds)
+                continue
+
+            if not retryable or status_code not in RETRYABLE_GRAPH_STATUS_CODES:
+                raise CorporateDirectoryUnavailable(
+                    retry_after_seconds=retry_after_seconds
+                )
+            if attempt >= self._max_attempts:
+                self._log_retry_exhausted(
+                    operation=operation,
+                    status=str(status_code),
+                    attempts=attempt,
+                )
+                raise CorporateDirectoryUnavailable(
+                    retry_after_seconds=retry_after_seconds
+                )
+
+            response_delay_seconds = self._retry_delay(
+                attempt,
+                retry_after_hint_seconds,
+            )
+            if response_delay_seconds is None:
+                logger.warning(
+                    "microsoft_graph_retry_deferred operation=%s status=%s "
+                    "attempt=%d retry_after_seconds=%s",
+                    operation,
+                    status_code,
+                    attempt,
+                    retry_after_seconds,
+                )
+                raise CorporateDirectoryUnavailable(
+                    retry_after_seconds=retry_after_seconds
+                )
+            self._log_retry(
+                operation=operation,
+                status=str(status_code),
+                attempt=attempt,
+                delay_seconds=response_delay_seconds,
+            )
+            await self._sleep(response_delay_seconds)
+
+        raise CorporateDirectoryUnavailable()
+
+    async def _read_json_object(
+        self,
+        response: httpx.Response,
+    ) -> Mapping[str, Any]:
+        """Decode one bounded successful response without retaining its content."""
+        content = bytearray()
+        async for chunk in response.aiter_bytes():
+            content.extend(chunk)
+            if len(content) > self._max_response_bytes:
+                raise CorporateDirectoryResponseInvalid(
+                    "Corporate directory response exceeds its size limit"
+                )
         try:
             body = json.loads(content)
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -235,8 +327,65 @@ class MicrosoftGraphCorporateDirectory:
             )
         return body
 
-    def _retry_after_seconds(self, response: httpx.Response) -> int | None:
-        """Return a non-negative numeric Retry-After bounded by local policy."""
+    def _retry_delay(
+        self,
+        attempt: int,
+        retry_after_seconds: int | None,
+    ) -> float | None:
+        """Return an allowed server-directed or exponential retry delay."""
+        if retry_after_seconds is not None:
+            if retry_after_seconds > self._max_retry_delay_seconds:
+                return None
+            return float(retry_after_seconds)
+        return self._fallback_retry_delay(attempt)
+
+    def _fallback_retry_delay(self, attempt: int) -> float:
+        """Return bounded exponential backoff with full base-interval jitter."""
+        jitter = min(max(float(self._jitter()), 0.0), 1.0)
+        exponential = self._backoff_base_seconds * (2 ** (attempt - 1))
+        delay = min(
+            exponential + (self._backoff_base_seconds * jitter),
+            self._max_retry_delay_seconds,
+        )
+        return float(delay)
+
+    def _log_retry(
+        self,
+        *,
+        operation: str,
+        status: str,
+        attempt: int,
+        delay_seconds: float,
+    ) -> None:
+        """Emit content-free retry telemetry for operational monitoring."""
+        logger.warning(
+            "microsoft_graph_retry operation=%s status=%s attempt=%d "
+            "max_attempts=%d delay_seconds=%.3f",
+            operation,
+            status,
+            attempt,
+            self._max_attempts,
+            delay_seconds,
+        )
+
+    @staticmethod
+    def _log_retry_exhausted(
+        *,
+        operation: str,
+        status: str,
+        attempts: int,
+    ) -> None:
+        """Emit a content-free event when retry policy is exhausted."""
+        logger.error(
+            "microsoft_graph_retry_exhausted operation=%s status=%s attempts=%d",
+            operation,
+            status,
+            attempts,
+        )
+
+    @staticmethod
+    def _numeric_retry_after_seconds(response: httpx.Response) -> int | None:
+        """Return a non-negative numeric Retry-After without trusting other formats."""
         value = response.headers.get("Retry-After")
         if value is None:
             return None
@@ -244,7 +393,13 @@ class MicrosoftGraphCorporateDirectory:
             seconds = int(value)
         except ValueError:
             return None
-        return min(max(seconds, 0), self._max_retry_after_seconds)
+        return max(seconds, 0)
+
+    def _bounded_retry_after_seconds(self, seconds: int | None) -> int | None:
+        """Bound the server hint before exposing it to an upstream caller."""
+        if seconds is None or self._max_retry_after_seconds == 0:
+            return None
+        return min(seconds, self._max_retry_after_seconds)
 
     @staticmethod
     def _graph_headers(

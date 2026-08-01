@@ -119,6 +119,9 @@ def get_corporate_directory_resolver(
             client_secret=settings.microsoft_graph_client_secret,
             timeout_seconds=settings.microsoft_graph_timeout_seconds,
             max_pages=settings.microsoft_graph_max_pages,
+            max_attempts=settings.microsoft_graph_max_attempts,
+            backoff_base_seconds=settings.microsoft_graph_backoff_base_seconds,
+            max_retry_delay_seconds=settings.microsoft_graph_max_retry_delay_seconds,
             max_retry_after_seconds=settings.microsoft_graph_max_retry_after_seconds,
             max_response_bytes=settings.microsoft_graph_max_response_bytes,
         )

@@ -145,9 +145,10 @@ Status em 2026-08-01: o adapter MSAL do portal, PKCE, `sessionStorage`, login/lo
 token silencioso da API, identidade `(tid, oid)`, tenant allowlist, política fail-closed
 para guest/conta sem `acct` confiável e enriquecimento Graph via OBO estão
 implementados. O adapter Graph possui `$select` mínimo, grupos transitivos, paginação
-com destino validado, timeout e propagação limitada de `Retry-After`. O catálogo
-versionado App Role/object ID também está implementado com provenance auditável.
-Validação contra tenant real, cache, revogação e assurance permanecem pendentes.
+com destino validado, timeout, retry limitado para leituras idempotentes, jitter e
+eventos operacionais sem conteúdo. O catálogo versionado App Role/object ID também está
+implementado com provenance auditável. Validação contra tenant real, group overage
+explícito, cache, revogação e assurance permanecem pendentes.
 
 ### Fase 1 — Fundação Entra
 
@@ -169,7 +170,8 @@ Validação contra tenant real, cache, revogação e assurance permanecem penden
 - [x] adapter Microsoft Graph com OBO, timeout e paginação validada;
 - [x] perfil `/me` com `$select` mínimo;
 - [x] associações transitivas de grupos;
-- [ ] retry limitado com jitter, cache e monitoramento de throttling.
+- [x] retry limitado com jitter e monitoramento básico de throttling;
+- [ ] cache curto com freshness explícita e invalidação distribuída.
 
 ### Fase 4 — Mapeamento governado
 
@@ -182,7 +184,8 @@ Validação contra tenant real, cache, revogação e assurance permanecem penden
 ### Fase 5 — Assurance
 
 - testes de group overage, grupos aninhados, guest e usuário desabilitado;
-- testes de remoção de grupo, cache expirado, Graph `429/5xx` e rotação de chave;
+- [x] testes determinísticos de Graph `429/5xx` e esgotamento do retry;
+- [ ] testes de remoção de grupo, cache expirado e rotação de chave;
 - revisão de consentimentos e least privilege;
 - monitoramento de falhas, latência, stale identity e mappings sem owner.
 
