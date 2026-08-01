@@ -2,6 +2,7 @@ import pytest
 from ai_governance_api.application.corporate_directory import CorporateDirectoryProfile
 from ai_governance_api.config import AppEnvironment, Settings
 from ai_governance_api.domain.identity import (
+    AuthorizationProvenance,
     DirectoryAccountType,
     DirectoryIdentity,
     Principal,
@@ -138,6 +139,7 @@ async def test_current_identity_exposes_local_mapping(client: AsyncClient) -> No
         "tenant_id": None,
         "object_id": None,
         "account_type": None,
+        "authorization_provenance": None,
         "directory_profile": None,
     }
 
@@ -152,6 +154,11 @@ async def test_current_identity_exposes_minimal_directory_provenance() -> None:
             object_id="22222222-2222-4222-8222-222222222222",
             account_type=DirectoryAccountType.MEMBER,
         ),
+        authorization_provenance=AuthorizationProvenance(
+            catalog_id="enterprise-entra-authorization",
+            catalog_version="2026.08.1",
+            catalog_digest="a" * 64,
+        ),
     )
 
     response = await current_identity(principal, None)
@@ -159,6 +166,11 @@ async def test_current_identity_exposes_minimal_directory_provenance() -> None:
     assert response.tenant_id == TENANT_ID
     assert response.object_id == "22222222-2222-4222-8222-222222222222"
     assert response.account_type is DirectoryAccountType.MEMBER
+    assert response.authorization_provenance is not None
+    assert response.authorization_provenance.catalog_id == (
+        "enterprise-entra-authorization"
+    )
+    assert response.authorization_provenance.catalog_digest == "a" * 64
 
 
 async def test_current_identity_exposes_minimized_graph_profile() -> None:
@@ -231,3 +243,16 @@ def test_graph_secret_is_excluded_from_settings_representation() -> None:
     )
 
     assert "super-secret-value" not in repr(settings)
+
+
+def test_entra_app_roles_claim_must_be_explicit() -> None:
+    with pytest.raises(ValidationError, match="APP_ROLES_CLAIM must not be empty"):
+        oidc_settings(
+            oidc_identity_mode="entra",
+            oidc_allowed_tenant_ids=TENANT_ID,
+            oidc_issuer=f"https://login.microsoftonline.com/{TENANT_ID}/v2.0",
+            oidc_jwks_url=(
+                f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
+            ),
+            oidc_entra_app_roles_claim="",
+        )

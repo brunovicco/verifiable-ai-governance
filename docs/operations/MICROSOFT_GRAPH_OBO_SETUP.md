@@ -80,8 +80,8 @@ O payload devolvido ao próprio usuário possui:
 }
 ```
 
-Quantidade e object IDs de grupos permanecem somente em memória para o futuro catálogo
-governado.
+Quantidade e object IDs de grupos permanecem somente em memória e alimentam o catálogo
+governado descrito em `DIRECTORY_AUTHORIZATION_CATALOG.md`.
 Bearer tokens, segredo, resposta completa e lista integral de grupos não devem aparecer
 em logs, traces ou respostas HTTP.
 

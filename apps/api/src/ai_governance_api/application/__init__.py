@@ -31,6 +31,9 @@ from ai_governance_api.application.corporate_directory import (
     CorporateDirectoryUnavailable,
     ResolveCorporateDirectory,
 )
+from ai_governance_api.application.directory_authorization import (
+    ResolveDirectoryAuthorization,
+)
 from ai_governance_api.application.evidence import (
     BinaryContent,
     BinaryStaging,
@@ -75,6 +78,7 @@ __all__ = [
     "MalwareScannerPort",
     "ObjectStoragePort",
     "ResolveCorporateDirectory",
+    "ResolveDirectoryAuthorization",
     "SaveAssessment",
     "SubmitAssessment",
     "TransactionPort",

@@ -20,7 +20,7 @@
 - [ ] Validação do login contra tenant Entra real e Conditional Access.
 - [x] Identidade corporativa por `(tid, oid)`, tenant allowlist e política para guests.
 - [x] Microsoft Graph via OBO para perfil, `department` e grupos transitivos do usuário.
-- [ ] Catálogo versionado de App Roles/object IDs Entra para áreas de aprovação.
+- [x] Catálogo versionado de App Roles/object IDs Entra para áreas de aprovação.
 - [ ] Group overage, paginação, throttling, cache, revogação e stale identity fail-closed.
 - [ ] Model/agent registry com approved scope, região, versão e datas de revisão.
 - [ ] Adapter de decisão do `policy-model-router`.

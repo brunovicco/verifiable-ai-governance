@@ -1,0 +1,20 @@
+catalog_id: enterprise-entra-authorization
+catalog_version: "2026.08.1"
+mappings:
+  - mapping_id: entra-role-security-reviewer
+    tenant_id: 11111111-1111-4111-8111-111111111111
+    source_type: app_role
+    source_value: Governance.Security.Reviewer
+    approval_area: security
+    enabled: true
+    owner: identity-and-access-management
+    mapping_version: 1
+
+  - mapping_id: entra-group-privacy-reviewer
+    tenant_id: 11111111-1111-4111-8111-111111111111
+    source_type: group
+    source_value: 22222222-2222-4222-8222-222222222222
+    approval_area: privacy
+    enabled: true
+    owner: identity-and-access-management
+    mapping_version: 1

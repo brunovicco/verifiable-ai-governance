@@ -1,3 +1,7 @@
+from ai_governance_api.dependencies import get_authorized_principal
+from ai_governance_api.domain.identity import AuthorizationProvenance, Principal
+from ai_governance_api.main import app
+from governance_schemas import ApprovalArea
 from httpx import AsyncClient
 
 OWNER_HEADERS = {"X-User-Id": "owner-1"}
@@ -48,16 +52,31 @@ async def test_create_submit_and_approve_low_risk_initiative(client: AsyncClient
     )
     assert self_approval.status_code == 403
 
-    approved = await client.post(
-        f"/api/v1/initiatives/{initiative['id']}/approvals/{approval['id']}/decision",
-        json={
-            "decision": "approved",
-            "comments": "Finalidade e owner validados com evidência anexada.",
-            "evidence_uri": "urn:test:business-review",
-            "expected_version": approval["version"],
-        },
-        headers={"X-User-Id": "business-reviewer", "X-User-Areas": "business"},
+    authorized_reviewer = Principal(
+        user_id="business-reviewer",
+        approval_areas=frozenset({ApprovalArea.BUSINESS}),
+        authorization_provenance=AuthorizationProvenance(
+            catalog_id="enterprise-entra-authorization",
+            catalog_version="2026.08.1",
+            catalog_digest="a" * 64,
+            matched_mapping_ids=("entra-business-reviewer",),
+            source_types=("app_role",),
+        ),
     )
+    app.dependency_overrides[get_authorized_principal] = lambda: authorized_reviewer
+    try:
+        approved = await client.post(
+            f"/api/v1/initiatives/{initiative['id']}/approvals/{approval['id']}/decision",
+            json={
+                "decision": "approved",
+                "comments": "Finalidade e owner validados com evidência anexada.",
+                "evidence_uri": "urn:test:business-review",
+                "expected_version": approval["version"],
+            },
+            headers={"X-User-Id": "business-reviewer"},
+        )
+    finally:
+        app.dependency_overrides.pop(get_authorized_principal, None)
     assert approved.status_code == 200
     assert approved.json()["status"] == "approved"
 
@@ -70,6 +89,13 @@ async def test_create_submit_and_approve_low_risk_initiative(client: AsyncClient
     ]
     assert events[1]["previous_hash"] == events[0]["event_hash"]
     assert events[2]["previous_hash"] == events[1]["event_hash"]
+    assert events[2]["payload"]["authorization"] == {
+        "catalog_id": "enterprise-entra-authorization",
+        "catalog_version": "2026.08.1",
+        "catalog_digest": "a" * 64,
+        "matched_mapping_ids": ["entra-business-reviewer"],
+        "source_types": ["app_role"],
+    }
 
 
 async def test_high_risk_initiative_requires_all_areas(client: AsyncClient) -> None:

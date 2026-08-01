@@ -315,6 +315,26 @@ class InitiativeService:
                     "review_round": initiative.current_review_round,
                 },
             )
+        audit_payload: dict[str, object] = {
+            "approval_id": approval.id,
+            "area": approval.area.value,
+            "decision": approval.status.value,
+            "evidence_sha256": evidence_digest,
+            "resulting_status": initiative.status.value,
+            "review_round": initiative.current_review_round,
+            "superseded_approval_ids": list(transition.superseded_gate_ids),
+            "reopened_assessment_ids": [item.id for item in reopened_assessments],
+        }
+        if principal.authorization_provenance is not None:
+            audit_payload["authorization"] = {
+                "catalog_id": principal.authorization_provenance.catalog_id,
+                "catalog_version": principal.authorization_provenance.catalog_version,
+                "catalog_digest": principal.authorization_provenance.catalog_digest,
+                "matched_mapping_ids": list(
+                    principal.authorization_provenance.matched_mapping_ids
+                ),
+                "source_types": list(principal.authorization_provenance.source_types),
+            }
         await append_audit_event(
             self._session,
             actor_id=principal.user_id,
@@ -326,16 +346,7 @@ class InitiativeService:
             entity_type="initiative",
             entity_id=initiative.id,
             entity_version=initiative.version,
-            payload={
-                "approval_id": approval.id,
-                "area": approval.area.value,
-                "decision": approval.status.value,
-                "evidence_sha256": evidence_digest,
-                "resulting_status": initiative.status.value,
-                "review_round": initiative.current_review_round,
-                "superseded_approval_ids": list(transition.superseded_gate_ids),
-                "reopened_assessment_ids": [item.id for item in reopened_assessments],
-            },
+            payload=audit_payload,
         )
         await self._commit_review_transition()
         return await self.get(initiative.id)

@@ -6,6 +6,10 @@ from ai_governance_api.adapters.assessment_persistence import (
     SqlAlchemyTransaction,
 )
 from ai_governance_api.adapters.control_context import SqlAlchemyInitiativeControlContextStore
+from ai_governance_api.adapters.directory_authorization_catalog import (
+    DirectoryAuthorizationCatalogError,
+    YamlDirectoryAuthorizationCatalog,
+)
 from ai_governance_api.adapters.evidence_persistence import (
     SqlAlchemyEvidenceAudit,
     SqlAlchemyEvidenceStore,
@@ -23,7 +27,9 @@ __all__ = [
     "SqlAlchemyInitiativeControlContextStore",
     "SqlAlchemyTransaction",
     "ClamAVScanner",
+    "DirectoryAuthorizationCatalogError",
     "MicrosoftGraphCorporateDirectory",
     "PyJwtOidcVerifier",
     "S3ObjectStorage",
+    "YamlDirectoryAuthorizationCatalog",
 ]

@@ -69,22 +69,24 @@ somente variáveis no container já construído não altera os valores `NEXT_PUB
 O CORS da API deve aceitar apenas a origem exata do portal. Como o portal usa bearer
 token e `credentials: omit`, cookies não são necessários nessa integração.
 
-## 4. App Roles para aprovação inicial
+## 4. App Roles e catálogo de autorização
 
-Até o catálogo governado de object IDs ser implementado, App Roles podem usar valores
-iguais à taxonomia interna, como `security`, `privacy` ou `business`. Nesse caso:
+Em modo Entra, App Roles não viram áreas de aprovação diretamente. Configure o claim
+dedicado e publique um mapping tenant-specific no catálogo governado:
 
 ```dotenv
-OIDC_GROUPS_CLAIM=roles
+OIDC_ENTRA_APP_ROLES_CLAIM=roles
+DIRECTORY_AUTHORIZATION_CATALOG_PATH=/run/governance/entra-authorization.yaml
 ```
 
-Somente valores já conhecidos pela API viram `ApprovalArea`; nomes desconhecidos são
-ignorados. `department`, e-mail, nome exibido ou texto de grupo nunca concedem
-autorização. Guest perde áreas de aprovação e administração por padrão. Se `acct`
-estiver ausente ou for inválido, a conta será classificada como `unknown` e também não
-receberá capacidades. Habilitar `OIDC_GUEST_APPROVALS_ENABLED=true` exige decisão
-formal de risco; essa opção não concede nada a contas `unknown`.
-Ela também não concede administração a guest.
+O catálogo liga o valor exato da App Role ou object ID do grupo a `ApprovalArea` e
+registra ID, versão e owner do mapping. Consulte
+`DIRECTORY_AUTHORIZATION_CATALOG.md`. `department`, e-mail, nome exibido ou texto de
+grupo nunca concedem autorização. Guest perde áreas de aprovação e administração por
+padrão. Se `acct` estiver ausente ou for inválido, a conta será classificada como
+`unknown` e também não receberá capacidades. Habilitar
+`OIDC_GUEST_APPROVALS_ENABLED=true` exige decisão formal de risco; essa opção não
+concede nada a contas `unknown` nem concede administração a guest.
 
 ## 5. Validação
 

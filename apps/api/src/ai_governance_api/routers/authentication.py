@@ -2,15 +2,22 @@
 
 from fastapi import APIRouter
 
-from ai_governance_api.dependencies import CurrentCorporateDirectoryProfile, CurrentPrincipal
-from ai_governance_api.schemas import CorporateDirectoryProfileRead, PrincipalRead
+from ai_governance_api.dependencies import (
+    CurrentAuthorizedPrincipal,
+    CurrentCorporateDirectoryProfile,
+)
+from ai_governance_api.schemas import (
+    AuthorizationProvenanceRead,
+    CorporateDirectoryProfileRead,
+    PrincipalRead,
+)
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
 
 
 @router.get("/me", response_model=PrincipalRead)
 async def current_identity(
-    principal: CurrentPrincipal,
+    principal: CurrentAuthorizedPrincipal,
     directory_profile: CurrentCorporateDirectoryProfile,
 ) -> PrincipalRead:
     """Return the caller identity and mapped governance capabilities."""
@@ -23,6 +30,19 @@ async def current_identity(
         tenant_id=directory_identity.tenant_id if directory_identity else None,
         object_id=directory_identity.object_id if directory_identity else None,
         account_type=directory_identity.account_type if directory_identity else None,
+        authorization_provenance=(
+            AuthorizationProvenanceRead(
+                catalog_id=principal.authorization_provenance.catalog_id,
+                catalog_version=principal.authorization_provenance.catalog_version,
+                catalog_digest=principal.authorization_provenance.catalog_digest,
+                matched_mapping_ids=list(
+                    principal.authorization_provenance.matched_mapping_ids
+                ),
+                source_types=list(principal.authorization_provenance.source_types),
+            )
+            if principal.authorization_provenance is not None
+            else None
+        ),
         directory_profile=(
             CorporateDirectoryProfileRead(
                 display_name=directory_profile.display_name,
