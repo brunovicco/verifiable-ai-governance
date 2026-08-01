@@ -12,6 +12,8 @@ governança em controles verificáveis, aprovações condicionais e evidências 
 - API FastAPI com autenticação OIDC validada contra provedor real;
 - inventário navegável de iniciativas, sistemas, modelos e agentes, com ownership,
   versão, região, escopo de uso, autonomia, ferramentas e limites operacionais;
+- revisão independente do escopo de modelos por Arquitetura e de agentes por Segurança,
+  com segregação de funções, digest canônico, validade por risco e invalidação em cascata;
 - estruturas persistentes preparadas para avaliações, evidências, incidentes e
   processamento internacional;
 - classificação preliminar de risco e workflow condicional para Negócio, Arquitetura,

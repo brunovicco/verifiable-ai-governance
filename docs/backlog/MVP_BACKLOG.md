@@ -27,7 +27,7 @@
   - [x] Cache PostgreSQL com TTL, freshness, binding ao catálogo e invalidação distribuída.
   - [x] Bloqueio/restauração emergencial persistente na plataforma, fail-closed e auditado.
   - [ ] Revogação de sessão no provedor e validação contra tenant Entra real.
-- [ ] Model/agent registry com approved scope, região, versão e datas de revisão.
+- [x] Model/agent registry com approved scope, região, versão e datas de revisão.
 - [ ] Adapter de decisão do `policy-model-router`.
 - [ ] Ingestão sanitizada de telemetria do `a2a-otel-kit`.
 - [ ] Contratos de evidência inspirados em `engineering-loop-schemas`.

@@ -218,6 +218,14 @@ owner do sistema ou a um administrador. Todos os comandos mutáveis exigem a ver
 esperada. Aposentadoria substitui exclusão física e fecha o agregado para novas
 alterações, preservando os registros e eventos de auditoria.
 
+Revisões de escopo usam um domínio puro: Arquitetura aprova modelos e Segurança aprova
+agentes, sem autoaprovação pelo owner. A decisão persiste revisor, validade proporcional
+ao risco, referência e digest SHA-256 do escopo canônico. Alteração material limpa a
+projeção aprovada; alterações de modelo invalidam agentes dependentes. A camada de
+aplicação verifica ainda que cada modelo permitido pelo agente esteja aprovado e com
+revisão vigente. Routers apenas traduzem contratos e erros para HTTP. Consulte o ADR
+0019.
+
 ## Modelo lógico inicial
 
 ```mermaid

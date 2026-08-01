@@ -103,6 +103,11 @@ export interface ModelAsset {
   allowed_data_classes: string[];
   evaluation_baseline: Record<string, unknown>;
   deprecation_date: string | null;
+  approved_scope_digest: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  next_review_at: string | null;
+  review_reference: string | null;
   status: string;
   version: number;
 }
@@ -113,6 +118,8 @@ export interface AgentAsset {
   name: string;
   purpose: string;
   owner_id: string;
+  agent_version: string;
+  deployment_region: string;
   autonomy_level: string;
   allowed_models: string[];
   tools: string[];
@@ -121,6 +128,11 @@ export interface AgentAsset {
   max_runtime_seconds: number | null;
   human_approval_points: string[];
   kill_switch_enabled: boolean;
+  approved_scope_digest: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  next_review_at: string | null;
+  review_reference: string | null;
   status: string;
   version: number;
 }

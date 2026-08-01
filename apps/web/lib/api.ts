@@ -193,6 +193,48 @@ export function createAgent(
   });
 }
 
+export function reviewModel(
+  id: string,
+  version: number,
+  nextReviewAt: string,
+  reference: string,
+  identity?: Identity,
+): Promise<ModelAsset> {
+  return request(
+    `/api/v1/models/${id}/review`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        expected_version: version,
+        next_review_at: nextReviewAt,
+        reference,
+      }),
+    },
+    identity,
+  );
+}
+
+export function reviewAgent(
+  id: string,
+  version: number,
+  nextReviewAt: string,
+  reference: string,
+  identity?: Identity,
+): Promise<AgentAsset> {
+  return request(
+    `/api/v1/agents/${id}/review`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        expected_version: version,
+        next_review_at: nextReviewAt,
+        reference,
+      }),
+    },
+    identity,
+  );
+}
+
 export function retireAISystem(id: string, version: number): Promise<AISystem> {
   return request(`/api/v1/systems/${id}/retire`, {
     method: "POST",

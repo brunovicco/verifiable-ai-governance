@@ -9,10 +9,13 @@ import {
   createAgent,
   createModel,
   getAISystem,
+  reviewAgent,
+  reviewModel,
   retireAgent,
   retireAISystem,
   retireModel,
 } from "@/lib/api";
+import { getPortalAuthConfig } from "@/lib/auth/config";
 import { label } from "@/lib/labels";
 import type { AISystem, AgentAsset, ModelAsset } from "@/lib/types";
 
@@ -26,6 +29,91 @@ function csv(value: FormDataEntryValue | null): string[] {
 function optionalNumber(value: FormDataEntryValue | null): number | null {
   const normalized = String(value ?? "").trim();
   return normalized ? Number(normalized) : null;
+}
+
+function formatDate(value: string | null): string {
+  if (!value) return "não definida";
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+type ReviewableAsset = ModelAsset | AgentAsset;
+
+function AssetReviewForm({
+  asset,
+  kind,
+  riskTier,
+  onReviewed,
+}: {
+  asset: ReviewableAsset;
+  kind: "model" | "agent";
+  riskTier: string;
+  onReviewed: (asset: ReviewableAsset) => void;
+}) {
+  const authConfig = getPortalAuthConfig();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const area = kind === "model" ? "architecture" : "security";
+  const areaLabel = kind === "model" ? "Arquitetura" : "Segurança";
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    const data = new FormData(event.currentTarget);
+    try {
+      const reviewer = String(data.get("reviewer") ?? "");
+      const identity = authConfig.mode === "local"
+        ? { userId: reviewer, areas: [area] }
+        : undefined;
+      const deadline = new Date(String(data.get("next_review_at"))).toISOString();
+      const reference = String(data.get("reference"));
+      const reviewed = kind === "model"
+        ? await reviewModel(asset.id, asset.version, deadline, reference, identity)
+        : await reviewAgent(asset.id, asset.version, deadline, reference, identity);
+      onReviewed(reviewed);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Falha ao revisar o ativo.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <details className="asset-review">
+      <summary>{asset.reviewed_at ? "Renovar revisão" : `Revisar com ${areaLabel}`}</summary>
+      <form className="asset-review-form" onSubmit={submit}>
+        <small>
+          Revisão independente de {areaLabel}. Para risco {label(riskTier)}, a API limita
+          automaticamente a validade permitida.
+        </small>
+        {authConfig.mode === "local" ? (
+          <label>
+            Revisor
+            <input name="reviewer" required minLength={3} placeholder={`revisor.${area}`} />
+          </label>
+        ) : (
+          <p className="authenticated-reviewer">
+            A revisão será vinculada à sua identidade corporativa autenticada.
+          </p>
+        )}
+        <label>
+          Próxima revisão
+          <input name="next_review_at" required type="datetime-local" />
+        </label>
+        <label>
+          Evidência
+          <input name="reference" required minLength={3} maxLength={100} placeholder="Ticket, URL ou URN" />
+        </label>
+        {error && <div className="notice notice-error">{error}</div>}
+        <button className="button button-primary button-small" disabled={busy}>
+          {busy ? "Revisando…" : "Confirmar revisão"}
+        </button>
+      </form>
+    </details>
+  );
 }
 
 function ModelForm({
@@ -53,6 +141,7 @@ function ModelForm({
         approved_use_cases: csv(data.get("approved_use_cases")),
         prohibited_use_cases: csv(data.get("prohibited_use_cases")),
         allowed_data_classes: data.getAll("allowed_data_classes").map(String),
+        evaluation_baseline: { reference: String(data.get("evaluation_baseline")) },
       });
       onCreated(model);
       form.reset();
@@ -72,8 +161,9 @@ function ModelForm({
         <label>Versão<input name="model_version" required /></label>
         <label>Região de inferência<input name="deployment_region" required minLength={2} /></label>
       </div>
-      <label>Usos aprovados<input name="approved_use_cases" placeholder="Separe por vírgula" /></label>
+      <label>Usos aprovados<input name="approved_use_cases" required placeholder="Separe por vírgula" /></label>
       <label>Usos proibidos<input name="prohibited_use_cases" placeholder="Separe por vírgula" /></label>
+      <label>Baseline de avaliação<input name="evaluation_baseline" required minLength={3} placeholder="Dataset, relatório ou versão da avaliação" /></label>
       <span className="field-label">Classes de dados autorizadas</span>
       <div className="check-grid compact-checks">
         {["public", "internal", "confidential", "restricted"].map((value) => (
@@ -112,6 +202,8 @@ function AgentForm({
         name: String(data.get("name")),
         purpose: String(data.get("purpose")),
         owner_id: String(data.get("owner_id")),
+        agent_version: String(data.get("agent_version")),
+        deployment_region: String(data.get("deployment_region")),
         autonomy_level: String(data.get("autonomy_level")),
         allowed_models: data.getAll("allowed_models").map(String),
         tools: csv(data.get("tools")),
@@ -136,6 +228,8 @@ function AgentForm({
       <div className="field-grid">
         <label>Nome<input name="name" required minLength={2} /></label>
         <label>Responsável<input name="owner_id" required defaultValue={system.owner_id} /></label>
+        <label>Versão do agente<input name="agent_version" required placeholder="1.0.0" /></label>
+        <label>Região de execução<input name="deployment_region" required minLength={2} /></label>
         <label>
           Autonomia
           <select name="autonomy_level" defaultValue="a0_information">
@@ -201,6 +295,20 @@ export default function AISystemPage() {
     setSystem((current) =>
       current ? { ...current, agents: [...(current.agents ?? []), agent] } : current,
     );
+  }
+
+  function replaceModel(reviewed: ReviewableAsset) {
+    setSystem((current) => current ? {
+      ...current,
+      models: current.models?.map((item) => item.id === reviewed.id ? reviewed as ModelAsset : item),
+    } : current);
+  }
+
+  function replaceAgent(reviewed: ReviewableAsset) {
+    setSystem((current) => current ? {
+      ...current,
+      agents: current.agents?.map((item) => item.id === reviewed.id ? reviewed as AgentAsset : item),
+    } : current);
   }
 
   async function retireSystem() {
@@ -296,6 +404,16 @@ export default function AISystemPage() {
                   <StatusPill value={model.status} />
                 </div>
                 <p>Dados: {model.allowed_data_classes.map(label).join(", ") || "não definidos"}</p>
+                {model.reviewed_at && (
+                  <div className="asset-review-meta">
+                    <small>Revisado por {model.reviewed_by} · válido até {formatDate(model.next_review_at)}</small>
+                    <code title={model.approved_scope_digest ?? ""}>Escopo {model.approved_scope_digest?.slice(0, 12)}…</code>
+                    <small>Evidência: {model.review_reference}</small>
+                  </div>
+                )}
+                {model.status !== "retired" && mutable && (
+                  <AssetReviewForm asset={model} kind="model" riskTier={system.risk_tier} onReviewed={replaceModel} />
+                )}
                 {model.status !== "retired" && mutable && (
                   <button className="link-button" disabled={busy === model.id} onClick={() => retireRegisteredModel(model)}>Aposentar modelo</button>
                 )}
@@ -312,10 +430,20 @@ export default function AISystemPage() {
             {system.agents?.map((agent) => (
               <div className="asset-card" key={agent.id}>
                 <div className="asset-card-heading">
-                  <div><strong>{agent.name}</strong><small>{label(agent.autonomy_level)} · {agent.owner_id}</small></div>
+                  <div><strong>{agent.name}</strong><small>{agent.agent_version} · {agent.deployment_region}</small><small>{label(agent.autonomy_level)} · {agent.owner_id}</small></div>
                   <StatusPill value={agent.status} />
                 </div>
                 <p>{agent.purpose}</p>
+                {agent.reviewed_at && (
+                  <div className="asset-review-meta">
+                    <small>Revisado por {agent.reviewed_by} · válido até {formatDate(agent.next_review_at)}</small>
+                    <code title={agent.approved_scope_digest ?? ""}>Escopo {agent.approved_scope_digest?.slice(0, 12)}…</code>
+                    <small>Evidência: {agent.review_reference}</small>
+                  </div>
+                )}
+                {agent.status !== "retired" && mutable && (
+                  <AssetReviewForm asset={agent} kind="agent" riskTier={system.risk_tier} onReviewed={replaceAgent} />
+                )}
                 {agent.status !== "retired" && mutable && (
                   <button className="link-button" disabled={busy === agent.id} onClick={() => retireRegisteredAgent(agent)}>Aposentar agente</button>
                 )}
