@@ -115,6 +115,12 @@ do alvo para o payload do evento. O tenant deve constar em
 confiável. Isso não remove App Role, grupo, sessão ou conta no Entra; a revogação
 definitiva continua sob responsabilidade de IAM.
 
+Se a identidade inteira precisar ser contida, use
+`POST /api/v1/auth/directory-access/block`. Esse comando impede a próxima request
+protegida em todas as réplicas, invalida o cache e grava auditoria na mesma transação.
+Restauração usa `/directory-access/restore` e exige nova resolução de autorização. O
+procedimento completo está em `DIRECTORY_ACCESS_INCIDENT_RESPONSE.md`.
+
 ## Validação mínima
 
 - App Role exata concede somente a área mapeada;

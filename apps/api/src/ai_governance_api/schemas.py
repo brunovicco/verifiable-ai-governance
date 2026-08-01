@@ -16,6 +16,10 @@ from governance_schemas import (
 )
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from ai_governance_api.domain.directory_access import (
+    DirectoryAccessBlockReason,
+    DirectoryAccessRestoreReason,
+)
 from ai_governance_api.domain.directory_authorization_cache import (
     DirectoryAuthorizationInvalidationReason,
 )
@@ -91,6 +95,46 @@ class DirectoryAuthorizationCacheInvalidationRead(BaseModel):
 
     cache_entry_id: str = Field(pattern=r"^[a-f0-9-]{36}$")
     invalidated_at: datetime
+    version: int = Field(ge=1)
+
+
+class DirectoryAccessChangeRequest(BaseModel):
+    """Shared bounded input for an administrative directory-access change."""
+
+    tenant_id: UUID
+    object_id: UUID
+    reference: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=100,
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+    )
+
+    @field_validator("reference")
+    @classmethod
+    def clean_reference(cls, value: str | None) -> str | None:
+        """Trim the optional ticket reference without accepting free-form content."""
+        return value.strip() if value is not None else None
+
+
+class DirectoryAccessBlockRequest(DirectoryAccessChangeRequest):
+    """Administrative request to suspend one directory identity."""
+
+    reason: DirectoryAccessBlockReason
+
+
+class DirectoryAccessRestoreRequest(DirectoryAccessChangeRequest):
+    """Administrative request to restore one directory identity."""
+
+    reason: DirectoryAccessRestoreReason
+
+
+class DirectoryAccessStateRead(BaseModel):
+    """Content-minimized result of an emergency access-state change."""
+
+    restriction_id: str = Field(pattern=r"^[a-f0-9-]{36}$")
+    blocked: bool
+    changed_at: datetime
     version: int = Field(ge=1)
 
 

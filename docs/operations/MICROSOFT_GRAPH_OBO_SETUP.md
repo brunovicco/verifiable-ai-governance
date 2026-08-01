@@ -138,6 +138,8 @@ testes determinísticos do adapter.
   reutilizado; indisponibilidade do Graph após um miss falha de forma fechada;
 - `POST /api/v1/auth/directory-authorization-cache/invalidate` exige administrador,
   usa motivo enumerado, é visível a todas as réplicas e registra auditoria minimizada;
+- `POST /api/v1/auth/directory-access/block` contém imediatamente a identidade na
+  plataforma e coordena estado, invalidação e auditoria em uma transação;
 - invalidação de cache apenas força revalidação. Incidentes ainda exigem revogar conta,
   sessão, consentimento, App Role ou grupo no Entra conforme o caso;
 - indisponibilidade ou resposta inconsistente falha de forma fechada e nunca adiciona
@@ -150,3 +152,5 @@ testes determinísticos do adapter.
 - [Obter o usuário autenticado](https://learn.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0)
 - [Associações transitivas do usuário](https://learn.microsoft.com/en-us/graph/api/user-list-transitivememberof?view=graph-rest-1.0)
 - [Throttling no Microsoft Graph](https://learn.microsoft.com/en-us/graph/throttling)
+- [Revogar acesso de usuário em emergência](https://learn.microsoft.com/pt-br/entra/identity/users/users-revoke-access)
+- [`revokeSignInSessions`](https://learn.microsoft.com/en-us/graph/api/user-revokesigninsessions?view=graph-rest-1.0)

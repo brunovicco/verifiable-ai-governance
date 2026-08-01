@@ -420,6 +420,29 @@ class DirectoryAuthorizationCacheEntry(VersionedMixin, Base):
     )
 
 
+class DirectoryAccessRestrictionEntry(VersionedMixin, Base):
+    """Current emergency platform-access state for one Entra identity."""
+
+    __tablename__ = "directory_access_restrictions"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id",
+            "object_id",
+            name="uq_directory_access_restrictions_identity",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    object_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    blocked: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    changed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        index=True,
+    )
+
+
 class AuditEvent(Base):
     """Append-only event linked into a tamper-evident hash chain."""
 

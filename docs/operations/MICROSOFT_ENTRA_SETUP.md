@@ -119,7 +119,9 @@ Entra no navegador possa permitir novo SSO conforme a política corporativa.
 - Rotacionar a credencial da API confidential client conforme
   `MICROSOFT_GRAPH_OBO_SETUP.md`; o portal SPA não possui segredo.
 - Remover redirect URIs antigas imediatamente após migração.
-- Revogar sessões e consentimentos pelo Entra quando houver comprometimento.
+- Bloquear primeiro a identidade na plataforma conforme
+  `DIRECTORY_ACCESS_INCIDENT_RESPONSE.md`, depois coordenar conta, sessões e
+  consentimentos no Entra.
 - Publicar novo build se client ID, tenant ou scope mudar.
 - Tratar suspeita de XSS como potencial exposição dos tokens da sessão atual.
 - Registrar falhas e correlation IDs minimizados, nunca os próprios tokens.
@@ -133,3 +135,4 @@ Entra no navegador possa permitir novo SSO conforme a política corporativa.
 - [Configuração de cache do MSAL](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/configuration)
 - [Claims de access token](https://learn.microsoft.com/en-us/entra/identity-platform/access-token-claims-reference)
 - [Claims opcionais, incluindo acct](https://learn.microsoft.com/en-us/entra/identity-platform/optional-claims-reference)
+- [Revogar acesso de usuário em emergência](https://learn.microsoft.com/pt-br/entra/identity/users/users-revoke-access)

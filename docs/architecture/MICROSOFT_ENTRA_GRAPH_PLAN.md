@@ -124,7 +124,8 @@ estático. Nenhuma credencial Entra será armazenada no repositório.
   com dados suficientemente recentes;
 - acesso não privilegiado pode usar snapshot ainda válido conforme política;
 - mudança de tenant, issuer, consentimento ou mapeamento exige configuração versionada;
-- remoção urgente de acesso deve invalidar cache e sessão da plataforma.
+- remoção urgente de acesso deve ativar a restrição persistente da plataforma, invalidar
+  o cache e coordenar revogação de conta/sessão no Entra.
 
 ## Dados, privacidade e auditoria
 
@@ -151,8 +152,10 @@ eventos operacionais sem conteúdo. O catálogo versionado App Role/object ID ta
 implementado com provenance auditável. Claims completos de grupos e os indicadores de
 group overage são tratados sem seguir `_claim_sources`. O cache PostgreSQL de
 capacidades derivadas possui TTL explícito, binding ao digest do catálogo e invalidação
-administrativa distribuída. Validação contra tenant real, revogação de sessão/acesso e
-assurance permanecem pendentes.
+administrativa distribuída. O bloqueio/restauração emergencial da plataforma também é
+persistente, auditado, fail-closed e aplicado antes de todas as rotas protegidas.
+Validação contra tenant real, revogação de sessão no provedor e assurance permanecem
+pendentes.
 
 ### Fase 1 — Fundação Entra
 
@@ -184,6 +187,7 @@ assurance permanecem pendentes.
 - [x] endpoint de identidade com área organizacional, capacidades e provenance;
 - [x] provenance do catálogo no evento auditável de decisão;
 - [x] auditoria minimizada de invalidação do cache.
+- [x] restrição emergencial local com auditoria e invalidação atômica do cache;
 - [ ] auditoria de sincronização e revogação no provedor.
 
 ### Fase 5 — Assurance
@@ -192,6 +196,7 @@ assurance permanecem pendentes.
 - [ ] testes de guest e usuário desabilitado contra tenant real;
 - [x] testes determinísticos de Graph `429/5xx` e esgotamento do retry;
 - [x] testes determinísticos de cache expirado e invalidação concorrente;
+- [x] testes determinísticos de bloqueio/restauração em toda rota protegida;
 - [ ] testes de remoção de grupo e rotação de chave contra tenant real;
 - revisão de consentimentos e least privilege;
 - monitoramento de falhas, latência, stale identity e mappings sem owner.
@@ -205,6 +210,7 @@ assurance permanecem pendentes.
 - grupos transitivos e overage são tratados;
 - guest não aprova sem política explícita;
 - remoção de associação revoga a capacidade dentro do SLA definido;
+- bloqueio emergencial interrompe a próxima request protegida em todas as réplicas;
 - indisponibilidade do Graph não promove usuário nem reutiliza snapshot expirado;
 - decisões registram provenance sem tokens ou inventário integral de grupos;
 - testes e runbooks demonstram consentimento mínimo, rotação e revogação.
@@ -216,3 +222,5 @@ assurance permanecem pendentes.
 - [Obter o usuário autenticado no Graph](https://learn.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0)
 - [Associações transitivas do usuário](https://learn.microsoft.com/en-us/graph/api/user-list-transitivememberof?view=graph-rest-1.0)
 - [Claims e group overage](https://learn.microsoft.com/en-us/entra/identity-platform/access-token-claims-reference#groups-overage-claim)
+- [Revogar acesso de usuário em emergência](https://learn.microsoft.com/pt-br/entra/identity/users/users-revoke-access)
+- [`revokeSignInSessions` no Microsoft Graph](https://learn.microsoft.com/en-us/graph/api/user-revokesigninsessions?view=graph-rest-1.0)

@@ -201,6 +201,10 @@ Administradores podem descartar o snapshot de uma identidade em todas as réplic
 endpoint auditado `POST /api/v1/auth/directory-authorization-cache/invalidate`; essa
 operação força nova resolução, mas não substitui a revogação da conta, sessão, App Role
 ou grupo no Microsoft Entra ID.
+Para incidentes, `POST /api/v1/auth/directory-access/block` interrompe imediatamente
+todas as rotas protegidas da identidade; `directory-access/restore` restaura o acesso
+sem reutilizar a autorização anterior. Consulte o
+[runbook de resposta a incidente](docs/operations/DIRECTORY_ACCESS_INCIDENT_RESPONSE.md).
 Consulte o [plano Entra/Graph](docs/architecture/MICROSOFT_ENTRA_GRAPH_PLAN.md).
 
 ## Organização

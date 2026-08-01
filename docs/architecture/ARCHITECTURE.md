@@ -96,8 +96,14 @@ Snapshots de autorização já derivados usam o PostgreSQL como cache compartilh
 réplicas. O núcleo exige TTL não expirado, digest do catálogo atual e ausência de uma
 invalidação posterior à resolução. O cache contém somente áreas, mapping IDs e
 provenance; token, perfil e object IDs de grupos nunca são armazenados. Uma invalidação
-administrativa limpa o snapshot e grava evidência hash-chained na mesma transação. As
-decisões estão nos ADRs 0011 a 0017.
+administrativa limpa o snapshot e grava evidência hash-chained na mesma transação.
+
+Uma restrição emergencial separada é verificada depois da autenticação e antes de toda
+rota protegida. O PostgreSQL mantém o estado corrente por `(tenant_id, object_id)` e
+falha de leitura bloqueia a request. Bloquear ou restaurar também invalida o cache de
+autorização e grava auditoria minimizada na mesma transação. Esse controle encerra o
+acesso à plataforma imediatamente, mas não substitui desabilitar a conta ou revogar
+sessões no Entra. As decisões estão nos ADRs 0011 a 0018.
 
 ### Assessments estruturados
 
@@ -245,6 +251,8 @@ erDiagram
   histórico resumido.
 - snapshots de autorização são derivados, têm TTL máximo de cinco minutos e não
   contêm perfil, token ou associações brutas de grupos.
+- restrições emergenciais são consultadas antes de todas as rotas protegidas e nunca
+  usam perfil, e-mail ou nome como chave.
 
 ## Portas de integração futuras
 
