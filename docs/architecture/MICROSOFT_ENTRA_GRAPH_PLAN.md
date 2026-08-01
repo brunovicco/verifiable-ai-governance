@@ -147,8 +147,9 @@ para guest/conta sem `acct` confiável e enriquecimento Graph via OBO estão
 implementados. O adapter Graph possui `$select` mínimo, grupos transitivos, paginação
 com destino validado, timeout, retry limitado para leituras idempotentes, jitter e
 eventos operacionais sem conteúdo. O catálogo versionado App Role/object ID também está
-implementado com provenance auditável. Validação contra tenant real, group overage
-explícito, cache, revogação e assurance permanecem pendentes.
+implementado com provenance auditável. Claims completos de grupos e os indicadores de
+group overage são tratados sem seguir `_claim_sources`. Validação contra tenant real,
+cache, revogação e assurance permanecem pendentes.
 
 ### Fase 1 — Fundação Entra
 
@@ -183,7 +184,8 @@ explícito, cache, revogação e assurance permanecem pendentes.
 
 ### Fase 5 — Assurance
 
-- testes de group overage, grupos aninhados, guest e usuário desabilitado;
+- [x] testes de group overage e grupos aninhados;
+- [ ] testes de guest e usuário desabilitado contra tenant real;
 - [x] testes determinísticos de Graph `429/5xx` e esgotamento do retry;
 - [ ] testes de remoção de grupo, cache expirado e rotação de chave;
 - revisão de consentimentos e least privilege;

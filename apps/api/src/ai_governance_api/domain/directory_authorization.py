@@ -12,6 +12,7 @@ from governance_schemas import ApprovalArea
 from ai_governance_api.domain.identity import (
     AuthorizationProvenance,
     DirectoryAccountType,
+    DirectoryGroupResolutionSource,
     Principal,
 )
 
@@ -134,6 +135,7 @@ class DirectoryAuthorizationCatalog:
         principal: Principal,
         *,
         group_object_ids: frozenset[str],
+        group_resolution_source: DirectoryGroupResolutionSource,
         guest_approvals_enabled: bool,
     ) -> Principal:
         """Return effective capabilities and minimized catalog provenance."""
@@ -144,6 +146,13 @@ class DirectoryAuthorizationCatalog:
             _canonical_uuid(group_id, "resolved group object ID")
             for group_id in group_object_ids
         )
+        if groups and group_resolution_source in {
+            DirectoryGroupResolutionSource.NONE,
+            DirectoryGroupResolutionSource.OVERAGE_UNRESOLVED,
+        }:
+            raise DirectoryAuthorizationError(
+                "Resolved groups require a trusted resolution source"
+            )
         eligible = identity.account_type is DirectoryAccountType.MEMBER or (
             identity.account_type is DirectoryAccountType.GUEST
             and guest_approvals_enabled
@@ -165,6 +174,7 @@ class DirectoryAuthorizationCatalog:
             catalog_digest=self.catalog_digest,
             matched_mapping_ids=tuple(sorted(mapping.mapping_id for mapping in matched)),
             source_types=tuple(sorted({mapping.source_type.value for mapping in matched})),
+            group_resolution_source=group_resolution_source,
         )
         return replace(
             principal,

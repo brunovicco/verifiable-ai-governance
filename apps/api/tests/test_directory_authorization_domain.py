@@ -7,6 +7,7 @@ from ai_governance_api.domain.directory_authorization import (
 )
 from ai_governance_api.domain.identity import (
     DirectoryAccountType,
+    DirectoryGroupResolutionSource,
     DirectoryIdentity,
     Principal,
 )
@@ -86,6 +87,7 @@ def test_catalog_combines_exact_app_role_and_transitive_group_mappings() -> None
     authorized = policy.authorize(
         principal(),
         group_object_ids=frozenset({GROUP_ID}),
+        group_resolution_source=DirectoryGroupResolutionSource.MICROSOFT_GRAPH,
         guest_approvals_enabled=False,
     )
 
@@ -100,6 +102,10 @@ def test_catalog_combines_exact_app_role_and_transitive_group_mappings() -> None
         "entra-role-security",
     )
     assert authorized.authorization_provenance.source_types == ("app_role", "group")
+    assert (
+        authorized.authorization_provenance.group_resolution_source
+        is DirectoryGroupResolutionSource.MICROSOFT_GRAPH
+    )
 
 
 def test_app_role_matching_is_case_sensitive_and_tenant_scoped() -> None:
@@ -122,12 +128,57 @@ def test_app_role_matching_is_case_sensitive_and_tenant_scoped() -> None:
     authorized = policy.authorize(
         principal(),
         group_object_ids=frozenset(),
+        group_resolution_source=DirectoryGroupResolutionSource.NONE,
         guest_approvals_enabled=False,
     )
 
     assert authorized.approval_areas == frozenset()
     assert authorized.authorization_provenance is not None
     assert authorized.authorization_provenance.matched_mapping_ids == ()
+
+
+def test_unresolved_overage_denies_groups_but_preserves_exact_app_roles() -> None:
+    policy = catalog(
+        mapping(
+            "entra-role-security",
+            source_type=DirectoryAuthorizationSource.APP_ROLE,
+            source_value="Governance.Security.Reviewer",
+            approval_area=ApprovalArea.SECURITY,
+        ),
+        mapping(
+            "entra-group-privacy",
+            source_type=DirectoryAuthorizationSource.GROUP,
+            source_value=GROUP_ID,
+            approval_area=ApprovalArea.PRIVACY,
+        ),
+    )
+
+    authorized = policy.authorize(
+        principal(),
+        group_object_ids=frozenset(),
+        group_resolution_source=DirectoryGroupResolutionSource.OVERAGE_UNRESOLVED,
+        guest_approvals_enabled=False,
+    )
+
+    assert authorized.approval_areas == frozenset({ApprovalArea.SECURITY})
+    assert authorized.authorization_provenance is not None
+    assert authorized.authorization_provenance.matched_mapping_ids == (
+        "entra-role-security",
+    )
+    assert (
+        authorized.authorization_provenance.group_resolution_source
+        is DirectoryGroupResolutionSource.OVERAGE_UNRESOLVED
+    )
+
+
+def test_group_ids_require_a_trusted_resolution_source() -> None:
+    with pytest.raises(DirectoryAuthorizationError, match="trusted resolution source"):
+        catalog().authorize(
+            principal(),
+            group_object_ids=frozenset({GROUP_ID}),
+            group_resolution_source=DirectoryGroupResolutionSource.NONE,
+            guest_approvals_enabled=False,
+        )
 
 
 @pytest.mark.parametrize(
@@ -155,6 +206,7 @@ def test_account_type_policy_is_fail_closed(
     authorized = policy.authorize(
         principal(account_type),
         group_object_ids=frozenset(),
+        group_resolution_source=DirectoryGroupResolutionSource.NONE,
         guest_approvals_enabled=guest_enabled,
     )
 
@@ -170,6 +222,7 @@ def test_provider_neutral_principal_keeps_existing_capabilities() -> None:
     authorized = catalog().authorize(
         original,
         group_object_ids=frozenset(),
+        group_resolution_source=DirectoryGroupResolutionSource.NONE,
         guest_approvals_enabled=False,
     )
 

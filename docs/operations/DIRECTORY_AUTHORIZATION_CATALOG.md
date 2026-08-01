@@ -60,7 +60,9 @@ aplicação não retorna ao catálogo empacotado quando o override falha.
 
 Mapeamentos `app_role` funcionam somente a partir do claim verificado. Mapeamentos
 `group` exigem Microsoft Graph habilitado para resolver associações transitivas. Se o
-Graph estiver desabilitado ou indisponível, grupo não concede capacidade.
+Graph estiver desabilitado, um claim `groups` completo e validado também pode fornecer
+os object IDs. Overage, claim ausente ou inválido nunca concede capacidade de grupo; se
+um snapshot Graph confiável existir, ele prevalece sobre o token.
 
 ## Workflow de mudança
 

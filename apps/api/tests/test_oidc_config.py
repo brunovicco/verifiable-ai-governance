@@ -171,6 +171,7 @@ async def test_current_identity_exposes_minimal_directory_provenance() -> None:
         "enterprise-entra-authorization"
     )
     assert response.authorization_provenance.catalog_digest == "a" * 64
+    assert response.authorization_provenance.group_resolution_source.value == "none"
 
 
 async def test_current_identity_exposes_minimized_graph_profile() -> None:
@@ -245,8 +246,17 @@ def test_graph_secret_is_excluded_from_settings_representation() -> None:
     assert "super-secret-value" not in repr(settings)
 
 
-def test_entra_app_roles_claim_must_be_explicit() -> None:
-    with pytest.raises(ValidationError, match="APP_ROLES_CLAIM must not be empty"):
+@pytest.mark.parametrize(
+    "claim_override",
+    [
+        {"oidc_entra_app_roles_claim": ""},
+        {"oidc_entra_groups_claim": ""},
+    ],
+)
+def test_entra_claim_paths_must_be_explicit(
+    claim_override: dict[str, object],
+) -> None:
+    with pytest.raises(ValidationError, match="Entra claim paths must not be empty"):
         oidc_settings(
             oidc_identity_mode="entra",
             oidc_allowed_tenant_ids=TENANT_ID,
@@ -254,5 +264,5 @@ def test_entra_app_roles_claim_must_be_explicit() -> None:
             oidc_jwks_url=(
                 f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
             ),
-            oidc_entra_app_roles_claim="",
+            **claim_override,
         )

@@ -2,6 +2,8 @@ import pytest
 from ai_governance_api.domain.identity import (
     CorporateIdentityPolicy,
     DirectoryAccountType,
+    DirectoryGroupClaims,
+    DirectoryGroupClaimState,
     IdentityMappingError,
     parse_approval_areas,
     principal_from_claims,
@@ -10,6 +12,7 @@ from governance_schemas import ApprovalArea
 
 TENANT_ID = "11111111-1111-4111-8111-111111111111"
 OBJECT_ID = "22222222-2222-4222-8222-222222222222"
+GROUP_ID = "33333333-3333-4333-8333-333333333333"
 
 
 def corporate_policy(*, guest_approvals_enabled: bool = False) -> CorporateIdentityPolicy:
@@ -184,6 +187,101 @@ def test_invalid_corporate_app_roles_claim_is_rejected() -> None:
             admin_claim="governance_admin",
             corporate_policy=corporate_policy(),
             corporate_roles_claim="roles",
+        )
+
+
+def test_complete_entra_groups_claim_uses_only_canonical_object_ids() -> None:
+    principal = principal_from_claims(
+        {
+            "tid": TENANT_ID,
+            "oid": OBJECT_ID,
+            "acct": 0,
+            "groups": [GROUP_ID.upper(), GROUP_ID],
+        },
+        areas_claim="governance_areas",
+        admin_claim="governance_admin",
+        corporate_policy=corporate_policy(),
+        corporate_groups_claim="groups",
+    )
+
+    assert principal.directory_group_claims.state is DirectoryGroupClaimState.COMPLETE
+    assert principal.directory_group_claims.object_ids == frozenset({GROUP_ID})
+
+
+@pytest.mark.parametrize(
+    "overage_claims",
+    [
+        {"hasgroups": True},
+        {
+            "_claim_names": {"groups": "src1"},
+            "_claim_sources": {
+                "src1": {"endpoint": "https://attacker.example.com/groups"}
+            },
+        },
+    ],
+)
+def test_entra_group_overage_ignores_claim_source_urls(
+    overage_claims: dict[str, object],
+) -> None:
+    principal = principal_from_claims(
+        {
+            "tid": TENANT_ID,
+            "oid": OBJECT_ID,
+            "acct": 0,
+            "groups": [GROUP_ID],
+            **overage_claims,
+        },
+        areas_claim="governance_areas",
+        admin_claim="governance_admin",
+        corporate_policy=corporate_policy(),
+        corporate_groups_claim="groups",
+    )
+
+    assert principal.directory_group_claims.state is DirectoryGroupClaimState.OVERAGE
+    assert principal.directory_group_claims.object_ids == frozenset()
+
+
+@pytest.mark.parametrize(
+    "claims",
+    [
+        {"groups": "not-an-array"},
+        {"groups": ["not-a-uuid"]},
+        {"hasgroups": "true"},
+        {"_claim_names": {"groups": 42}},
+    ],
+)
+def test_invalid_entra_group_contract_is_rejected(claims: dict[str, object]) -> None:
+    with pytest.raises(IdentityMappingError, match="OIDC"):
+        principal_from_claims(
+            {"tid": TENANT_ID, "oid": OBJECT_ID, "acct": 0, **claims},
+            areas_claim="governance_areas",
+            admin_claim="governance_admin",
+            corporate_policy=corporate_policy(),
+            corporate_groups_claim="groups",
+        )
+
+
+def test_entra_groups_claim_cannot_exceed_jwt_limit() -> None:
+    with pytest.raises(IdentityMappingError, match="JWT item limit"):
+        principal_from_claims(
+            {
+                "tid": TENANT_ID,
+                "oid": OBJECT_ID,
+                "acct": 0,
+                "groups": [GROUP_ID] * 201,
+            },
+            areas_claim="governance_areas",
+            admin_claim="governance_admin",
+            corporate_policy=corporate_policy(),
+            corporate_groups_claim="groups",
+        )
+
+
+def test_incomplete_group_claim_state_cannot_carry_object_ids() -> None:
+    with pytest.raises(IdentityMappingError, match="cannot contain object IDs"):
+        DirectoryGroupClaims(
+            state=DirectoryGroupClaimState.OVERAGE,
+            object_ids=frozenset({GROUP_ID}),
         )
 
 

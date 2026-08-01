@@ -95,6 +95,7 @@ async def test_create_submit_and_approve_low_risk_initiative(client: AsyncClient
         "catalog_digest": "a" * 64,
         "matched_mapping_ids": ["entra-business-reviewer"],
         "source_types": ["app_role"],
+        "group_resolution_source": "none",
     }
 
 

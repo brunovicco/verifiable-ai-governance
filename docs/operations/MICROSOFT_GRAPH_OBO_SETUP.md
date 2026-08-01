@@ -88,6 +88,12 @@ governado descrito em `DIRECTORY_AUTHORIZATION_CATALOG.md`.
 Bearer tokens, segredo, resposta completa e lista integral de grupos não devem aparecer
 em logs, traces ou respostas HTTP.
 
+Quando o access token possui um claim `groups` completo, seus UUIDs podem alimentar o
+catálogo sem criar uma chamada controlada pelo token. Se `hasgroups=true` ou
+`_claim_names.groups` indicar overage, a lista do token é considerada incompleta e o
+snapshot obtido do endpoint Graph fixo prevalece. `_claim_sources` é ignorado, inclusive
+quando aponta para Azure AD Graph legado ou para um host inesperado.
+
 ## 5. Validação em tenant não produtivo
 
 1. habilitar as variáveis no ambiente de teste;

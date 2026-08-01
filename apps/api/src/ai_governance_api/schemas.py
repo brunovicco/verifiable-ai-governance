@@ -15,7 +15,10 @@ from governance_schemas import (
 )
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from ai_governance_api.domain.identity import DirectoryAccountType
+from ai_governance_api.domain.identity import (
+    DirectoryAccountType,
+    DirectoryGroupResolutionSource,
+)
 
 
 def _clean_strings(values: list[str]) -> list[str]:
@@ -40,6 +43,9 @@ class AuthorizationProvenanceRead(BaseModel):
     catalog_digest: str = Field(pattern=r"^[a-f0-9]{64}$")
     matched_mapping_ids: list[str] = Field(default_factory=list)
     source_types: list[str] = Field(default_factory=list)
+    group_resolution_source: DirectoryGroupResolutionSource = (
+        DirectoryGroupResolutionSource.NONE
+    )
 
 
 class PrincipalRead(BaseModel):

@@ -334,6 +334,9 @@ class InitiativeService:
                     principal.authorization_provenance.matched_mapping_ids
                 ),
                 "source_types": list(principal.authorization_provenance.source_types),
+                "group_resolution_source": (
+                    principal.authorization_provenance.group_resolution_source.value
+                ),
             }
         await append_audit_event(
             self._session,
