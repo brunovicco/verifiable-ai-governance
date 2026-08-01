@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
+import { FieldHelp } from "@/components/FieldHelp";
 import { StatusPill } from "@/components/StatusPill";
 import {
   createAISystem,
@@ -20,6 +21,11 @@ import {
 } from "@/lib/api";
 import { label } from "@/lib/labels";
 import { getPortalAuthConfig } from "@/lib/auth/config";
+import {
+  initiativeCheckGuidance,
+  proposalFieldGuidance,
+  reviewFieldGuidance,
+} from "@/lib/field-guidance";
 import type {
   AISystem,
   Approval,
@@ -211,6 +217,7 @@ function EvidenceWorkspace({
           <div className="field-grid">
             <label>
               Finalidade
+              <FieldHelp label="finalidade da evidência" text={reviewFieldGuidance.evidence_kind} />
               <select name="kind" defaultValue="assessment">
                 {EVIDENCE_KINDS.map((kind) => (
                   <option value={kind.value} key={kind.value}>{kind.label}</option>
@@ -219,6 +226,7 @@ function EvidenceWorkspace({
             </label>
             <label>
               Arquivo
+              <FieldHelp label="arquivo de evidência" text={reviewFieldGuidance.evidence_file} />
               <input
                 name="file"
                 type="file"
@@ -296,13 +304,13 @@ function ApprovalCard({ approval, initiativeId, onUpdated }: { approval: Approva
     {approval.status === "pending" && <button className="link-button" onClick={() => setOpen(!open)}>{open ? "Fechar" : "Registrar decisão"}</button>}
     {open && <form className="decision-form" onSubmit={decide}>
       {authConfig.mode === "local" ? (
-        <label>Identificação do revisor<input name="reviewer" required minLength={3} placeholder={`revisor.${approval.area}`} /></label>
+        <label>Identificação do revisor<FieldHelp label="identificação do revisor" text={reviewFieldGuidance.reviewer} /><input name="reviewer" required minLength={3} placeholder={`revisor.${approval.area}`} /></label>
       ) : (
         <p className="authenticated-reviewer">A decisão será vinculada à sua identidade corporativa autenticada.</p>
       )}
-      <label>Decisão<select name="decision"><option value="approved">Aprovar</option><option value="changes_requested">Solicitar ajustes</option><option value="rejected">Rejeitar definitivamente</option></select></label>
-      <label>Justificativa<textarea name="comments" required minLength={5} rows={2} /></label>
-      <label>Referência da evidência<input name="evidence_uri" required placeholder="URL, ticket ou URN" /></label>
+      <label>Decisão<FieldHelp label="decisão da análise" text={reviewFieldGuidance.decision} /><select name="decision"><option value="approved">Aprovar</option><option value="changes_requested">Solicitar ajustes</option><option value="rejected">Rejeitar definitivamente</option></select></label>
+      <label>Justificativa<FieldHelp label="justificativa da decisão" text={reviewFieldGuidance.comments} /><textarea name="comments" required minLength={5} rows={2} /></label>
+      <label>Referência da evidência<FieldHelp label="referência da evidência" text={reviewFieldGuidance.evidence_uri} /><input name="evidence_uri" required placeholder="URL, ticket ou URN" /></label>
       {error && <div className="notice notice-error">{error}</div>}
       <button className="button button-primary button-small" disabled={busy}>{busy ? "Registrando…" : "Confirmar decisão"}</button>
     </form>}
@@ -403,23 +411,24 @@ function RevisionWorkspace({
         </div>
         <label>
           Motivo desta atualização
+          <FieldHelp label="motivo da atualização" text={proposalFieldGuidance.change_reason} />
           <textarea name="change_reason" required minLength={5} maxLength={2000} rows={2} />
           <small>O log guarda somente um hash deste texto, não seu conteúdo.</small>
         </label>
         <div className="field-grid">
-          <label>Nome<input name="name" required minLength={3} defaultValue={initiative.name} /></label>
-          <label>Área de negócio<input name="business_area" required minLength={2} defaultValue={initiative.business_area} /></label>
+          <label>Nome<FieldHelp label="nome da iniciativa" text={proposalFieldGuidance.name} /><input name="name" required minLength={3} defaultValue={initiative.name} /></label>
+          <label>Área de negócio<FieldHelp label="área de negócio" text={proposalFieldGuidance.business_area} /><input name="business_area" required minLength={2} defaultValue={initiative.business_area} /></label>
         </div>
-        <label>Descrição<textarea name="description" required minLength={20} rows={4} defaultValue={initiative.description} /></label>
-        <label>Usuários previstos<textarea name="intended_users" required minLength={3} rows={2} defaultValue={initiative.intended_users} /></label>
+        <label>Descrição<FieldHelp label="descrição da iniciativa" text={proposalFieldGuidance.description} /><textarea name="description" required minLength={20} rows={4} defaultValue={initiative.description} /></label>
+        <label>Usuários previstos<FieldHelp label="usuários previstos" text={proposalFieldGuidance.intended_users} /><textarea name="intended_users" required minLength={3} rows={2} defaultValue={initiative.intended_users} /></label>
         <div className="field-grid">
-          <label>Impacto da decisão<select name="decision_impact" defaultValue={initiative.decision_impact}><option value="informational">Informacional</option><option value="operational">Operacional</option><option value="material">Material</option><option value="rights_or_safety">Direitos ou segurança</option></select></label>
-          <label>Classificação dos dados<select name="data_classification" defaultValue={initiative.data_classification}><option value="public">Público</option><option value="internal">Interno</option><option value="confidential">Confidencial</option><option value="restricted">Restrito</option></select></label>
-          <label>Autonomia<select name="autonomy_level" defaultValue={initiative.autonomy_level}><option value="a0_information">A0 · Informação</option><option value="a1_recommendation">A1 · Recomendação</option><option value="a2_prepare_for_approval">A2 · Prepara ação</option><option value="a3_reversible_actions">A3 · Ação reversível</option><option value="a4_high_impact_actions">A4 · Alto impacto</option><option value="a5_high_autonomy">A5 · Alta autonomia</option></select></label>
-          <label>Hospedagem<select name="hosting_model" defaultValue={initiative.hosting_model}><option value="saas">Serviço SaaS</option><option value="cloud_managed">Nuvem gerenciada</option><option value="self_hosted">Própria</option><option value="hybrid">Híbrida</option></select></label>
+          <label>Impacto da decisão<FieldHelp label="impacto da decisão" text={proposalFieldGuidance.decision_impact} /><select name="decision_impact" defaultValue={initiative.decision_impact}><option value="informational">Informacional</option><option value="operational">Operacional</option><option value="material">Material</option><option value="rights_or_safety">Direitos ou segurança</option></select></label>
+          <label>Classificação dos dados<FieldHelp label="classificação dos dados" text={proposalFieldGuidance.data_classification} /><select name="data_classification" defaultValue={initiative.data_classification}><option value="public">Público</option><option value="internal">Interno</option><option value="confidential">Confidencial</option><option value="restricted">Restrito</option></select></label>
+          <label>Autonomia<FieldHelp label="nível de autonomia" text={proposalFieldGuidance.autonomy_level} /><select name="autonomy_level" defaultValue={initiative.autonomy_level}><option value="a0_information">A0 · Informação</option><option value="a1_recommendation">A1 · Recomendação</option><option value="a2_prepare_for_approval">A2 · Prepara ação</option><option value="a3_reversible_actions">A3 · Ação reversível</option><option value="a4_high_impact_actions">A4 · Alto impacto</option><option value="a5_high_autonomy">A5 · Alta autonomia</option></select></label>
+          <label>Hospedagem<FieldHelp label="modelo de hospedagem" text={proposalFieldGuidance.hosting_model} /><select name="hosting_model" defaultValue={initiative.hosting_model}><option value="saas">Serviço SaaS</option><option value="cloud_managed">Nuvem gerenciada</option><option value="self_hosted">Própria</option><option value="hybrid">Híbrida</option></select></label>
         </div>
         <div className="check-grid revision-checks">
-          {[
+          {([
             ["affects_rights", "Afeta direitos", initiative.affects_rights],
             ["executes_actions", "Executa ações", initiative.executes_actions],
             ["personal_data", "Usa dados pessoais", initiative.personal_data],
@@ -432,15 +441,19 @@ function RevisionWorkspace({
             ["uses_agents", "Usa agentes", initiative.uses_agents],
             ["uses_mcp", "Usa MCP", initiative.uses_mcp],
             ["uses_custom_model", "Modelo customizado", initiative.uses_custom_model],
-          ].map(([name, text, checked]) => (
+          ] as const).map(([name, text, checked]) => (
             <label className="check" key={String(name)}>
               <input name={String(name)} type="checkbox" defaultChecked={Boolean(checked)} />
-              <span>{String(text)}</span>
+              <span className="check-copy">
+                {String(text)}
+                <FieldHelp label={String(text)} text={initiativeCheckGuidance[name]} />
+              </span>
             </label>
           ))}
         </div>
         <label>
           Países de inferência
+          <FieldHelp label="países de inferência" text={proposalFieldGuidance.inference_countries} />
           <input name="inference_countries" defaultValue={initiative.inference_countries?.join(", ")} placeholder="Brasil, Estados Unidos" />
         </label>
         {error && <div className="notice notice-error">{error}</div>}
@@ -460,6 +473,7 @@ function RevisionWorkspace({
         )}
         <label>
           Resumo final das correções
+          <FieldHelp label="resumo final das correções" text={proposalFieldGuidance.revision_summary} />
           <textarea name="revision_summary" required minLength={10} maxLength={2000} rows={3} />
         </label>
         <button className="button button-primary" disabled={submitting || blockingAssessments.length > 0}>

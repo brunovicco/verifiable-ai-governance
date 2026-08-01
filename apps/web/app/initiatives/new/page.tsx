@@ -4,7 +4,9 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { FieldHelp } from "@/components/FieldHelp";
 import { createInitiative } from "@/lib/api";
+import { initiativeCheckGuidance, proposalFieldGuidance } from "@/lib/field-guidance";
 
 const checks = [
   ["affects_rights", "Pode afetar direitos, benefícios ou oportunidades"],
@@ -67,37 +69,79 @@ export default function NewInitiativePage() {
       <form onSubmit={handleSubmit}>
         <fieldset>
           <legend><span>01</span><div>Contexto de negócio<small>Finalidade, responsável e público</small></div></legend>
-          <label>Nome da iniciativa<input name="name" required minLength={3} placeholder="Ex.: Assistente de atendimento" /></label>
-          <label>Qual problema será resolvido?<textarea name="description" required minLength={20} rows={4} placeholder="Descreva o objetivo e o resultado esperado." /></label>
+          <label>
+            Nome da iniciativa
+            <FieldHelp label="nome da iniciativa" text={proposalFieldGuidance.name} />
+            <input name="name" required minLength={3} placeholder="Ex.: Assistente de atendimento" />
+          </label>
+          <label>
+            Qual problema será resolvido?
+            <FieldHelp label="problema a ser resolvido" text={proposalFieldGuidance.description} />
+            <textarea name="description" required minLength={20} rows={4} placeholder="Descreva o objetivo e o resultado esperado." />
+          </label>
           <div className="field-grid">
-            <label>Área responsável<input name="business_area" required placeholder="Ex.: Experiência do Cliente" /></label>
-            <label>Quem utilizará?<input name="intended_users" required placeholder="Ex.: Analistas internos" /></label>
+            <label>
+              Área responsável
+              <FieldHelp label="área responsável" text={proposalFieldGuidance.business_area} />
+              <input name="business_area" required placeholder="Ex.: Experiência do Cliente" />
+            </label>
+            <label>
+              Quem utilizará?
+              <FieldHelp label="usuários da iniciativa" text={proposalFieldGuidance.intended_users} />
+              <input name="intended_users" required placeholder="Ex.: Analistas internos" />
+            </label>
           </div>
         </fieldset>
 
         <fieldset>
           <legend><span>02</span><div>Impacto e autonomia<small>Como a IA influencia ou executa decisões</small></div></legend>
           <div className="field-grid">
-            <label>Impacto de uma saída incorreta<select name="decision_impact" defaultValue="informational"><option value="informational">Informativo, facilmente revisável</option><option value="operational">Impacto operacional limitado</option><option value="material">Impacto financeiro, jurídico ou reputacional</option><option value="rights_or_safety">Direitos, acesso, saúde ou segurança</option></select></label>
-            <label>Nível de autonomia<select name="autonomy_level" defaultValue="a0_information"><option value="a0_information">Apenas informa</option><option value="a1_recommendation">Recomenda uma ação</option><option value="a2_prepare_for_approval">Prepara ação para aprovação</option><option value="a3_reversible_actions">Executa ações reversíveis</option><option value="a4_high_impact_actions">Executa ações de alto impacto</option><option value="a5_high_autonomy">Alta autonomia e delegação</option></select></label>
+            <label>
+              Impacto de uma saída incorreta
+              <FieldHelp label="impacto de uma saída incorreta" text={proposalFieldGuidance.decision_impact} />
+              <select name="decision_impact" defaultValue="informational"><option value="informational">Informativo, facilmente revisável</option><option value="operational">Impacto operacional limitado</option><option value="material">Impacto financeiro, jurídico ou reputacional</option><option value="rights_or_safety">Direitos, acesso, saúde ou segurança</option></select>
+            </label>
+            <label>
+              Nível de autonomia
+              <FieldHelp label="nível de autonomia" text={proposalFieldGuidance.autonomy_level} />
+              <select name="autonomy_level" defaultValue="a0_information"><option value="a0_information">Apenas informa</option><option value="a1_recommendation">Recomenda uma ação</option><option value="a2_prepare_for_approval">Prepara ação para aprovação</option><option value="a3_reversible_actions">Executa ações reversíveis</option><option value="a4_high_impact_actions">Executa ações de alto impacto</option><option value="a5_high_autonomy">Alta autonomia e delegação</option></select>
+            </label>
           </div>
         </fieldset>
 
         <fieldset>
           <legend><span>03</span><div>Dados e tecnologia<small>Informações usadas e forma de hospedagem</small></div></legend>
           <div className="field-grid">
-            <label>Classificação mais alta dos dados<select name="data_classification" defaultValue="internal"><option value="public">Públicos</option><option value="internal">Internos</option><option value="confidential">Confidenciais</option><option value="restricted">Restritos</option></select></label>
-            <label>Modelo de hospedagem<select name="hosting_model" defaultValue="saas"><option value="saas">Serviço SaaS</option><option value="cloud_managed">Cloud gerenciada</option><option value="self_hosted">Infraestrutura própria</option><option value="hybrid">Híbrida</option></select></label>
+            <label>
+              Classificação mais alta dos dados
+              <FieldHelp label="classificação dos dados" text={proposalFieldGuidance.data_classification} />
+              <select name="data_classification" defaultValue="internal"><option value="public">Públicos</option><option value="internal">Internos</option><option value="confidential">Confidenciais</option><option value="restricted">Restritos</option></select>
+            </label>
+            <label>
+              Modelo de hospedagem
+              <FieldHelp label="modelo de hospedagem" text={proposalFieldGuidance.hosting_model} />
+              <select name="hosting_model" defaultValue="saas"><option value="saas">Serviço SaaS</option><option value="cloud_managed">Cloud gerenciada</option><option value="self_hosted">Infraestrutura própria</option><option value="hybrid">Híbrida</option></select>
+            </label>
           </div>
           <div className="check-grid">
             {checks.map(([name, text]) => (
               <label className="check" key={name}>
                 <input name={name} type="checkbox" onChange={name === "international_processing" ? (event) => setInternational(event.target.checked) : undefined} />
-                <span>{text}</span>
+                <span className="check-copy">
+                  {text}
+                  <FieldHelp label={text} text={initiativeCheckGuidance[name]} />
+                </span>
               </label>
             ))}
           </div>
-          {international && <label>Países de inferência, armazenamento, logs ou suporte<input name="inference_countries" required placeholder="Ex.: Estados Unidos, Irlanda" /><small>Separe os países por vírgula.</small></label>}
+          {international && (
+            <label>
+              Países de inferência, armazenamento, logs ou suporte
+              <FieldHelp label="países envolvidos" text={proposalFieldGuidance.inference_countries} />
+              <input name="inference_countries" required placeholder="Ex.: Estados Unidos, Irlanda" />
+              <small>Separe os países por vírgula.</small>
+            </label>
+          )}
         </fieldset>
 
         {error && <div className="notice notice-error">Revise as informações: {error}</div>}
