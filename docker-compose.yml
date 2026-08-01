@@ -22,12 +22,20 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     environment:
-      APP_ENV: local
+      APP_ENV: ${APP_ENV:-local}
+      APP_VERSION: ${APP_VERSION:-0.1.0}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-governance}:${POSTGRES_PASSWORD:-governance-local-only}@postgres:5432/${POSTGRES_DB:-ai_governance}
-      AUTO_CREATE_SCHEMA: "true"
-      DEV_AUTH_ENABLED: "true"
-      OIDC_ENABLED: "false"
-      CORS_ORIGINS: http://localhost:3000
+      AUTO_CREATE_SCHEMA: ${AUTO_CREATE_SCHEMA:-true}
+      DEV_AUTH_ENABLED: ${DEV_AUTH_ENABLED:-true}
+      OIDC_ENABLED: ${OIDC_ENABLED:-false}
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:-ai-governance-api}
+      OIDC_ALGORITHMS: ${OIDC_ALGORITHMS:-RS256}
+      OIDC_GROUPS_CLAIM: ${OIDC_GROUPS_CLAIM:-governance_areas}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-true}
+      AUDIT_HASH_SALT: ${AUDIT_HASH_SALT:-local-development-only}
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:

@@ -1,3 +1,5 @@
+"""SQLAlchemy persistence models for governance aggregates and audit events."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -30,18 +32,24 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 def new_id() -> str:
+    """Return a UUID string suitable for public entity identifiers."""
     return str(uuid4())
 
 
 def utcnow() -> datetime:
+    """Return the current timezone-aware UTC timestamp."""
     return datetime.now(UTC)
 
 
 class Base(DeclarativeBase):
+    """Declarative base shared by all persistence models."""
+
     pass
 
 
 class VersionedMixin:
+    """Add optimistic versioning and lifecycle timestamps to mutable entities."""
+
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, nullable=False
@@ -52,6 +60,8 @@ class VersionedMixin:
 
 
 class Initiative(VersionedMixin, Base):
+    """Business proposal evaluated by the governance policy."""
+
     __tablename__ = "initiatives"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
@@ -99,12 +109,12 @@ class Initiative(VersionedMixin, Base):
         back_populates="initiative", cascade="all, delete-orphan", lazy="selectin"
     )
     assessments: Mapped[list[Assessment]] = relationship(back_populates="initiative")
-    systems: Mapped[list[AISystem]] = relationship(
-        back_populates="initiative", lazy="selectin"
-    )
+    systems: Mapped[list[AISystem]] = relationship(back_populates="initiative", lazy="selectin")
 
 
 class AISystem(VersionedMixin, Base):
+    """Operational AI system created from an approved initiative."""
+
     __tablename__ = "ai_systems"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
@@ -122,13 +132,13 @@ class AISystem(VersionedMixin, Base):
     metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
 
     initiative: Mapped[Initiative] = relationship(back_populates="systems")
-    models: Mapped[list[ModelAsset]] = relationship(
-        back_populates="ai_system", lazy="selectin"
-    )
+    models: Mapped[list[ModelAsset]] = relationship(back_populates="ai_system", lazy="selectin")
     agents: Mapped[list[Agent]] = relationship(back_populates="ai_system", lazy="selectin")
 
 
 class ModelAsset(VersionedMixin, Base):
+    """Versioned model registered within an AI system."""
+
     __tablename__ = "model_assets"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
@@ -152,6 +162,8 @@ class ModelAsset(VersionedMixin, Base):
 
 
 class Agent(VersionedMixin, Base):
+    """Governed agent with explicit tools, permissions, and limits."""
+
     __tablename__ = "agents"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
@@ -179,6 +191,8 @@ class Agent(VersionedMixin, Base):
 
 
 class Assessment(VersionedMixin, Base):
+    """Versioned assessment answers and resulting risk classification."""
+
     __tablename__ = "assessments"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
@@ -199,6 +213,8 @@ class Assessment(VersionedMixin, Base):
 
 
 class Approval(VersionedMixin, Base):
+    """Approval gate assigned to one governance area."""
+
     __tablename__ = "approvals"
     __table_args__ = (
         UniqueConstraint("initiative_id", "area", name="uq_approval_initiative_area"),
@@ -226,6 +242,8 @@ class Approval(VersionedMixin, Base):
 
 
 class Evidence(VersionedMixin, Base):
+    """Evidence reference and digest supporting a governance decision."""
+
     __tablename__ = "evidence"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
@@ -244,6 +262,8 @@ class Evidence(VersionedMixin, Base):
 
 
 class Incident(VersionedMixin, Base):
+    """Operational incident associated with an AI system."""
+
     __tablename__ = "incidents"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
@@ -260,6 +280,8 @@ class Incident(VersionedMixin, Base):
 
 
 class InternationalProcessing(VersionedMixin, Base):
+    """Cross-border processing record and its safeguards."""
+
     __tablename__ = "international_processing"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
@@ -280,6 +302,8 @@ class InternationalProcessing(VersionedMixin, Base):
 
 
 class AuditEvent(Base):
+    """Append-only event linked into a tamper-evident hash chain."""
+
     __tablename__ = "audit_events"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)

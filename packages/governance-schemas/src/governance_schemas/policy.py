@@ -1,3 +1,5 @@
+"""Contracts exchanged with governance policy evaluators."""
+
 from pydantic import BaseModel, Field
 
 from governance_schemas.enums import (
@@ -11,6 +13,8 @@ from governance_schemas.enums import (
 
 
 class PolicyContext(BaseModel):
+    """Complete normalized inputs required for policy evaluation."""
+
     decision_impact: DecisionImpact
     data_classification: DataClassification
     autonomy_level: AutonomyLevel
@@ -30,6 +34,8 @@ class PolicyContext(BaseModel):
 
 
 class RiskBreakdown(BaseModel):
+    """Explainable components of a governance risk score."""
+
     impact: int = Field(ge=0, le=30)
     data: int = Field(ge=0, le=25)
     autonomy: int = Field(ge=0, le=25)
@@ -38,16 +44,21 @@ class RiskBreakdown(BaseModel):
 
     @property
     def total(self) -> int:
+        """Return the bounded aggregate score."""
         return self.impact + self.data + self.autonomy + self.exposure + self.regulatory
 
 
 class ApprovalRequirement(BaseModel):
+    """Policy result for one organizational approval area."""
+
     area: ApprovalArea
     required: bool
     reason: str
 
 
 class PolicyDecision(BaseModel):
+    """Versioned, explainable result of evaluating a policy context."""
+
     policy_id: str = "baseline-governance-policy"
     policy_version: str = "1.0.0"
     score: int = Field(ge=0, le=100)
@@ -59,4 +70,5 @@ class PolicyDecision(BaseModel):
 
     @property
     def can_submit(self) -> bool:
+        """Return whether no fail-closed reason blocks submission."""
         return not self.blocked_reasons

@@ -1,3 +1,5 @@
+"""Vendor-neutral governance contracts and taxonomies."""
+
 from governance_schemas.enums import (
     ApprovalArea,
     ApprovalStatus,

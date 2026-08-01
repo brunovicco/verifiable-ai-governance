@@ -1,3 +1,5 @@
+"""Asynchronous SQLAlchemy engine and request-scoped sessions."""
+
 from collections.abc import AsyncIterator
 
 from sqlalchemy.ext.asyncio import (
@@ -19,5 +21,6 @@ SessionFactory = async_sessionmaker(engine, expire_on_commit=False, class_=Async
 
 
 async def get_db() -> AsyncIterator[AsyncSession]:
+    """Yield one transaction-capable session per request."""
     async with SessionFactory() as session:
         yield session

@@ -1,3 +1,5 @@
+"""Authentication adapter for OIDC and explicit local identities."""
+
 from functools import lru_cache
 from typing import Annotated
 
@@ -8,7 +10,7 @@ from governance_schemas import ApprovalArea
 from jwt import PyJWKClient
 from pydantic import BaseModel
 
-from ai_governance_api.config import Settings, get_settings
+from ai_governance_api.config import AppEnvironment, Settings, get_settings
 
 bearer = HTTPBearer(auto_error=False)
 BearerCredentials = Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)]
@@ -16,6 +18,8 @@ SettingsDependency = Annotated[Settings, Depends(get_settings)]
 
 
 class Principal(BaseModel):
+    """Authenticated identity and its governance approval capabilities."""
+
     user_id: str
     email: str | None = None
     approval_areas: frozenset[ApprovalArea] = frozenset()
@@ -24,6 +28,7 @@ class Principal(BaseModel):
 
 @lru_cache
 def jwks_client(issuer: str) -> PyJWKClient:
+    """Return a cached JWKS client for an issuer."""
     return PyJWKClient(f"{issuer.rstrip('/')}/.well-known/jwks.json")
 
 
@@ -57,7 +62,7 @@ def _oidc_principal(
         claims = jwt.decode(
             credentials.credentials,
             signing_key.key,
-            algorithms=[item.strip() for item in settings.oidc_algorithms.split(",")],
+            algorithms=settings.oidc_algorithm_list,
             audience=settings.oidc_audience,
             issuer=settings.oidc_issuer,
         )
@@ -83,9 +88,13 @@ async def get_principal(
     x_user_email: Annotated[str | None, Header()] = None,
     x_user_areas: Annotated[str | None, Header()] = None,
 ) -> Principal:
+    """Resolve the trusted principal for the current request."""
     if settings.oidc_enabled:
         return _oidc_principal(credentials, settings)
-    if settings.app_env == "local" and settings.dev_auth_enabled:
+    if (
+        settings.app_env in {AppEnvironment.LOCAL, AppEnvironment.TEST}
+        and settings.dev_auth_enabled
+    ):
         if not x_user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

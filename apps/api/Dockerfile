@@ -12,10 +12,15 @@ RUN uv sync --frozen --package ai-governance-api --no-dev --no-editable
 
 FROM python:3.12-slim-bookworm
 WORKDIR /workspace
+RUN addgroup --system governance && adduser --system --ingroup governance governance
 COPY --from=builder /workspace/.venv /workspace/.venv
 COPY apps/api/alembic.ini /workspace/alembic.ini
 COPY apps/api/alembic /workspace/alembic
 ENV PATH="/workspace/.venv/bin:$PATH" \
-    PYTHONUNBUFFERED=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UVICORN_HOST=0.0.0.0 \
+    UVICORN_PORT=8000
+USER governance
 EXPOSE 8000
-CMD ["uvicorn", "ai_governance_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "ai_governance_api.main:app"]

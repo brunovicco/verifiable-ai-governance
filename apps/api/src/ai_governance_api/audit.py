@@ -1,3 +1,5 @@
+"""Append-only, hash-chained audit event persistence."""
+
 import hashlib
 import json
 from typing import Any
@@ -19,6 +21,7 @@ async def append_audit_event(
     entity_version: int,
     payload: dict[str, Any],
 ) -> AuditEvent:
+    """Append an audit event linked to the latest event in the global chain."""
     previous = await session.scalar(
         select(AuditEvent).order_by(AuditEvent.occurred_at.desc(), AuditEvent.id.desc()).limit(1)
     )
