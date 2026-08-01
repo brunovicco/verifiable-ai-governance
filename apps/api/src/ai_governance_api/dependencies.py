@@ -7,6 +7,12 @@ from fastapi import Depends
 from policy_engine import GovernancePolicyEngine
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ai_governance_api.adapters import (
+    SqlAlchemyAssessmentAudit,
+    SqlAlchemyAssessmentStore,
+    SqlAlchemyTransaction,
+)
+from ai_governance_api.application import ListAssessments, SaveAssessment, SubmitAssessment
 from ai_governance_api.auth import Principal, get_principal
 from ai_governance_api.database import get_db
 from ai_governance_api.services import InitiativeService, InventoryService, PolicyEvaluator
@@ -39,3 +45,31 @@ def get_inventory_service(session: DatabaseSession) -> InventoryService:
 
 InitiativeServiceDependency = Annotated[InitiativeService, Depends(get_initiative_service)]
 InventoryServiceDependency = Annotated[InventoryService, Depends(get_inventory_service)]
+
+
+def get_save_assessment(session: DatabaseSession) -> SaveAssessment:
+    """Build the request-scoped save-assessment use case at the composition root."""
+    return SaveAssessment(
+        SqlAlchemyAssessmentStore(session),
+        SqlAlchemyAssessmentAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+def get_list_assessments(session: DatabaseSession) -> ListAssessments:
+    """Build the request-scoped assessment query at the composition root."""
+    return ListAssessments(SqlAlchemyAssessmentStore(session))
+
+
+def get_submit_assessment(session: DatabaseSession) -> SubmitAssessment:
+    """Build the request-scoped submit-assessment use case at the composition root."""
+    return SubmitAssessment(
+        SqlAlchemyAssessmentStore(session),
+        SqlAlchemyAssessmentAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+SaveAssessmentDependency = Annotated[SaveAssessment, Depends(get_save_assessment)]
+ListAssessmentsDependency = Annotated[ListAssessments, Depends(get_list_assessments)]
+SubmitAssessmentDependency = Annotated[SubmitAssessment, Depends(get_submit_assessment)]

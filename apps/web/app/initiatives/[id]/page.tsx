@@ -5,9 +5,65 @@ import { FormEvent, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 import { StatusPill } from "@/components/StatusPill";
-import { createAISystem, decideApproval, getInitiative, submitInitiative } from "@/lib/api";
+import {
+  createAISystem,
+  decideApproval,
+  getInitiative,
+  listAssessments,
+  submitInitiative,
+} from "@/lib/api";
 import { label } from "@/lib/labels";
-import type { AISystem, Approval, Initiative } from "@/lib/types";
+import type { AISystem, Approval, Assessment, AssessmentKind, Initiative } from "@/lib/types";
+
+const ASSESSMENT_KINDS: AssessmentKind[] = [
+  "ai-impact-assessment",
+  "ripd",
+  "international-processing-assessment",
+];
+
+function isAssessmentKind(value: string): value is AssessmentKind {
+  return ASSESSMENT_KINDS.some((kind) => kind === value);
+}
+
+function AssessmentWorkspace({
+  assessments,
+  initiative,
+}: {
+  assessments: Assessment[];
+  initiative: Initiative;
+}) {
+  const required = initiative.required_documents.filter(isAssessmentKind);
+
+  return (
+    <section className="panel assessments-panel">
+      <div className="panel-heading">
+        <div>
+          <p className="eyebrow">AVALIAÇÕES E EVIDÊNCIAS</p>
+          <h2>Assessments estruturados</h2>
+        </div>
+        <small>Rascunhos versionados e enviados para revisão independente</small>
+      </div>
+      <div className="assessment-grid">
+        {required.map((kind) => {
+          const assessment = assessments.find((item) => item.assessment_type === kind);
+          return (
+            <Link className="assessment-card" href={`/initiatives/${initiative.id}/assessments/${kind}`} key={kind}>
+              <div>
+                <strong>{label(kind)}</strong>
+                <small>{assessment ? `Schema ${assessment.schema_version} · versão ${assessment.version}` : "Formulário guiado pendente"}</small>
+              </div>
+              <div className="assessment-card-status">
+                {assessment && <StatusPill value={assessment.risk_tier} />}
+                <StatusPill value={assessment?.status ?? "not_started"} />
+                <span aria-hidden>→</span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 function ApprovalCard({ approval, initiativeId, onUpdated }: { approval: Approval; initiativeId: string; onUpdated: (value: Initiative) => void }) {
   const [open, setOpen] = useState(false);
@@ -147,10 +203,18 @@ function SystemInventory({
 export default function InitiativePage() {
   const { id } = useParams<{ id: string }>();
   const [initiative, setInitiative] = useState<Initiative | null>(null);
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { getInitiative(id).then(setInitiative).catch((reason: Error) => setError(reason.message)); }, [id]);
+  useEffect(() => {
+    Promise.all([getInitiative(id), listAssessments(id)])
+      .then(([initiativeValue, assessmentValues]) => {
+        setInitiative(initiativeValue);
+        setAssessments(assessmentValues);
+      })
+      .catch((reason: Error) => setError(reason.message));
+  }, [id]);
 
   async function submit() {
     if (!initiative) return; setBusy(true); setError("");
@@ -181,6 +245,7 @@ export default function InitiativePage() {
       <article className="panel summary-card"><p className="eyebrow">AVALIAÇÃO PRELIMINAR</p><div className="score"><strong>{initiative.risk_score}</strong><span>/ 100</span></div><StatusPill value={initiative.risk_tier} /><dl><div><dt>Área</dt><dd>{initiative.business_area}</dd></div><div><dt>Owner</dt><dd>{initiative.business_owner_id}</dd></div><div><dt>Política</dt><dd>{initiative.policy_id} v{initiative.policy_version}</dd></div><div><dt>Versão do registro</dt><dd>{initiative.version}</dd></div></dl></article>
       <article className="panel documents-card"><p className="eyebrow">DOCUMENTAÇÃO REQUERIDA</p><h2>{initiative.required_documents.length} artefatos</h2><ul className="document-list">{initiative.required_documents.map((document) => <li key={document}><span>✓</span>{label(document)}</li>)}</ul></article>
     </section>
+    <AssessmentWorkspace assessments={assessments} initiative={initiative} />
     {initiative.status !== "draft" && <section className="panel approvals-panel"><div className="panel-heading"><div><p className="eyebrow">FLUXO DE APROVAÇÃO</p><h2>{approved} de {required.length} gates concluídos</h2></div><div className="progress"><span style={{ width: `${required.length ? (approved / required.length) * 100 : 0}%` }} /></div></div><div className="approval-grid">{initiative.approvals?.map((approval) => <ApprovalCard approval={approval} initiativeId={initiative.id} key={approval.id} onUpdated={setInitiative} />)}</div></section>}
     {(initiative.status === "approved" || (initiative.systems?.length ?? 0) > 0) && (
       <SystemInventory initiative={initiative} onCreated={addSystem} />

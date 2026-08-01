@@ -5,7 +5,7 @@
 - [x] Monorepo, setup local, PostgreSQL, API, portal, testes e CI.
 - [x] Cadastro, triagem, gates condicionais, SoD, auditoria e versionamento.
 - [x] CRUD e telas de AI systems, modelos e agentes ligados à iniciativa aprovada.
-- [ ] Assessment estruturado para AIA, RIPD e processamento internacional.
+- [x] Assessment estruturado para AIA, RIPD e processamento internacional.
 - [ ] Catálogo inicial de 25 controles em YAML e visualização de aplicabilidade.
 - [ ] Upload seguro de evidências com object storage, checksum do arquivo e malware scan.
 - [ ] Workflow de revisão, solicitação de ajuste e resubmissão sem apagar histórico.

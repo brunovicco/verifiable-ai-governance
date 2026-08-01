@@ -194,6 +194,13 @@ class Assessment(VersionedMixin, Base):
     """Versioned assessment answers and resulting risk classification."""
 
     __tablename__ = "assessments"
+    __table_args__ = (
+        UniqueConstraint(
+            "initiative_id",
+            "assessment_type",
+            name="uq_assessment_initiative_type",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     initiative_id: Mapped[str] = mapped_column(

@@ -8,6 +8,7 @@ const LABELS: Record<string, string> = {
   rejected: "Rejeitada",
   not_required: "Não aplicável",
   pending: "Pendente",
+  not_started: "Não iniciado",
   low: "Baixo",
   medium: "Médio",
   high: "Alto",

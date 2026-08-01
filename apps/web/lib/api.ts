@@ -1,4 +1,12 @@
-import type { AgentAsset, AISystem, Identity, Initiative, ModelAsset } from "@/lib/types";
+import type {
+  AgentAsset,
+  AISystem,
+  Assessment,
+  AssessmentKind,
+  Identity,
+  Initiative,
+  ModelAsset,
+} from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 export const DEMO_REQUESTER: Identity = { userId: "demo.requester" };
@@ -53,6 +61,29 @@ export function createInitiative(payload: Record<string, unknown>): Promise<Init
 
 export function submitInitiative(id: string, version: number): Promise<Initiative> {
   return request(`/api/v1/initiatives/${id}/submit`, {
+    method: "POST",
+    body: JSON.stringify({ expected_version: version }),
+  });
+}
+
+export function listAssessments(initiativeId: string): Promise<Assessment[]> {
+  return request(`/api/v1/initiatives/${initiativeId}/assessments`);
+}
+
+export function saveAssessment(
+  initiativeId: string,
+  kind: AssessmentKind,
+  answers: Record<string, unknown>,
+  expectedVersion: number | null,
+): Promise<Assessment> {
+  return request(`/api/v1/initiatives/${initiativeId}/assessments/${kind}`, {
+    method: "PUT",
+    body: JSON.stringify({ expected_version: expectedVersion, answers }),
+  });
+}
+
+export function submitAssessment(id: string, version: number): Promise<Assessment> {
+  return request(`/api/v1/assessments/${id}/submit`, {
     method: "POST",
     body: JSON.stringify({ expected_version: version }),
   });

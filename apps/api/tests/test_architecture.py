@@ -1,3 +1,5 @@
+import ast
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -9,6 +11,7 @@ from httpx import AsyncClient
 from pydantic import ValidationError
 
 USER_HEADERS = {"X-User-Id": "architecture-test-owner"}
+API_SOURCE = Path(__file__).parents[1] / "src" / "ai_governance_api"
 
 
 class FixedPolicyEvaluator:
@@ -97,3 +100,26 @@ def test_production_accepts_explicit_fail_closed_configuration() -> None:
 
     assert settings.app_version == "2026.07.31"
     assert settings.cors_origin_list == ["https://governance.example.com"]
+
+
+@pytest.mark.parametrize(
+    "relative_path",
+    ["domain/assessments.py", "application/assessments.py"],
+)
+def test_assessment_core_does_not_import_delivery_or_persistence_frameworks(
+    relative_path: str,
+) -> None:
+    source = (API_SOURCE / relative_path).read_text(encoding="utf-8")
+    imports = {
+        node.module.split(".")[0]
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+    imports.update(
+        alias.name.split(".")[0]
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    )
+
+    assert imports.isdisjoint({"fastapi", "sqlalchemy", "pydantic"})
