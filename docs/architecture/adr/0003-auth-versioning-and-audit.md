@@ -15,3 +15,6 @@
 
 O encadeamento por hash torna adulteração detectável, mas não substitui WORM storage,
 assinatura externa, SIEM ou timestamping confiável. Esses controles entram após o MVP.
+
+A configuração de confiança, as fronteiras de Clean Architecture e a validação com
+provedor real foram detalhadas posteriormente no ADR 0008.

@@ -3,9 +3,25 @@
 from enum import StrEnum
 from functools import lru_cache
 from typing import Literal
+from urllib.parse import urlparse
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+TRUSTED_OIDC_ALGORITHMS = frozenset(
+    {
+        "RS256",
+        "RS384",
+        "RS512",
+        "PS256",
+        "PS384",
+        "PS512",
+        "ES256",
+        "ES384",
+        "ES512",
+        "EdDSA",
+    }
+)
 
 
 class AppEnvironment(StrEnum):
@@ -41,9 +57,15 @@ class Settings(BaseSettings):
     oidc_enabled: bool = False
     dev_auth_enabled: bool = True
     oidc_issuer: str = ""
+    oidc_jwks_url: str = ""
     oidc_audience: str = "ai-governance-api"
     oidc_algorithms: str = "RS256"
     oidc_groups_claim: str = "governance_areas"
+    oidc_admin_claim: str = "governance_admin"
+    oidc_jwks_timeout_seconds: float = Field(default=2.0, gt=0, le=10)
+    oidc_jwks_cache_seconds: float = Field(default=300, ge=30, le=86400)
+    oidc_clock_skew_seconds: float = Field(default=30, ge=0, le=300)
+    oidc_max_token_length: int = Field(default=16384, ge=1024, le=65536)
 
     audit_hash_salt: str = Field(default="local-development-only", repr=False)
     control_catalog_path: str = ""
@@ -97,10 +119,19 @@ class Settings(BaseSettings):
             raise ValueError("OIDC must be enabled outside the local environment")
         if self.oidc_enabled and not self.oidc_issuer:
             raise ValueError("OIDC_ISSUER is required when OIDC is enabled")
+        if self.oidc_enabled and not self.oidc_jwks_url:
+            raise ValueError("OIDC_JWKS_URL is required when OIDC is enabled")
         if not self.oidc_algorithm_list or any(
-            algorithm.lower() == "none" for algorithm in self.oidc_algorithm_list
+            algorithm not in TRUSTED_OIDC_ALGORITHMS for algorithm in self.oidc_algorithm_list
         ):
-            raise ValueError("OIDC_ALGORITHMS must contain trusted signing algorithms")
+            raise ValueError("OIDC_ALGORITHMS must contain only trusted asymmetric algorithms")
+        if self.oidc_enabled:
+            self._validate_oidc_url("OIDC_ISSUER", self.oidc_issuer, require_tls=not is_local)
+            self._validate_oidc_url("OIDC_JWKS_URL", self.oidc_jwks_url, require_tls=not is_local)
+            if not self.oidc_audience.strip():
+                raise ValueError("OIDC_AUDIENCE must not be empty")
+            if not self.oidc_groups_claim.strip() or not self.oidc_admin_claim.strip():
+                raise ValueError("OIDC claim paths must not be empty")
         if not is_local and self.dev_auth_enabled:
             raise ValueError("DEV_AUTH_ENABLED must be false outside local and test environments")
         if not is_local and self.auto_create_schema:
@@ -128,6 +159,17 @@ class Settings(BaseSettings):
         ):
             raise ValueError("Explicit object-storage endpoints must use HTTPS outside local")
         return self
+
+    @staticmethod
+    def _validate_oidc_url(name: str, value: str, *, require_tls: bool) -> None:
+        """Validate an explicit OIDC trust URL and prohibit embedded credentials."""
+        parsed = urlparse(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError(f"{name} must be an absolute HTTP(S) URL")
+        if parsed.username is not None or parsed.password is not None:
+            raise ValueError(f"{name} must not contain credentials")
+        if require_tls and parsed.scheme != "https":
+            raise ValueError(f"{name} must use HTTPS outside local and test environments")
 
 
 @lru_cache

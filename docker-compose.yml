@@ -1,5 +1,42 @@
 name: verifiable-ai-governance
 
+x-api-environment: &api-environment
+  APP_ENV: ${APP_ENV:-local}
+  APP_VERSION: ${APP_VERSION:-0.1.0}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-governance}:${POSTGRES_PASSWORD:-governance-local-only}@postgres:5432/${POSTGRES_DB:-ai_governance}
+  AUTO_CREATE_SCHEMA: "false"
+  DEV_AUTH_ENABLED: ${DEV_AUTH_ENABLED:-true}
+  OIDC_ENABLED: ${OIDC_ENABLED:-false}
+  OIDC_ISSUER: ${OIDC_ISSUER:-}
+  OIDC_JWKS_URL: ${OIDC_JWKS_URL:-}
+  OIDC_AUDIENCE: ${OIDC_AUDIENCE:-ai-governance-api}
+  OIDC_ALGORITHMS: ${OIDC_ALGORITHMS:-RS256}
+  OIDC_GROUPS_CLAIM: ${OIDC_GROUPS_CLAIM:-governance_areas}
+  OIDC_ADMIN_CLAIM: ${OIDC_ADMIN_CLAIM:-governance_admin}
+  OIDC_JWKS_TIMEOUT_SECONDS: ${OIDC_JWKS_TIMEOUT_SECONDS:-2}
+  OIDC_JWKS_CACHE_SECONDS: ${OIDC_JWKS_CACHE_SECONDS:-300}
+  OIDC_CLOCK_SKEW_SECONDS: ${OIDC_CLOCK_SKEW_SECONDS:-30}
+  OIDC_MAX_TOKEN_LENGTH: ${OIDC_MAX_TOKEN_LENGTH:-16384}
+  CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+  CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-true}
+  AUDIT_HASH_SALT: ${AUDIT_HASH_SALT:-local-development-only}
+  CONTROL_CATALOG_PATH: ${CONTROL_CATALOG_PATH:-}
+  EVIDENCE_MAX_BYTES: ${EVIDENCE_MAX_BYTES:-10485760}
+  EVIDENCE_REQUEST_OVERHEAD_BYTES: ${EVIDENCE_REQUEST_OVERHEAD_BYTES:-65536}
+  EVIDENCE_ALLOWED_CONTENT_TYPES: ${EVIDENCE_ALLOWED_CONTENT_TYPES:-application/pdf,image/png,image/jpeg,text/plain,text/csv,application/json}
+  MALWARE_SCANNER_HOST: malware-scanner
+  MALWARE_SCANNER_PORT: 3310
+  MALWARE_SCANNER_CONNECT_TIMEOUT_SECONDS: ${MALWARE_SCANNER_CONNECT_TIMEOUT_SECONDS:-2}
+  MALWARE_SCANNER_SCAN_TIMEOUT_SECONDS: ${MALWARE_SCANNER_SCAN_TIMEOUT_SECONDS:-30}
+  OBJECT_STORAGE_ENDPOINT_URL: http://object-storage:9000
+  OBJECT_STORAGE_REGION: ${OBJECT_STORAGE_REGION:-us-east-1}
+  OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET:-governance-evidence}
+  OBJECT_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-governance}
+  OBJECT_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-governance-local-only}
+  OBJECT_STORAGE_AUTO_CREATE_BUCKET: ${OBJECT_STORAGE_AUTO_CREATE_BUCKET:-true}
+  OBJECT_STORAGE_SERVER_SIDE_ENCRYPTION: ${OBJECT_STORAGE_SERVER_SIDE_ENCRYPTION:-}
+
 services:
   postgres:
     image: postgres:17-alpine
@@ -30,51 +67,39 @@ services:
       - governance-evidence:/data
 
   malware-scanner:
-    image: clamav/clamav:1.4.3
+    image: clamav/clamav-debian:1.4.5@sha256:50296b62b23764b474be18310521f64a720524d69334ea5236aab5fac44ff993
     ports:
       - "127.0.0.1:${CLAMAV_PORT:-3310}:3310"
     volumes:
       - governance-clamav:/var/lib/clamav
 
+  migrate:
+    image: verifiable-ai-governance-api:local
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: ["alembic", "-c", "/workspace/alembic.ini", "upgrade", "head"]
+    environment:
+      <<: *api-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
   api:
+    image: verifiable-ai-governance-api:local
     build:
       context: .
       dockerfile: apps/api/Dockerfile
     environment:
-      APP_ENV: ${APP_ENV:-local}
-      APP_VERSION: ${APP_VERSION:-0.1.0}
-      LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-governance}:${POSTGRES_PASSWORD:-governance-local-only}@postgres:5432/${POSTGRES_DB:-ai_governance}
-      AUTO_CREATE_SCHEMA: ${AUTO_CREATE_SCHEMA:-true}
-      DEV_AUTH_ENABLED: ${DEV_AUTH_ENABLED:-true}
-      OIDC_ENABLED: ${OIDC_ENABLED:-false}
-      OIDC_ISSUER: ${OIDC_ISSUER:-}
-      OIDC_AUDIENCE: ${OIDC_AUDIENCE:-ai-governance-api}
-      OIDC_ALGORITHMS: ${OIDC_ALGORITHMS:-RS256}
-      OIDC_GROUPS_CLAIM: ${OIDC_GROUPS_CLAIM:-governance_areas}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
-      CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-true}
-      AUDIT_HASH_SALT: ${AUDIT_HASH_SALT:-local-development-only}
-      CONTROL_CATALOG_PATH: ${CONTROL_CATALOG_PATH:-}
-      EVIDENCE_MAX_BYTES: ${EVIDENCE_MAX_BYTES:-10485760}
-      EVIDENCE_REQUEST_OVERHEAD_BYTES: ${EVIDENCE_REQUEST_OVERHEAD_BYTES:-65536}
-      EVIDENCE_ALLOWED_CONTENT_TYPES: ${EVIDENCE_ALLOWED_CONTENT_TYPES:-application/pdf,image/png,image/jpeg,text/plain,text/csv,application/json}
-      MALWARE_SCANNER_HOST: malware-scanner
-      MALWARE_SCANNER_PORT: 3310
-      MALWARE_SCANNER_CONNECT_TIMEOUT_SECONDS: ${MALWARE_SCANNER_CONNECT_TIMEOUT_SECONDS:-2}
-      MALWARE_SCANNER_SCAN_TIMEOUT_SECONDS: ${MALWARE_SCANNER_SCAN_TIMEOUT_SECONDS:-30}
-      OBJECT_STORAGE_ENDPOINT_URL: http://object-storage:9000
-      OBJECT_STORAGE_REGION: ${OBJECT_STORAGE_REGION:-us-east-1}
-      OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET:-governance-evidence}
-      OBJECT_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-governance}
-      OBJECT_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-governance-local-only}
-      OBJECT_STORAGE_AUTO_CREATE_BUCKET: ${OBJECT_STORAGE_AUTO_CREATE_BUCKET:-true}
-      OBJECT_STORAGE_SERVER_SIDE_ENCRYPTION: ${OBJECT_STORAGE_SERVER_SIDE_ENCRYPTION:-}
+      <<: *api-environment
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       object-storage:
         condition: service_started
       malware-scanner:

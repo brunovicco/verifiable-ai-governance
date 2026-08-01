@@ -28,3 +28,13 @@ accountable business owner por iniciativa.
 - alto/crítico exige pessoas independentes entre áreas aprovadoras;
 - administrador da plataforma não recebe automaticamente autoridade de aprovação;
 - exceção não é aprovada pelo mesmo papel que solicita ou implementa a exceção.
+
+## Identidade corporativa
+
+- IAM administra app registrations, consentimentos, grupos e ciclo de vida no Entra;
+- Segurança aprova trust boundaries, Conditional Access, credenciais e scopes;
+- Governança de IA responde pelo mapeamento App Role/grupo → área de aprovação;
+- Privacidade valida atributos coletados do Graph, finalidade, retenção e localização;
+- Infra/DevOps operam configuração, secret manager, disponibilidade e observabilidade;
+- nenhuma dessas funções pode alterar sozinha um mapeamento e aprovar usando a
+  capacidade que acabou de conceder.

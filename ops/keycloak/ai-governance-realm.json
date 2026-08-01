@@ -1,0 +1,91 @@
+{
+  "realm": "ai-governance",
+  "enabled": true,
+  "displayName": "Verifiable AI Governance (local validation)",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "roles": {
+    "realm": [
+      {"name": "business"},
+      {"name": "security"}
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "ai-governance-cli",
+      "name": "OIDC integration validator",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocolMappers": [
+        {
+          "name": "governance areas",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "false",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "governance_areas",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "governance api audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "ai-governance-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "security.reviewer",
+      "enabled": true,
+      "firstName": "Security",
+      "lastName": "Reviewer",
+      "email": "security.reviewer@example.test",
+      "emailVerified": true,
+      "requiredActions": [],
+      "realmRoles": ["security"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "local-only",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "business.reviewer",
+      "enabled": true,
+      "firstName": "Business",
+      "lastName": "Reviewer",
+      "email": "business.reviewer@example.test",
+      "emailVerified": true,
+      "requiredActions": [],
+      "realmRoles": ["business"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "local-only",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

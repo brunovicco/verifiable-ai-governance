@@ -7,7 +7,7 @@ governança em controles verificáveis, aprovações condicionais e evidências 
 ## O que já está disponível
 
 - portal Next.js voltado a solicitantes e aprovadores não técnicos;
-- API FastAPI com autenticação preparada para OIDC;
+- API FastAPI com autenticação OIDC validada contra provedor real;
 - inventário navegável de iniciativas, sistemas, modelos e agentes, com ownership,
   versão, região, escopo de uso, autonomia, ferramentas e limites operacionais;
 - estruturas persistentes preparadas para avaliações, evidências, incidentes e
@@ -34,13 +34,18 @@ cp .env.example .env
 docker compose up --build
 ```
 
+Antes de iniciar a API, o Compose executa `alembic upgrade head` em um serviço one-shot.
+A API só recebe tráfego se a migração terminar com sucesso. O volume PostgreSQL é
+preservado; não use `docker compose down -v` como procedimento de atualização.
+
 Se a porta local do PostgreSQL já estiver ocupada, use por exemplo
 `POSTGRES_PORT=55432 docker compose up --build`; a comunicação interna entre os
 containers continua automática.
 
 O Compose também inicia MinIO e ClamAV. Na primeira execução, o scanner pode levar
 alguns minutos para preparar as assinaturas; até ficar disponível, uploads falham de
-forma fechada com `503`.
+forma fechada com `503`. A imagem Debian oficial do ClamAV é fixada por digest
+multi-arquitetura e funciona em hosts AMD64 e ARM64.
 
 Abra o portal em <http://localhost:3000> e a documentação da API em
 <http://localhost:8000/docs>.
@@ -56,6 +61,7 @@ Pré-requisitos: Python 3.12+, `uv`, Node.js 20.9+ e PostgreSQL.
 ```bash
 make setup
 docker compose up -d postgres
+make migrate
 make dev-api
 ```
 
@@ -114,9 +120,39 @@ provedor em vez de variáveis estáticas.
 ## Autenticação OIDC
 
 Em ambientes compartilhados, defina `APP_ENV` diferente de `local`, habilite
-`OIDC_ENABLED=true` e informe `OIDC_ISSUER` e `OIDC_AUDIENCE`. A aplicação se recusa a
-iniciar fora do ambiente local se OIDC estiver desabilitado. O claim configurado em
-`OIDC_GROUPS_CLAIM` deve conter as áreas que o usuário pode aprovar.
+`OIDC_ENABLED=true` e informe `OIDC_ISSUER`, `OIDC_JWKS_URL` e `OIDC_AUDIENCE`. A
+aplicação se recusa a iniciar fora do ambiente local se OIDC estiver desabilitado ou
+se issuer/JWKS não usarem HTTPS. O claim configurado em `OIDC_GROUPS_CLAIM` pode ser um
+caminho aninhado, como `realm_access.roles`, e deve conter as áreas que o usuário pode
+aprovar. Somente o booleano JSON `true` no `OIDC_ADMIN_CLAIM` concede administração.
+
+Assinatura, issuer, audience, expiração, emissão e subject são obrigatoriamente
+validados. Algoritmos simétricos não são aceitos. A obtenção de JWKS possui timeout e
+cache configuráveis, e tokens excessivamente grandes são rejeitados antes do acesso ao
+provedor.
+
+### Validação local com Keycloak
+
+O overlay opcional usa Keycloak exclusivamente como provedor de teste reproduzível. Ele
+importa um realm local, emite um token RS256 com audience da API e mapeia o papel
+`security` para `governance_areas`.
+
+```bash
+make oidc-up
+make oidc-verify
+make oidc-down
+```
+
+O validador confirma token real, mapeamento do grupo e rejeição de token ausente e de
+assinatura adulterada. As senhas presentes no realm e em `.env.example` são somente
+locais. O fluxo de senha direta existe apenas neste cliente de teste; autenticação
+interativa do portal com authorization code e PKCE permanece no backlog.
+
+A implementação corporativa planejada utilizará Microsoft Entra ID para o login e
+Microsoft Graph via OBO para identificar automaticamente o perfil, o departamento e os
+grupos transitivos. Áreas de aprovação virão somente de App Roles ou object IDs
+explicitamente mapeados; departamento e nomes de grupos não concederão autorização.
+Consulte o [plano Entra/Graph](docs/architecture/MICROSOFT_ENTRA_GRAPH_PLAN.md).
 
 ## Organização
 

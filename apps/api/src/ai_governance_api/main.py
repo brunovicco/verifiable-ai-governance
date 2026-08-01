@@ -16,6 +16,7 @@ from ai_governance_api.dependencies import get_control_catalog
 from ai_governance_api.errors import ApplicationError, ErrorKind
 from ai_governance_api.models import Base
 from ai_governance_api.routers.assessments import router as assessments_router
+from ai_governance_api.routers.authentication import router as authentication_router
 from ai_governance_api.routers.controls import router as controls_router
 from ai_governance_api.routers.evidence import router as evidence_router
 from ai_governance_api.routers.health import router as health_router
@@ -143,6 +144,7 @@ def create_app() -> FastAPI:
         max_bytes=settings.evidence_max_bytes + settings.evidence_request_overhead_bytes,
     )
     app.include_router(health_router)
+    app.include_router(authentication_router)
     app.include_router(initiatives_router)
     app.include_router(assessments_router)
     app.include_router(controls_router)

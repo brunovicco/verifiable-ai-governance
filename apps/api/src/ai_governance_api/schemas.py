@@ -20,6 +20,15 @@ def _clean_strings(values: list[str]) -> list[str]:
     return sorted({value.strip() for value in values if value.strip()})
 
 
+class PrincipalRead(BaseModel):
+    """Authenticated identity information safe to expose to its owner."""
+
+    user_id: str
+    email: str | None = None
+    approval_areas: list[ApprovalArea] = Field(default_factory=list)
+    is_admin: bool = False
+
+
 class ModelAssetCreate(BaseModel):
     """Input for registering a model asset."""
 

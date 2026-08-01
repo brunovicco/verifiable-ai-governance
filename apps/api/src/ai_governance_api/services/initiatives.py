@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ai_governance_api.audit import append_audit_event
-from ai_governance_api.auth import Principal
+from ai_governance_api.domain.identity import Principal
 from ai_governance_api.domain.reviews import (
     InitiativeReviewState,
     ReviewActor,

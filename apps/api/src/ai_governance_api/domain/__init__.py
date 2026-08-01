@@ -23,6 +23,7 @@ from ai_governance_api.domain.evidence import (
     ScanVerdict,
     StoredObject,
 )
+from ai_governance_api.domain.identity import IdentityMappingError, Principal
 from ai_governance_api.domain.reviews import (
     GateDecisionTransition,
     InitiativeReviewState,
@@ -49,7 +50,9 @@ __all__ = [
     "InternationalProcessingAnswers",
     "InitiativeEvidenceContext",
     "InitiativeReviewState",
+    "IdentityMappingError",
     "MalwareScanResult",
+    "Principal",
     "RIPDAnswers",
     "ReviewActor",
     "ReviewConflict",

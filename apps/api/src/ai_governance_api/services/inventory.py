@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ai_governance_api.audit import append_audit_event
-from ai_governance_api.auth import Principal
+from ai_governance_api.domain.identity import Principal
 from ai_governance_api.errors import ApplicationError, ErrorKind
 from ai_governance_api.models import Agent, AISystem, AuditEvent, Initiative, ModelAsset
 from ai_governance_api.schemas import (

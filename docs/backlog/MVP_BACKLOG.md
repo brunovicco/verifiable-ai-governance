@@ -9,11 +9,18 @@
 - [x] Catálogo inicial de 25 controles em YAML e visualização de aplicabilidade.
 - [x] Upload seguro de evidências com object storage, checksum do arquivo e malware scan.
 - [x] Workflow de revisão, solicitação de ajuste e resubmissão sem apagar histórico.
-- [ ] Integração OIDC validada com ao menos um provedor e mapeamento de grupos.
-- [ ] Migrações explícitas e política de backup/restauração testada.
+- [x] Integração OIDC validada com ao menos um provedor e mapeamento de grupos.
+- [x] Migrações explícitas e bloqueantes no startup do Compose.
+- [ ] Política de backup/restauração testada.
+- [x] Tornar a imagem ClamAV do ambiente local compatível com hosts ARM64.
 
 ## P1 — Operação e assurance
 
+- [ ] Login do portal via Microsoft Entra ID, authorization code com PKCE e sessão segura.
+- [ ] Identidade corporativa por `(tid, oid)`, tenant allowlist e política para guests.
+- [ ] Microsoft Graph via OBO para perfil, `department` e grupos transitivos do usuário.
+- [ ] Catálogo versionado de App Roles/object IDs Entra para áreas de aprovação.
+- [ ] Group overage, paginação, throttling, cache, revogação e stale identity fail-closed.
 - [ ] Model/agent registry com approved scope, região, versão e datas de revisão.
 - [ ] Adapter de decisão do `policy-model-router`.
 - [ ] Ingestão sanitizada de telemetria do `a2a-otel-kit`.
