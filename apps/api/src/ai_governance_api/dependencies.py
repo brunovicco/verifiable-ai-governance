@@ -3,12 +3,13 @@
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from policy_engine import GovernanceControlCatalog, GovernancePolicyEngine
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_governance_api.adapters import (
     ClamAVScanner,
+    MicrosoftGraphCorporateDirectory,
     S3ObjectStorage,
     SqlAlchemyAssessmentAudit,
     SqlAlchemyAssessmentStore,
@@ -19,22 +20,29 @@ from ai_governance_api.adapters import (
 )
 from ai_governance_api.application import (
     ControlCatalogPort,
+    CorporateDirectoryIdentityMismatch,
+    CorporateDirectoryNotApplicable,
+    CorporateDirectoryProfile,
+    CorporateDirectoryResponseInvalid,
+    CorporateDirectoryUnavailable,
     EvaluateInitiativeControls,
     ListAssessments,
     ListControlCatalog,
     ListEvidence,
+    ResolveCorporateDirectory,
     SaveAssessment,
     SubmitAssessment,
     UploadEvidence,
 )
-from ai_governance_api.auth import get_principal
-from ai_governance_api.config import get_settings
+from ai_governance_api.auth import BEARER_CHALLENGE, BearerCredentials, get_principal
+from ai_governance_api.config import Settings, get_settings
 from ai_governance_api.database import get_db
 from ai_governance_api.domain.identity import Principal
 from ai_governance_api.services import InitiativeService, InventoryService, PolicyEvaluator
 
 DatabaseSession = Annotated[AsyncSession, Depends(get_db)]
 CurrentPrincipal = Annotated[Principal, Depends(get_principal)]
+SettingsDependency = Annotated[Settings, Depends(get_settings)]
 
 
 @lru_cache
@@ -56,6 +64,75 @@ def get_control_catalog() -> ControlCatalogPort:
 
 PolicyEvaluatorDependency = Annotated[PolicyEvaluator, Depends(get_policy_evaluator)]
 ControlCatalogDependency = Annotated[ControlCatalogPort, Depends(get_control_catalog)]
+
+
+def get_corporate_directory_resolver(
+    settings: SettingsDependency,
+) -> ResolveCorporateDirectory | None:
+    """Build Graph enrichment only when the deployment enables its OBO boundary."""
+    if not settings.microsoft_graph_enabled:
+        return None
+    return ResolveCorporateDirectory(
+        MicrosoftGraphCorporateDirectory(
+            tenant_id=settings.oidc_entra_issuer_tenant_id,
+            client_id=settings.microsoft_graph_client_id,
+            client_secret=settings.microsoft_graph_client_secret,
+            timeout_seconds=settings.microsoft_graph_timeout_seconds,
+            max_pages=settings.microsoft_graph_max_pages,
+            max_retry_after_seconds=settings.microsoft_graph_max_retry_after_seconds,
+            max_response_bytes=settings.microsoft_graph_max_response_bytes,
+        )
+    )
+
+
+CorporateDirectoryResolverDependency = Annotated[
+    ResolveCorporateDirectory | None,
+    Depends(get_corporate_directory_resolver),
+]
+
+
+async def get_corporate_directory_profile(
+    principal: CurrentPrincipal,
+    credentials: BearerCredentials,
+    resolver: CorporateDirectoryResolverDependency,
+) -> CorporateDirectoryProfile | None:
+    """Enrich the current identity while mapping dependency failures safely."""
+    if resolver is None:
+        return None
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Bearer token required",
+            headers=BEARER_CHALLENGE,
+        )
+    try:
+        return await resolver.execute(principal, credentials.credentials)
+    except CorporateDirectoryUnavailable as exc:
+        headers = (
+            {"Retry-After": str(exc.retry_after_seconds)}
+            if exc.retry_after_seconds is not None
+            else None
+        )
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Corporate directory unavailable",
+            headers=headers,
+        ) from exc
+    except (
+        CorporateDirectoryIdentityMismatch,
+        CorporateDirectoryNotApplicable,
+        CorporateDirectoryResponseInvalid,
+    ) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Corporate directory response could not be trusted",
+        ) from exc
+
+
+CurrentCorporateDirectoryProfile = Annotated[
+    CorporateDirectoryProfile | None,
+    Depends(get_corporate_directory_profile),
+]
 
 
 def get_initiative_service(

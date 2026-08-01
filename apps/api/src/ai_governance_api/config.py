@@ -78,6 +78,18 @@ class Settings(BaseSettings):
     oidc_clock_skew_seconds: float = Field(default=30, ge=0, le=300)
     oidc_max_token_length: int = Field(default=16384, ge=1024, le=65536)
 
+    microsoft_graph_enabled: bool = False
+    microsoft_graph_client_id: str = ""
+    microsoft_graph_client_secret: str = Field(default="", repr=False)
+    microsoft_graph_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
+    microsoft_graph_max_pages: int = Field(default=20, ge=1, le=100)
+    microsoft_graph_max_retry_after_seconds: int = Field(default=300, ge=0, le=3600)
+    microsoft_graph_max_response_bytes: int = Field(
+        default=1024 * 1024,
+        ge=1024,
+        le=5 * 1024 * 1024,
+    )
+
     audit_hash_salt: str = Field(default="local-development-only", repr=False)
     control_catalog_path: str = ""
 
@@ -191,6 +203,8 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "Entra tenant and guest settings require OIDC_IDENTITY_MODE=entra"
                 )
+        if self.microsoft_graph_enabled:
+            self._validate_microsoft_graph()
         if not is_local and self.dev_auth_enabled:
             raise ValueError("DEV_AUTH_ENABLED must be false outside local and test environments")
         if not is_local and self.auto_create_schema:
@@ -227,6 +241,23 @@ class Settings(BaseSettings):
         issuer_tenant = self.oidc_entra_issuer_tenant_id
         if issuer_tenant not in allowed_tenants:
             raise ValueError("OIDC_ISSUER tenant must be present in OIDC_ALLOWED_TENANT_IDS")
+
+    def _validate_microsoft_graph(self) -> None:
+        """Require Graph OBO to use the established tenant-specific Entra boundary."""
+        if not self.oidc_enabled or self.oidc_identity_mode is not OidcIdentityMode.ENTRA:
+            raise ValueError(
+                "Microsoft Graph requires OIDC_ENABLED=true and OIDC_IDENTITY_MODE=entra"
+            )
+        try:
+            client_id = UUID(self.microsoft_graph_client_id.strip())
+        except (ValueError, AttributeError) as exc:
+            raise ValueError("MICROSOFT_GRAPH_CLIENT_ID must be a UUID") from exc
+        if client_id.int == 0:
+            raise ValueError("MICROSOFT_GRAPH_CLIENT_ID must be a non-nil UUID")
+        if not self.microsoft_graph_client_secret.strip():
+            raise ValueError(
+                "MICROSOFT_GRAPH_CLIENT_SECRET is required when Microsoft Graph is enabled"
+            )
 
     @staticmethod
     def _validate_oidc_url(name: str, value: str, *, require_tls: bool) -> None:

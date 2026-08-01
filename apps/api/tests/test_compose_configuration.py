@@ -79,3 +79,22 @@ def test_api_corporate_identity_policy_is_environment_driven() -> None:
     assert environment["OIDC_GUEST_APPROVALS_ENABLED"] == (
         "${OIDC_GUEST_APPROVALS_ENABLED:-false}"
     )
+
+
+def test_api_graph_obo_configuration_is_environment_driven() -> None:
+    """Keep Graph OBO opt-in and its secret out of committed defaults."""
+    compose = cast(
+        dict[str, Any],
+        yaml.safe_load((ROOT / "docker-compose.yml").read_text(encoding="utf-8")),
+    )
+
+    environment = compose["x-api-environment"]
+
+    assert environment["MICROSOFT_GRAPH_ENABLED"] == "${MICROSOFT_GRAPH_ENABLED:-false}"
+    assert environment["MICROSOFT_GRAPH_CLIENT_ID"] == "${MICROSOFT_GRAPH_CLIENT_ID:-}"
+    assert environment["MICROSOFT_GRAPH_CLIENT_SECRET"] == (
+        "${MICROSOFT_GRAPH_CLIENT_SECRET:-}"
+    )
+    assert environment["MICROSOFT_GRAPH_MAX_RESPONSE_BYTES"] == (
+        "${MICROSOFT_GRAPH_MAX_RESPONSE_BYTES:-1048576}"
+    )

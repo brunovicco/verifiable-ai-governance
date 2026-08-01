@@ -142,9 +142,11 @@ Evidências auditáveis mínimas:
 ## Entregas planejadas
 
 Status em 2026-08-01: o adapter MSAL do portal, PKCE, `sessionStorage`, login/logout,
-token silencioso da API, identidade `(tid, oid)`, tenant allowlist e política
-fail-closed para guest/conta sem `acct` confiável estão implementados. A validação
-contra tenant real e os itens das fases 3 a 5 permanecem pendentes.
+token silencioso da API, identidade `(tid, oid)`, tenant allowlist, política fail-closed
+para guest/conta sem `acct` confiável e enriquecimento Graph via OBO estão
+implementados. O adapter Graph possui `$select` mínimo, grupos transitivos, paginação
+com destino validado, timeout e propagação limitada de `Retry-After`. Validação contra
+tenant real, catálogo de mapeamento, cache, revogação e assurance permanecem pendentes.
 
 ### Fase 1 — Fundação Entra
 
@@ -162,10 +164,11 @@ contra tenant real e os itens das fases 3 a 5 permanecem pendentes.
 
 ### Fase 3 — Enriquecimento Graph
 
-- porta de aplicação `CorporateDirectoryPort`;
-- adapter Microsoft Graph com OBO, timeouts, paginação e throttling;
-- perfil `/me` com `$select` mínimo;
-- associações `/me/transitiveMemberOf`.
+- [x] porta de aplicação `CorporateDirectoryPort`;
+- [x] adapter Microsoft Graph com OBO, timeout e paginação validada;
+- [x] perfil `/me` com `$select` mínimo;
+- [x] associações transitivas de grupos;
+- [ ] retry limitado com jitter, cache e monitoramento de throttling.
 
 ### Fase 4 — Mapeamento governado
 

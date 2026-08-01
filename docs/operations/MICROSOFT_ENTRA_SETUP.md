@@ -3,8 +3,8 @@
 ## Escopo
 
 Este runbook configura o login interativo do portal e a emissão de access token para a
-API. Microsoft Graph, OBO, grupos transitivos e sincronização de `department` não fazem
-parte desta etapa.
+API. Microsoft Graph, OBO, grupos transitivos e `department` são configurados
+separadamente em `MICROSOFT_GRAPH_OBO_SETUP.md`.
 
 Use duas app registrations. O portal é um public client SPA sem segredo. A API é um
 resource server separado e continua validando cada token.
@@ -107,8 +107,8 @@ Entra no navegador possa permitir novo SSO conforme a política corporativa.
 
 ## 6. Rotação, revogação e incidente
 
-- Rotacionar certificados ou segredos apenas da API confidential client quando OBO for
-  adicionado; o portal SPA não possui segredo.
+- Rotacionar a credencial da API confidential client conforme
+  `MICROSOFT_GRAPH_OBO_SETUP.md`; o portal SPA não possui segredo.
 - Remover redirect URIs antigas imediatamente após migração.
 - Revogar sessões e consentimentos pelo Entra quando houver comprometimento.
 - Publicar novo build se client ID, tenant ou scope mudar.

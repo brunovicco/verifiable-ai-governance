@@ -74,10 +74,13 @@ coincidir com o issuer Entra tenant-specific. O claim opcional `acct` classifica
 ou guest; guest e classificação ausente/ambígua perdem áreas de aprovação e
 administração por padrão.
 
-Microsoft Graph via OBO, perfil, `department` e associações transitivas continuam
-planejados. O domínio dependerá de portas próprias. Autorizações serão derivadas de App
+Microsoft Graph via OBO implementa a porta `CorporateDirectoryPort` para obter perfil,
+`department` e object IDs de grupos transitivos com coleta mínima. O adapter usa
+endpoints fixos, timeouts e paginação validada, enquanto o caso de uso vincula o
+resultado a `(tenant_id, object_id)`. O endpoint expõe apenas o perfil; quantidade e
+lista de grupos permanecem internas. Autorizações continuarão derivadas somente de App
 Roles ou object IDs mapeados, nunca de nomes ou de `department`. O plano detalhado está
-em `MICROSOFT_ENTRA_GRAPH_PLAN.md`; as decisões estão nos ADRs 0011 e 0012.
+em `MICROSOFT_ENTRA_GRAPH_PLAN.md`; as decisões estão nos ADRs 0011, 0012 e 0013.
 
 ### Assessments estruturados
 
