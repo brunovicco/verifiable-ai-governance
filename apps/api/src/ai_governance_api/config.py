@@ -95,6 +95,11 @@ class Settings(BaseSettings):
         le=5 * 1024 * 1024,
     )
     directory_authorization_catalog_path: str = ""
+    directory_authorization_cache_ttl_seconds: int = Field(
+        default=60,
+        ge=5,
+        le=300,
+    )
 
     audit_hash_salt: str = Field(default="local-development-only", repr=False)
     control_catalog_path: str = ""

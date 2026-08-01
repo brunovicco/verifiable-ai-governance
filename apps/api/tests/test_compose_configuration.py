@@ -88,6 +88,9 @@ def test_api_corporate_identity_policy_is_environment_driven() -> None:
     assert environment["DIRECTORY_AUTHORIZATION_CATALOG_PATH"] == (
         "${DIRECTORY_AUTHORIZATION_CATALOG_PATH:-}"
     )
+    assert environment["DIRECTORY_AUTHORIZATION_CACHE_TTL_SECONDS"] == (
+        "${DIRECTORY_AUTHORIZATION_CACHE_TTL_SECONDS:-60}"
+    )
 
 
 def test_api_graph_obo_configuration_is_environment_driven() -> None:

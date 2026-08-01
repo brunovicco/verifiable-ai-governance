@@ -34,6 +34,7 @@ class DirectoryGroupResolutionSource(StrEnum):
     NONE = "none"
     TOKEN = "token"
     MICROSOFT_GRAPH = "microsoft_graph"
+    CACHE = "cache"
     OVERAGE_UNRESOLVED = "overage_unresolved"
 
 

@@ -246,6 +246,16 @@ def test_graph_secret_is_excluded_from_settings_representation() -> None:
     assert "super-secret-value" not in repr(settings)
 
 
+@pytest.mark.parametrize("ttl_seconds", [4, 301])
+def test_directory_authorization_cache_ttl_is_bounded(ttl_seconds: int) -> None:
+    with pytest.raises(ValidationError):
+        Settings(directory_authorization_cache_ttl_seconds=ttl_seconds)
+
+
+def test_directory_authorization_cache_ttl_defaults_to_one_minute() -> None:
+    assert Settings().directory_authorization_cache_ttl_seconds == 60
+
+
 @pytest.mark.parametrize(
     "claim_override",
     [

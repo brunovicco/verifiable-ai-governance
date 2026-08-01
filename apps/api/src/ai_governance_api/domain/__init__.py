@@ -20,6 +20,13 @@ from ai_governance_api.domain.directory_authorization import (
     DirectoryAuthorizationMapping,
     DirectoryAuthorizationSource,
 )
+from ai_governance_api.domain.directory_authorization_cache import (
+    DirectoryAuthorizationCacheError,
+    DirectoryAuthorizationCacheKey,
+    DirectoryAuthorizationInvalidation,
+    DirectoryAuthorizationInvalidationReason,
+    DirectoryAuthorizationSnapshot,
+)
 from ai_governance_api.domain.evidence import (
     EvidenceActor,
     EvidenceKind,
@@ -65,8 +72,13 @@ __all__ = [
     "DirectoryGroupClaimState",
     "DirectoryGroupResolutionSource",
     "DirectoryAuthorizationCatalog",
+    "DirectoryAuthorizationCacheError",
+    "DirectoryAuthorizationCacheKey",
     "DirectoryAuthorizationError",
+    "DirectoryAuthorizationInvalidation",
+    "DirectoryAuthorizationInvalidationReason",
     "DirectoryAuthorizationMapping",
+    "DirectoryAuthorizationSnapshot",
     "DirectoryAuthorizationSource",
     "DirectoryIdentity",
     "EvidenceActor",

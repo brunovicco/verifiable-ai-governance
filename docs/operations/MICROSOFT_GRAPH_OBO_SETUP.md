@@ -132,8 +132,14 @@ testes determinísticos do adapter.
 - logs `microsoft_graph_retry`, `microsoft_graph_retry_deferred` e
   `microsoft_graph_retry_exhausted` permitem alertas por operação, status e tentativa,
   sem URL, token, usuário, tenant ou conteúdo de resposta;
-- cache, invalidação e stale identity permanecem pendentes e serão tratados como uma
-  decisão separada de consistência entre réplicas;
+- decisões de autorização derivadas são armazenadas no PostgreSQL por
+  `DIRECTORY_AUTHORIZATION_CACHE_TTL_SECONDS`, entre 5 e 300 segundos;
+- snapshot expirado, invalidado ou vinculado a outro digest de catálogo nunca é
+  reutilizado; indisponibilidade do Graph após um miss falha de forma fechada;
+- `POST /api/v1/auth/directory-authorization-cache/invalidate` exige administrador,
+  usa motivo enumerado, é visível a todas as réplicas e registra auditoria minimizada;
+- invalidação de cache apenas força revalidação. Incidentes ainda exigem revogar conta,
+  sessão, consentimento, App Role ou grupo no Entra conforme o caso;
 - indisponibilidade ou resposta inconsistente falha de forma fechada e nunca adiciona
   capacidades de aprovação.
 

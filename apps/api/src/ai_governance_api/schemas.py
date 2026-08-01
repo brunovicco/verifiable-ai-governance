@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from typing import Any
+from uuid import UUID
 
 from governance_schemas import (
     ApprovalArea,
@@ -15,6 +16,9 @@ from governance_schemas import (
 )
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from ai_governance_api.domain.directory_authorization_cache import (
+    DirectoryAuthorizationInvalidationReason,
+)
 from ai_governance_api.domain.identity import (
     DirectoryAccountType,
     DirectoryGroupResolutionSource,
@@ -60,6 +64,34 @@ class PrincipalRead(BaseModel):
     account_type: DirectoryAccountType | None = None
     authorization_provenance: AuthorizationProvenanceRead | None = None
     directory_profile: CorporateDirectoryProfileRead | None = None
+
+
+class DirectoryAuthorizationCacheInvalidationRequest(BaseModel):
+    """Administrative command for one stable Entra identity cache key."""
+
+    tenant_id: UUID
+    object_id: UUID
+    reason: DirectoryAuthorizationInvalidationReason
+    reference: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=100,
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+    )
+
+    @field_validator("reference")
+    @classmethod
+    def clean_reference(cls, value: str | None) -> str | None:
+        """Trim the optional ticket reference without accepting free-form content."""
+        return value.strip() if value is not None else None
+
+
+class DirectoryAuthorizationCacheInvalidationRead(BaseModel):
+    """Content-minimized result of a distributed cache invalidation."""
+
+    cache_entry_id: str = Field(pattern=r"^[a-f0-9-]{36}$")
+    invalidated_at: datetime
+    version: int = Field(ge=1)
 
 
 class ModelAssetCreate(BaseModel):

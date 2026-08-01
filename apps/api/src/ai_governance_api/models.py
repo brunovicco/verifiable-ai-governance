@@ -383,6 +383,43 @@ class InternationalProcessing(VersionedMixin, Base):
     privacy_approved: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
 
+class DirectoryAuthorizationCacheEntry(VersionedMixin, Base):
+    """Shared, content-minimized authorization snapshot or invalidation marker."""
+
+    __tablename__ = "directory_authorization_cache"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id",
+            "object_id",
+            name="uq_directory_authorization_cache_identity",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    object_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    catalog_id: Mapped[str | None] = mapped_column(String(100))
+    catalog_version: Mapped[str | None] = mapped_column(String(50))
+    catalog_digest: Mapped[str | None] = mapped_column(String(64), index=True)
+    approval_areas: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    matched_mapping_ids: Mapped[list[str]] = mapped_column(
+        JSON,
+        default=list,
+        nullable=False,
+    )
+    source_types: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    original_group_resolution_source: Mapped[str | None] = mapped_column(String(50))
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        index=True,
+    )
+    invalidated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        index=True,
+    )
+
+
 class AuditEvent(Base):
     """Append-only event linked into a tamper-evident hash chain."""
 
