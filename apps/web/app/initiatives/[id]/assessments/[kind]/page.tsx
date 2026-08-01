@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 
+import { FieldHelp } from "@/components/FieldHelp";
 import { StatusPill } from "@/components/StatusPill";
 import {
   getInitiative,
@@ -12,6 +13,7 @@ import {
   submitAssessment,
 } from "@/lib/api";
 import { label } from "@/lib/labels";
+import { assessmentFieldGuidance } from "@/lib/field-guidance";
 import type { Assessment, AssessmentKind, Initiative } from "@/lib/types";
 
 const ASSESSMENT_KINDS: AssessmentKind[] = [
@@ -122,15 +124,15 @@ function AssessmentFields({
       <>
         <fieldset disabled={disabled}>
           <legend><span>01</span><div>Impacto esperado<small>Pessoas afetadas, benefício e possíveis danos</small></div></legend>
-          <label>Quem pode ser afetado?<input name="affected_groups" required defaultValue={answerList(assessment, "affected_groups")} placeholder="Ex.: clientes, atendentes, fornecedores" /><small>Separe os grupos por vírgula.</small></label>
-          <label>Quais benefícios são esperados?<textarea name="intended_benefits" required minLength={10} rows={4} defaultValue={answerText(assessment, "intended_benefits")} /></label>
-          <label>Quais danos ou efeitos indesejados são plausíveis?<input name="potential_harms" required defaultValue={answerList(assessment, "potential_harms")} placeholder="Ex.: orientação incorreta, tratamento desigual" /><small>Separe os cenários por vírgula.</small></label>
+          <label>Quem pode ser afetado?<FieldHelp label="pessoas afetadas" text={assessmentFieldGuidance.affected_groups} /><input name="affected_groups" required defaultValue={answerList(assessment, "affected_groups")} placeholder="Ex.: clientes, atendentes, fornecedores" /><small>Separe os grupos por vírgula.</small></label>
+          <label>Quais benefícios são esperados?<FieldHelp label="benefícios esperados" text={assessmentFieldGuidance.intended_benefits} /><textarea name="intended_benefits" required minLength={10} rows={4} defaultValue={answerText(assessment, "intended_benefits")} /></label>
+          <label>Quais danos ou efeitos indesejados são plausíveis?<FieldHelp label="danos plausíveis" text={assessmentFieldGuidance.potential_harms} /><input name="potential_harms" required defaultValue={answerList(assessment, "potential_harms")} placeholder="Ex.: orientação incorreta, tratamento desigual" /><small>Separe os cenários por vírgula.</small></label>
         </fieldset>
         <fieldset disabled={disabled}>
           <legend><span>02</span><div>Salvaguardas humanas<small>Supervisão, contestação e mitigação</small></div></legend>
-          <label>Como ocorrerá a supervisão humana?<textarea name="human_oversight" required minLength={10} rows={4} defaultValue={answerText(assessment, "human_oversight")} /></label>
-          <label>Como uma pessoa poderá questionar ou corrigir o resultado?<textarea name="contestability" required minLength={10} rows={4} defaultValue={answerText(assessment, "contestability")} /></label>
-          <label>Quais medidas reduzem os riscos?<input name="mitigation_measures" required defaultValue={answerList(assessment, "mitigation_measures")} placeholder="Ex.: revisão humana, limites de uso, avaliação periódica" /><small>Separe as medidas por vírgula.</small></label>
+          <label>Como ocorrerá a supervisão humana?<FieldHelp label="supervisão humana" text={assessmentFieldGuidance.human_oversight} /><textarea name="human_oversight" required minLength={10} rows={4} defaultValue={answerText(assessment, "human_oversight")} /></label>
+          <label>Como uma pessoa poderá questionar ou corrigir o resultado?<FieldHelp label="contestação do resultado" text={assessmentFieldGuidance.contestability} /><textarea name="contestability" required minLength={10} rows={4} defaultValue={answerText(assessment, "contestability")} /></label>
+          <label>Quais medidas reduzem os riscos?<FieldHelp label="medidas de mitigação" text={assessmentFieldGuidance.mitigation_measures} /><input name="mitigation_measures" required defaultValue={answerList(assessment, "mitigation_measures")} placeholder="Ex.: revisão humana, limites de uso, avaliação periódica" /><small>Separe as medidas por vírgula.</small></label>
         </fieldset>
       </>
     );
@@ -141,20 +143,20 @@ function AssessmentFields({
         <fieldset disabled={disabled}>
           <legend><span>01</span><div>Tratamento de dados<small>Finalidade, titulares e necessidade</small></div></legend>
           <div className="field-grid">
-            <label>Área controladora<input name="controller_area" required minLength={2} defaultValue={answerText(assessment, "controller_area")} /></label>
-            <label>Hipótese ou base legal<input name="legal_basis" required minLength={3} defaultValue={answerText(assessment, "legal_basis")} /></label>
+            <label>Área controladora<FieldHelp label="área controladora" text={assessmentFieldGuidance.controller_area} /><input name="controller_area" required minLength={2} defaultValue={answerText(assessment, "controller_area")} /></label>
+            <label>Hipótese ou base legal<FieldHelp label="base legal" text={assessmentFieldGuidance.legal_basis} /><input name="legal_basis" required minLength={3} defaultValue={answerText(assessment, "legal_basis")} /></label>
           </div>
-          <label>Qual é a finalidade do tratamento?<textarea name="processing_purpose" required minLength={10} rows={4} defaultValue={answerText(assessment, "processing_purpose")} /></label>
+          <label>Qual é a finalidade do tratamento?<FieldHelp label="finalidade do tratamento" text={assessmentFieldGuidance.processing_purpose} /><textarea name="processing_purpose" required minLength={10} rows={4} defaultValue={answerText(assessment, "processing_purpose")} /></label>
           <div className="field-grid">
-            <label>Categorias de dados pessoais<input name="personal_data_categories" required defaultValue={answerList(assessment, "personal_data_categories")} placeholder="Ex.: nome, e-mail, histórico" /></label>
-            <label>Grupos de titulares<input name="data_subjects" required defaultValue={answerList(assessment, "data_subjects")} placeholder="Ex.: clientes, colaboradores" /></label>
+            <label>Categorias de dados pessoais<FieldHelp label="categorias de dados pessoais" text={assessmentFieldGuidance.personal_data_categories} /><input name="personal_data_categories" required defaultValue={answerList(assessment, "personal_data_categories")} placeholder="Ex.: nome, e-mail, histórico" /></label>
+            <label>Grupos de titulares<FieldHelp label="grupos de titulares" text={assessmentFieldGuidance.data_subjects} /><input name="data_subjects" required defaultValue={answerList(assessment, "data_subjects")} placeholder="Ex.: clientes, colaboradores" /></label>
           </div>
-          <label>Por que o tratamento é necessário e proporcional?<textarea name="necessity_assessment" required minLength={10} rows={4} defaultValue={answerText(assessment, "necessity_assessment")} /></label>
+          <label>Por que o tratamento é necessário e proporcional?<FieldHelp label="necessidade e proporcionalidade" text={assessmentFieldGuidance.necessity_assessment} /><textarea name="necessity_assessment" required minLength={10} rows={4} defaultValue={answerText(assessment, "necessity_assessment")} /></label>
         </fieldset>
         <fieldset disabled={disabled}>
           <legend><span>02</span><div>Riscos de privacidade<small>Cenários e medidas de proteção</small></div></legend>
-          <label>Cenários de risco<input name="risk_scenarios" required defaultValue={answerList(assessment, "risk_scenarios")} placeholder="Ex.: acesso indevido, retenção excessiva" /></label>
-          <label>Salvaguardas aplicadas<input name="safeguards" required defaultValue={answerList(assessment, "safeguards")} placeholder="Ex.: minimização, criptografia, controle de acesso" /></label>
+          <label>Cenários de risco<FieldHelp label="cenários de risco" text={assessmentFieldGuidance.risk_scenarios} /><input name="risk_scenarios" required defaultValue={answerList(assessment, "risk_scenarios")} placeholder="Ex.: acesso indevido, retenção excessiva" /></label>
+          <label>Salvaguardas aplicadas<FieldHelp label="salvaguardas aplicadas" text={assessmentFieldGuidance.safeguards} /><input name="safeguards" required defaultValue={answerList(assessment, "safeguards")} placeholder="Ex.: minimização, criptografia, controle de acesso" /></label>
         </fieldset>
       </>
     );
@@ -170,26 +172,26 @@ function AssessmentFields({
     <>
       <fieldset disabled={disabled}>
         <legend><span>01</span><div>Mapa do fluxo internacional<small>Dados, inferência, armazenamento e logs</small></div></legend>
-        <label>Categorias de dados enviadas ou acessadas<input name="data_categories" required defaultValue={answerList(assessment, "data_categories")} placeholder="Ex.: prompts, documentos, telemetria" /></label>
+        <label>Categorias de dados enviadas ou acessadas<FieldHelp label="categorias de dados" text={assessmentFieldGuidance.data_categories} /><input name="data_categories" required defaultValue={answerList(assessment, "data_categories")} placeholder="Ex.: prompts, documentos, telemetria" /></label>
         <div className="field-grid">
-          <label>País de origem<input name="source_country" required minLength={2} defaultValue={answerText(assessment, "source_country") || "Brasil"} /></label>
-          <label>Países de inferência<input name="inference_countries" required defaultValue={answerList(assessment, "inference_countries")} /></label>
-          <label>Regiões de armazenamento<input name="storage_regions" required defaultValue={answerList(assessment, "storage_regions")} /></label>
-          <label>Regiões dos logs e telemetria<input name="log_regions" required defaultValue={answerList(assessment, "log_regions")} /></label>
+          <label>País de origem<FieldHelp label="país de origem" text={assessmentFieldGuidance.source_country} /><input name="source_country" required minLength={2} defaultValue={answerText(assessment, "source_country") || "Brasil"} /></label>
+          <label>Países de inferência<FieldHelp label="países de inferência" text={assessmentFieldGuidance.inference_countries} /><input name="inference_countries" required defaultValue={answerList(assessment, "inference_countries")} /></label>
+          <label>Regiões de armazenamento<FieldHelp label="regiões de armazenamento" text={assessmentFieldGuidance.storage_regions} /><input name="storage_regions" required defaultValue={answerList(assessment, "storage_regions")} /></label>
+          <label>Regiões dos logs e telemetria<FieldHelp label="regiões de logs" text={assessmentFieldGuidance.log_regions} /><input name="log_regions" required defaultValue={answerList(assessment, "log_regions")} /></label>
         </div>
       </fieldset>
       <fieldset disabled={disabled}>
         <legend><span>02</span><div>Fornecedor e salvaguardas<small>Suboperadores, fundamento e controles</small></div></legend>
         <div className="field-grid">
-          <label>Fornecedor ou suboperador<input name="subprocessor_name" defaultValue={typeof firstSubprocessor?.name === "string" ? firstSubprocessor.name : ""} placeholder="Opcional" /></label>
-          <label>Países do suboperador<input name="subprocessor_countries" defaultValue={subprocessorCountries} /></label>
+          <label>Fornecedor ou suboperador<FieldHelp label="fornecedor ou suboperador" text={assessmentFieldGuidance.subprocessor_name} /><input name="subprocessor_name" defaultValue={typeof firstSubprocessor?.name === "string" ? firstSubprocessor.name : ""} placeholder="Opcional" /></label>
+          <label>Países do suboperador<FieldHelp label="países do suboperador" text={assessmentFieldGuidance.subprocessor_countries} /><input name="subprocessor_countries" defaultValue={subprocessorCountries} /></label>
         </div>
-        <label>Finalidade do suboperador<input name="subprocessor_purpose" defaultValue={typeof firstSubprocessor?.purpose === "string" ? firstSubprocessor.purpose : ""} /></label>
+        <label>Finalidade do suboperador<FieldHelp label="finalidade do suboperador" text={assessmentFieldGuidance.subprocessor_purpose} /><input name="subprocessor_purpose" defaultValue={typeof firstSubprocessor?.purpose === "string" ? firstSubprocessor.purpose : ""} /></label>
         <div className="field-grid">
-          <label>Mecanismo de transferência<input name="transfer_mechanism" required minLength={3} defaultValue={answerText(assessment, "transfer_mechanism")} /></label>
-          <label>Hipótese ou base legal<input name="legal_basis" required minLength={3} defaultValue={answerText(assessment, "legal_basis")} /></label>
+          <label>Mecanismo de transferência<FieldHelp label="mecanismo de transferência" text={assessmentFieldGuidance.transfer_mechanism} /><input name="transfer_mechanism" required minLength={3} defaultValue={answerText(assessment, "transfer_mechanism")} /></label>
+          <label>Hipótese ou base legal<FieldHelp label="base legal" text={assessmentFieldGuidance.legal_basis} /><input name="legal_basis" required minLength={3} defaultValue={answerText(assessment, "legal_basis")} /></label>
         </div>
-        <label>Salvaguardas técnicas e contratuais<input name="safeguards" required defaultValue={answerList(assessment, "safeguards")} placeholder="Ex.: criptografia, retenção limitada, proibição de treinamento" /></label>
+        <label>Salvaguardas técnicas e contratuais<FieldHelp label="salvaguardas técnicas e contratuais" text={assessmentFieldGuidance.safeguards} /><input name="safeguards" required defaultValue={answerList(assessment, "safeguards")} placeholder="Ex.: criptografia, retenção limitada, proibição de treinamento" /></label>
       </fieldset>
     </>
   );
@@ -285,7 +287,7 @@ export default function AssessmentPage() {
         <AssessmentFields assessment={assessment} disabled={!editable || busy} kind={kind} />
         <fieldset disabled={!editable || busy}>
           <div className="risk-decision">
-            <label>Risco residual após as salvaguardas
+            <label>Risco residual após as salvaguardas<FieldHelp label="risco residual" text={assessmentFieldGuidance.residual_risk} />
               <select name="residual_risk" required defaultValue={answerText(assessment, "residual_risk") || "medium"}>
                 <option value="low">Baixo</option>
                 <option value="medium">Médio</option>

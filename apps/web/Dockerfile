@@ -19,6 +19,7 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
 COPY --from=dependencies /workspace/node_modules ./node_modules
 COPY --from=dependencies /workspace/apps/web/node_modules ./apps/web/node_modules
 COPY package.json ./
+COPY packages/document-templates ./packages/document-templates
 COPY apps/web ./apps/web
 RUN npm run build:web
 
@@ -29,6 +30,7 @@ ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0
 COPY --from=builder --chown=node:node /workspace/apps/web/.next/standalone ./
 COPY --from=builder --chown=node:node /workspace/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=node:node /workspace/packages/document-templates ./packages/document-templates
 USER node
 EXPOSE 3000
 CMD ["node", "apps/web/server.js"]
