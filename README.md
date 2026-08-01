@@ -16,6 +16,8 @@ governança em controles verificáveis, aprovações condicionais e evidências 
   Segurança, Infra, DevOps, Privacidade, Jurídico, Compliance e Dados;
 - assessments estruturados e versionados para impacto de IA, RIPD e processamento
   internacional, com formulários guiados, risco residual e submissão para revisão;
+- catálogo baseline com 25 controles em YAML, regras declarativas e visualização
+  explicável de aplicabilidade por iniciativa;
 - segregação de funções, versionamento otimista e trilha de auditoria encadeada por hash;
 - PostgreSQL local, migração inicial, testes e CI.
 
@@ -68,6 +70,11 @@ make quality
 testes Python, testes/lint do portal e build de produção. Configuração de deploy é
 fornecida por variáveis de ambiente; `.env` é apenas uma conveniência local.
 
+O catálogo padrão é empacotado com o `policy-engine`. Para fornecer uma política
+organizacional diferente, configure `CONTROL_CATALOG_PATH` com o caminho de um YAML
+válido. Arquivo ausente, schema inválido, IDs duplicados ou quantidade inesperada fazem
+a aplicação falhar de forma fechada.
+
 ## Fluxo do MVP
 
 1. O solicitante cadastra uma proposta em linguagem de negócio.
@@ -97,7 +104,7 @@ iniciar fora do ambiente local se OIDC estiver desabilitado. O claim configurado
 apps/web                     Portal Next.js
 apps/api                     API FastAPI e persistência
 packages/governance-schemas Contratos e taxonomias compartilhadas
-packages/policy-engine       Classificação e aprovações condicionais
+packages/policy-engine       Classificação, controles e aplicabilidade
 packages/document-templates Templates versionados de documentos
 docs                         Produto, governança, arquitetura, ADRs e backlog
 ```

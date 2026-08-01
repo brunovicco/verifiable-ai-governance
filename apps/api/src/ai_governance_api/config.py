@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     oidc_groups_claim: str = "governance_areas"
 
     audit_hash_salt: str = Field(default="local-development-only", repr=False)
+    control_catalog_path: str = ""
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -22,6 +22,32 @@ export interface Assessment {
   updated_at: string;
 }
 
+export interface ControlDefinition {
+  control_id: string;
+  title: string;
+  domain: string;
+  objective: string;
+  control_type: string;
+  owner: string;
+  review_frequency: string;
+  requirements: string[];
+  evidence: string[];
+  implementation_reference: string | null;
+}
+
+export interface ControlEvaluation {
+  control: ControlDefinition;
+  applicable: boolean;
+  reasons: string[];
+}
+
+export interface InitiativeControlReport {
+  initiative_id: string;
+  catalog_id: string;
+  catalog_version: string;
+  controls: ControlEvaluation[];
+}
+
 export interface Approval {
   id: string;
   area: string;

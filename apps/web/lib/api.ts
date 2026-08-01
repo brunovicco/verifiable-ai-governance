@@ -3,6 +3,7 @@ import type {
   AISystem,
   Assessment,
   AssessmentKind,
+  InitiativeControlReport,
   Identity,
   Initiative,
   ModelAsset,
@@ -68,6 +69,10 @@ export function submitInitiative(id: string, version: number): Promise<Initiativ
 
 export function listAssessments(initiativeId: string): Promise<Assessment[]> {
   return request(`/api/v1/initiatives/${initiativeId}/assessments`);
+}
+
+export function getInitiativeControls(initiativeId: string): Promise<InitiativeControlReport> {
+  return request(`/api/v1/initiatives/${initiativeId}/controls`);
 }
 
 export function saveAssessment(

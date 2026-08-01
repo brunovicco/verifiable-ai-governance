@@ -3,7 +3,7 @@ name = "policy-engine"
 version = "0.1.0"
 description = "Deterministic governance policy evaluation"
 requires-python = ">=3.12"
-dependencies = ["governance-schemas"]
+dependencies = ["governance-schemas", "pyyaml>=6.0.2,<7"]
 
 [tool.uv.sources]
 governance-schemas = { workspace = true }

@@ -9,6 +9,8 @@ const LABELS: Record<string, string> = {
   not_required: "Não aplicável",
   pending: "Pendente",
   not_started: "Não iniciado",
+  applicable: "Aplicável",
+  not_applicable: "Não aplicável",
   low: "Baixo",
   medium: "Médio",
   high: "Alto",
@@ -36,6 +38,17 @@ const LABELS: Record<string, string> = {
   "human-oversight-plan": "Plano de supervisão humana",
   "threat-model": "Modelo de ameaças",
   "monitoring-plan": "Plano de monitoramento",
+  organization: "Organização",
+  risk: "Risco",
+  human_oversight: "Supervisão humana",
+  model: "Modelos",
+  agent: "Agentes",
+  operations: "Operações",
+  evidence: "Evidências",
+  change: "Mudanças",
+  preventive: "Preventivo",
+  detective: "Detectivo",
+  corrective: "Corretivo",
 };
 
 export function label(value: string): string {

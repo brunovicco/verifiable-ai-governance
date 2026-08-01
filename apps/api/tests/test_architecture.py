@@ -104,7 +104,11 @@ def test_production_accepts_explicit_fail_closed_configuration() -> None:
 
 @pytest.mark.parametrize(
     "relative_path",
-    ["domain/assessments.py", "application/assessments.py"],
+    [
+        "domain/assessments.py",
+        "application/assessments.py",
+        "application/controls.py",
+    ],
 )
 def test_assessment_core_does_not_import_delivery_or_persistence_frameworks(
     relative_path: str,
