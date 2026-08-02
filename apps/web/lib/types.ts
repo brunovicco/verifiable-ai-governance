@@ -98,6 +98,7 @@ export interface ModelAsset {
   provider: string;
   model_name: string;
   model_version: string;
+  routing_group: string;
   deployment_region: string;
   approved_use_cases: string[];
   prohibited_use_cases: string[];

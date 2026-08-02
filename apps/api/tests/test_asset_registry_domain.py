@@ -43,6 +43,7 @@ def model_candidate(**overrides: object) -> ModelReviewCandidate:
         "provider": "Example AI",
         "model_name": "governed-medium",
         "model_version": "2026-08-01",
+        "routing_group": "reasoning-medium",
         "deployment_region": "Brazil South",
         "approved_use_cases": ("knowledge assistance",),
         "prohibited_use_cases": ("employment decision",),
@@ -134,6 +135,8 @@ def test_model_review_requires_use_data_and_evaluation_boundaries() -> None:
         review_model_scope(model_candidate(allowed_data_classes=()), context)
     with pytest.raises(AssetReviewError, match="evaluation baseline"):
         review_model_scope(model_candidate(evaluation_baseline={}), context)
+    with pytest.raises(AssetReviewError, match="logical routing group"):
+        review_model_scope(model_candidate(routing_group="unassigned"), context)
 
 
 def test_action_capable_agent_requires_human_and_runtime_boundaries() -> None:

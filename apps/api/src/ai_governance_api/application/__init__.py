@@ -69,6 +69,16 @@ from ai_governance_api.application.evidence import (
     ObjectStoragePort,
     UploadEvidence,
 )
+from ai_governance_api.application.model_routing import (
+    ListModelRoutingDecisions,
+    ModelRouterUnavailable,
+    ModelRoutingAuditPort,
+    ModelRoutingDecisionStorePort,
+    ModelRoutingScopeReaderPort,
+    ModelRoutingTransactionPort,
+    PolicyModelRouterPort,
+    RequestModelRoutingDecision,
+)
 
 __all__ = [
     "AuthenticateAccessToken",
@@ -112,11 +122,19 @@ __all__ = [
     "ListAssessments",
     "ListControlCatalog",
     "ListEvidence",
+    "ListModelRoutingDecisions",
     "MalwareScannerPort",
+    "ModelRouterUnavailable",
+    "ModelRoutingAuditPort",
+    "ModelRoutingDecisionStorePort",
+    "ModelRoutingScopeReaderPort",
+    "ModelRoutingTransactionPort",
     "ObjectStoragePort",
+    "PolicyModelRouterPort",
     "ResolveCorporateDirectory",
     "ResolveDirectoryAuthorization",
     "RequireActiveDirectoryAccess",
+    "RequestModelRoutingDecision",
     "RestoreDirectoryAccess",
     "ReuseDirectoryAuthorization",
     "SaveAssessment",

@@ -29,8 +29,14 @@ from ai_governance_api.adapters.evidence_persistence import (
 )
 from ai_governance_api.adapters.malware import ClamAVScanner
 from ai_governance_api.adapters.microsoft_graph import MicrosoftGraphCorporateDirectory
+from ai_governance_api.adapters.model_routing_persistence import (
+    SqlAlchemyModelRoutingAudit,
+    SqlAlchemyModelRoutingDecisionStore,
+    SqlAlchemyModelRoutingScopeReader,
+)
 from ai_governance_api.adapters.object_storage import S3ObjectStorage
 from ai_governance_api.adapters.oidc import PyJwtOidcVerifier
+from ai_governance_api.adapters.policy_model_router import PolicyModelRouterHttpAdapter
 
 __all__ = [
     "SqlAlchemyAssessmentAudit",
@@ -47,10 +53,14 @@ __all__ = [
     "SqlAlchemyEvidenceAudit",
     "SqlAlchemyEvidenceStore",
     "SqlAlchemyInitiativeControlContextStore",
+    "SqlAlchemyModelRoutingAudit",
+    "SqlAlchemyModelRoutingDecisionStore",
+    "SqlAlchemyModelRoutingScopeReader",
     "SqlAlchemyTransaction",
     "ClamAVScanner",
     "DirectoryAuthorizationCatalogError",
     "MicrosoftGraphCorporateDirectory",
+    "PolicyModelRouterHttpAdapter",
     "PyJwtOidcVerifier",
     "S3ObjectStorage",
     "YamlDirectoryAuthorizationCatalog",

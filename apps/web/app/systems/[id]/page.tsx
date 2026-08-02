@@ -138,6 +138,7 @@ function ModelForm({
         provider: String(data.get("provider")),
         model_name: String(data.get("model_name")),
         model_version: String(data.get("model_version")),
+        routing_group: String(data.get("routing_group")),
         deployment_region: String(data.get("deployment_region")),
         approved_use_cases: csv(data.get("approved_use_cases")),
         prohibited_use_cases: csv(data.get("prohibited_use_cases")),
@@ -160,6 +161,7 @@ function ModelForm({
         <label>Provedor<input name="provider" required minLength={2} /></label>
         <label>Modelo<input name="model_name" required minLength={2} /></label>
         <label>Versão<input name="model_version" required /></label>
+        <label>Grupo lógico<input name="routing_group" required minLength={2} placeholder="reasoning-medium" pattern="[a-z0-9][a-z0-9._-]*" /></label>
         <label>Região de inferência<input name="deployment_region" required minLength={2} /></label>
       </div>
       <label>Usos aprovados<input name="approved_use_cases" required placeholder="Separe por vírgula" /></label>
@@ -401,7 +403,7 @@ export default function AISystemPage() {
             {system.models?.map((model) => (
               <div className="asset-card" key={model.id}>
                 <div className="asset-card-heading">
-                  <div><strong>{model.provider} · {model.model_name}</strong><small>{model.model_version} · {model.deployment_region}</small></div>
+                  <div><strong>{model.provider} · {model.model_name}</strong><small>{model.model_version} · {model.deployment_region} · grupo {model.routing_group}</small></div>
                   <StatusPill value={assetDisplayStatus(model.status, model.review_state)} />
                 </div>
                 <p>Dados: {model.allowed_data_classes.map(label).join(", ") || "não definidos"}</p>

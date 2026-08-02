@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ai_governance_api.adapters import (
     ClamAVScanner,
     MicrosoftGraphCorporateDirectory,
+    PolicyModelRouterHttpAdapter,
     S3ObjectStorage,
     SqlAlchemyAssessmentAudit,
     SqlAlchemyAssessmentStore,
@@ -27,6 +28,9 @@ from ai_governance_api.adapters import (
     SqlAlchemyEvidenceAudit,
     SqlAlchemyEvidenceStore,
     SqlAlchemyInitiativeControlContextStore,
+    SqlAlchemyModelRoutingAudit,
+    SqlAlchemyModelRoutingDecisionStore,
+    SqlAlchemyModelRoutingScopeReader,
     SqlAlchemyTransaction,
     YamlDirectoryAuthorizationCatalog,
 )
@@ -46,6 +50,9 @@ from ai_governance_api.application import (
     ListAssessments,
     ListControlCatalog,
     ListEvidence,
+    ListModelRoutingDecisions,
+    PolicyModelRouterPort,
+    RequestModelRoutingDecision,
     RequireActiveDirectoryAccess,
     ResolveCorporateDirectory,
     ResolveDirectoryAuthorization,
@@ -447,6 +454,52 @@ def get_inventory_service(session: DatabaseSession) -> InventoryService:
 
 InitiativeServiceDependency = Annotated[InitiativeService, Depends(get_initiative_service)]
 InventoryServiceDependency = Annotated[InventoryService, Depends(get_inventory_service)]
+
+
+@lru_cache
+def get_policy_model_router() -> PolicyModelRouterHttpAdapter:
+    """Build the process configuration for the external routing decision point."""
+    settings = get_settings()
+    return PolicyModelRouterHttpAdapter(
+        base_url=settings.policy_model_router_base_url,
+        api_keys=settings.policy_model_router_api_key_map,
+        timeout_seconds=settings.policy_model_router_timeout_seconds,
+        max_response_bytes=settings.policy_model_router_max_response_bytes,
+    )
+
+
+def get_request_model_routing_decision(
+    session: DatabaseSession,
+    router: Annotated[PolicyModelRouterPort, Depends(get_policy_model_router)],
+) -> RequestModelRoutingDecision:
+    """Build routing enforcement without holding a DB session across network I/O."""
+    return RequestModelRoutingDecision(
+        SqlAlchemyModelRoutingScopeReader(SessionFactory),
+        router,
+        SqlAlchemyModelRoutingDecisionStore(session),
+        SqlAlchemyModelRoutingAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+def get_list_model_routing_decisions(
+    session: DatabaseSession,
+) -> ListModelRoutingDecisions:
+    """Build the request-scoped routing evidence query."""
+    return ListModelRoutingDecisions(
+        SqlAlchemyModelRoutingScopeReader(SessionFactory),
+        SqlAlchemyModelRoutingDecisionStore(session),
+    )
+
+
+RequestModelRoutingDecisionDependency = Annotated[
+    RequestModelRoutingDecision,
+    Depends(get_request_model_routing_decision),
+]
+ListModelRoutingDecisionsDependency = Annotated[
+    ListModelRoutingDecisions,
+    Depends(get_list_model_routing_decisions),
+]
 
 
 def get_save_assessment(session: DatabaseSession) -> SaveAssessment:

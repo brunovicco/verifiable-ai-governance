@@ -1,5 +1,6 @@
 """Environment-driven application configuration."""
 
+import json
 from enum import StrEnum
 from functools import lru_cache
 from typing import Literal
@@ -101,6 +102,16 @@ class Settings(BaseSettings):
         le=300,
     )
 
+    policy_model_router_enabled: bool = False
+    policy_model_router_base_url: str = "http://localhost:8082"
+    policy_model_router_api_keys_json: str = Field(default="{}", repr=False)
+    policy_model_router_timeout_seconds: float = Field(default=2.0, gt=0, le=10)
+    policy_model_router_max_response_bytes: int = Field(
+        default=256 * 1024,
+        ge=1024,
+        le=1024 * 1024,
+    )
+
     audit_hash_salt: str = Field(default="local-development-only", repr=False)
     control_catalog_path: str = ""
 
@@ -187,6 +198,31 @@ class Settings(BaseSettings):
             if content_type.strip()
         )
 
+    @property
+    def policy_model_router_api_key_map(self) -> dict[str, str]:
+        """Return the validated per-agent secret mapping for policy-model-router."""
+        try:
+            raw = json.loads(self.policy_model_router_api_keys_json)
+        except json.JSONDecodeError as exc:
+            raise ValueError("POLICY_MODEL_ROUTER_API_KEYS_JSON must be valid JSON") from exc
+        if not isinstance(raw, dict):
+            raise ValueError("POLICY_MODEL_ROUTER_API_KEYS_JSON must be a JSON object")
+        api_keys: dict[str, str] = {}
+        for agent_name, api_key in raw.items():
+            if (
+                not isinstance(agent_name, str)
+                or not isinstance(api_key, str)
+                or not agent_name
+                or agent_name != agent_name.strip()
+                or len(agent_name) > 200
+                or not api_key
+            ):
+                raise ValueError(
+                    "POLICY_MODEL_ROUTER_API_KEYS_JSON must map bounded agent names to secrets"
+                )
+            api_keys[agent_name] = api_key
+        return api_keys
+
     @model_validator(mode="after")
     def validate_authentication(self) -> "Settings":
         """Fail closed when deployment settings weaken authentication or audit."""
@@ -216,6 +252,8 @@ class Settings(BaseSettings):
                 )
         if self.microsoft_graph_enabled:
             self._validate_microsoft_graph()
+        if self.policy_model_router_enabled:
+            self._validate_policy_model_router(require_tls=not is_local)
         if not is_local and self.dev_auth_enabled:
             raise ValueError("DEV_AUTH_ENABLED must be false outside local and test environments")
         if not is_local and self.auto_create_schema:
@@ -243,6 +281,28 @@ class Settings(BaseSettings):
         ):
             raise ValueError("Explicit object-storage endpoints must use HTTPS outside local")
         return self
+
+    def _validate_policy_model_router(self, *, require_tls: bool) -> None:
+        """Require a trusted URL and at least one per-agent routing credential."""
+        self._validate_oidc_url(
+            "POLICY_MODEL_ROUTER_BASE_URL",
+            self.policy_model_router_base_url,
+            require_tls=require_tls,
+        )
+        parsed = urlparse(self.policy_model_router_base_url)
+        if (
+            parsed.query
+            or parsed.fragment
+            or parsed.username is not None
+            or parsed.password is not None
+        ):
+            raise ValueError(
+                "POLICY_MODEL_ROUTER_BASE_URL must not contain credentials, query, or fragment"
+            )
+        if not self.policy_model_router_api_key_map:
+            raise ValueError(
+                "POLICY_MODEL_ROUTER_API_KEYS_JSON is required when policy routing is enabled"
+            )
 
     def _validate_entra_identity_boundary(self) -> None:
         """Require tenant-specific Entra trust coherent with the tenant allowlist."""

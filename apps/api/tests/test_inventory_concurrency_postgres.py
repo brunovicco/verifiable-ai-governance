@@ -141,6 +141,7 @@ async def _seed_reviewable_model(
             provider="Example AI",
             model_name="governed-medium",
             model_version="2026-08-01",
+            routing_group="reasoning-medium",
             deployment_region="Brazil South",
             approved_use_cases=["knowledge assistance"],
             prohibited_use_cases=["employment decision"],

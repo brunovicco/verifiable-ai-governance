@@ -1,6 +1,7 @@
 """SQLAlchemy persistence models for governance aggregates and audit events."""
 
 from datetime import UTC, datetime
+from decimal import Decimal
 from typing import Any
 from uuid import uuid4
 
@@ -22,6 +23,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    Numeric,
     String,
     Text,
     UniqueConstraint,
@@ -197,6 +199,7 @@ class ModelAsset(ReviewableAssetMixin, VersionedMixin, Base):
     provider: Mapped[str] = mapped_column(String(200), nullable=False)
     model_name: Mapped[str] = mapped_column(String(200), nullable=False)
     model_version: Mapped[str] = mapped_column(String(100), nullable=False)
+    routing_group: Mapped[str] = mapped_column(String(100), nullable=False)
     deployment_region: Mapped[str] = mapped_column(String(100), nullable=False)
     approved_use_cases: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     prohibited_use_cases: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
@@ -239,6 +242,68 @@ class Agent(ReviewableAssetMixin, VersionedMixin, Base):
     )
 
     ai_system: Mapped[AISystem] = relationship(back_populates="agents")
+
+
+class ModelRoutingDecisionEntry(Base):
+    """Durable lifecycle and provenance for one runtime routing attempt."""
+
+    __tablename__ = "model_routing_decisions"
+    __table_args__ = (
+        UniqueConstraint(
+            "router_decision_id",
+            name="uq_model_routing_decisions_router_decision_id",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    ai_system_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_systems.id"), nullable=False, index=True
+    )
+    initiative_id: Mapped[str] = mapped_column(
+        ForeignKey("initiatives.id"), nullable=False, index=True
+    )
+    agent_id: Mapped[str] = mapped_column(
+        ForeignKey("agents.id"), nullable=False, index=True
+    )
+    requested_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    requested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
+    scope_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    workflow_id: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
+    task_id: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
+    workload: Mapped[str] = mapped_column(String(100), nullable=False)
+    risk_level: Mapped[str] = mapped_column(String(20), nullable=False)
+    data_classification: Mapped[str] = mapped_column(String(20), nullable=False)
+    context_tokens_estimated: Mapped[int] = mapped_column(Integer, nullable=False)
+    max_output_tokens_estimated: Mapped[int] = mapped_column(Integer, nullable=False)
+    structured_output_required: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    max_latency_ms: Mapped[int] = mapped_column(Integer, nullable=False)
+    max_cost_usd: Mapped[Decimal] = mapped_column(Numeric(18, 8), nullable=False)
+    outcome: Mapped[str] = mapped_column(String(30), nullable=False, index=True)
+    decision_source: Mapped[str | None] = mapped_column(String(40))
+    router_decision_id: Mapped[str | None] = mapped_column(String(200))
+    router_outcome: Mapped[str | None] = mapped_column(String(20))
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    selected_model_group: Mapped[str | None] = mapped_column(String(100))
+    rejected_model_group: Mapped[str | None] = mapped_column(String(100))
+    reason: Mapped[str | None] = mapped_column(Text)
+    reason_code: Mapped[str | None] = mapped_column(String(100))
+    observed_value: Mapped[str | None] = mapped_column(String(1000))
+    required_value: Mapped[str | None] = mapped_column(String(1000))
+    rejected_candidates: Mapped[list[dict[str, str]]] = mapped_column(
+        JSON,
+        default=list,
+        nullable=False,
+    )
+    policy_id: Mapped[str | None] = mapped_column(String(200))
+    policy_version: Mapped[str | None] = mapped_column(String(100))
+    policy_digest: Mapped[str | None] = mapped_column(String(64), index=True)
+    service_version: Mapped[str | None] = mapped_column(String(100))
+    environment: Mapped[str | None] = mapped_column(String(100))
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
 class Assessment(VersionedMixin, Base):

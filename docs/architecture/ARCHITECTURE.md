@@ -13,8 +13,8 @@ flowchart LR
   A --> O["Provedor OIDC"]
   O -. "implementação corporativa planejada" .-> E["Microsoft Entra ID"]
   A -. "perfil e grupos via OBO" .-> G["Microsoft Graph"]
+  A -. "decisão de roteamento, opcional" .-> PMR["policy-model-router"]
   A -. futuro .-> R["Runtime governance adapters"]
-  R -.-> PMR["policy-model-router"]
   R -.-> OTEL["a2a-otel-kit"]
   R -.-> ELS["engineering-loop-schemas"]
   R -.-> ALI["alicerce"]
@@ -233,6 +233,29 @@ distintos. A vigência é exposta separadamente como `review_state`, calculada n
 da leitura, para que uma aprovação expirada não seja apresentada como corrente. Consulte
 o ADR 0020.
 
+### Roteamento de modelos em runtime
+
+Cada modelo revisado por Arquitetura recebe um `routing_group` explícito; o marcador de
+migração `unassigned` nunca é aceito como grupo vigente. Antes de qualquer chamada
+externa, um domínio puro decide se um agente pode operar e quais grupos revisados estão
+elegíveis: sistema operacional, agente aprovado com revisão vigente, ao menos um modelo
+elegível, classe de dado autorizada e custo dentro do limite revisado. Só então a
+aplicação consulta o `policy-model-router`, um serviço externo que recebe apenas
+metadados operacionais (workload, risco, classe de dado, limites de custo e latência,
+nunca prompt ou documento) e devolve o grupo lógico a usar ou uma rejeição explícita.
+
+Cada tentativa é persistida como `pending` antes da chamada e finalizada como `allowed`,
+`blocked` ou `dependency_unavailable` depois dela, preservando evidência mesmo se o
+processo falhar entre as duas transações. Um digest SHA-256 do escopo, capturado antes
+da chamada e revalidado com uma leitura fresca depois dela, bloqueia a decisão como
+`registry_scope_changed` se algum fato relevante mudou nesse intervalo. O grupo
+devolvido pelo roteador só é aceito se corresponder ao `routing_group` de um modelo
+atualmente elegível; o roteador nunca pode aprovar um grupo que a governança não
+revisou. A chamada HTTP é única e não é repetida, por não ser idempotente;
+indisponibilidade, resposta inválida, fora do tamanho esperado ou sem correspondência ao
+pedido falha fechado como `dependency_unavailable`, traduzido para HTTP 503. Consulte o
+ADR 0021.
+
 ## Modelo lógico inicial
 
 ```mermaid
@@ -271,10 +294,13 @@ erDiagram
 
 ## Portas de integração futuras
 
+O `policy-model-router` deixou de ser uma porta futura: a integração está implementada e
+descrita em "Roteamento de modelos em runtime" e no ADR 0021. As integrações a seguir
+permanecem portas futuras, sem acoplar o núcleo do MVP a esses projetos.
+
 | Integração | Entrada esperada | Evidência produzida |
 |---|---|---|
 | Microsoft Entra ID/Graph | token, perfil e object IDs delegados | identidade, área e provenance do mapeamento |
-| `policy-model-router` | contexto de risco e classe de dado | decisão, policy digest e rejeições |
 | `a2a-otel-kit` | spans/eventos sanitizados | correlação de modelos, agentes, A2A e MCP |
 | `engineering-loop-schemas` | contrato, execução e veredito | evidência independente vinculada ao artefato |
 | `alicerce` | pedido de execução controlada | limites, isolamento e resultado verificável |
