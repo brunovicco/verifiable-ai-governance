@@ -171,6 +171,11 @@ class ModelAssetCreate(BaseModel):
     provider: str = Field(min_length=2, max_length=200)
     model_name: str = Field(min_length=2, max_length=200)
     model_version: str = Field(min_length=1, max_length=100)
+    routing_group: str = Field(
+        min_length=2,
+        max_length=100,
+        pattern=r"^[a-z0-9][a-z0-9._-]*$",
+    )
     deployment_region: str = Field(min_length=2, max_length=100)
     approved_use_cases: list[str] = Field(default_factory=list)
     prohibited_use_cases: list[str] = Field(default_factory=list)
@@ -192,6 +197,12 @@ class ModelAssetUpdate(BaseModel):
     provider: str | None = Field(default=None, min_length=2, max_length=200)
     model_name: str | None = Field(default=None, min_length=2, max_length=200)
     model_version: str | None = Field(default=None, min_length=1, max_length=100)
+    routing_group: str | None = Field(
+        default=None,
+        min_length=2,
+        max_length=100,
+        pattern=r"^[a-z0-9][a-z0-9._-]*$",
+    )
     deployment_region: str | None = Field(default=None, min_length=2, max_length=100)
     approved_use_cases: list[str] | None = None
     prohibited_use_cases: list[str] | None = None
@@ -325,6 +336,7 @@ class ModelAssetRead(ReviewableAssetRead):
     provider: str
     model_name: str
     model_version: str
+    routing_group: str
     deployment_region: str
     approved_use_cases: list[str]
     prohibited_use_cases: list[str]

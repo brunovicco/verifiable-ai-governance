@@ -25,6 +25,7 @@ from ai_governance_api.routers.evidence import router as evidence_router
 from ai_governance_api.routers.health import router as health_router
 from ai_governance_api.routers.initiatives import router as initiatives_router
 from ai_governance_api.routers.inventory import router as inventory_router
+from ai_governance_api.routers.model_routing import router as model_routing_router
 
 ERROR_STATUS_CODES = {
     ErrorKind.FORBIDDEN: 403,
@@ -154,6 +155,7 @@ def create_app() -> FastAPI:
     app.include_router(controls_router)
     app.include_router(evidence_router)
     app.include_router(inventory_router)
+    app.include_router(model_routing_router)
 
     @app.exception_handler(ApplicationError)
     async def handle_application_error(

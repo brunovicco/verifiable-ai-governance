@@ -625,6 +625,7 @@ class InventoryService:
             provider=model.provider,
             model_name=model.model_name,
             model_version=model.model_version,
+            routing_group=model.routing_group,
             deployment_region=model.deployment_region,
             approved_use_cases=tuple(model.approved_use_cases),
             prohibited_use_cases=tuple(model.prohibited_use_cases),

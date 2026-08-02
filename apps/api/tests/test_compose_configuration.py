@@ -119,3 +119,29 @@ def test_api_graph_obo_configuration_is_environment_driven() -> None:
     assert environment["MICROSOFT_GRAPH_MAX_RESPONSE_BYTES"] == (
         "${MICROSOFT_GRAPH_MAX_RESPONSE_BYTES:-1048576}"
     )
+
+
+def test_api_policy_model_router_configuration_is_environment_driven() -> None:
+    """Keep runtime routing enforcement opt-in and its credentials out of committed defaults."""
+    compose = cast(
+        dict[str, Any],
+        yaml.safe_load((ROOT / "docker-compose.yml").read_text(encoding="utf-8")),
+    )
+
+    environment = compose["x-api-environment"]
+
+    assert environment["POLICY_MODEL_ROUTER_ENABLED"] == (
+        "${POLICY_MODEL_ROUTER_ENABLED:-false}"
+    )
+    assert environment["POLICY_MODEL_ROUTER_BASE_URL"] == (
+        "${POLICY_MODEL_ROUTER_BASE_URL:-http://host.docker.internal:8082}"
+    )
+    assert environment["POLICY_MODEL_ROUTER_API_KEYS_JSON"] == (
+        "${POLICY_MODEL_ROUTER_API_KEYS_JSON:-{}}"
+    )
+    assert environment["POLICY_MODEL_ROUTER_TIMEOUT_SECONDS"] == (
+        "${POLICY_MODEL_ROUTER_TIMEOUT_SECONDS:-2}"
+    )
+    assert environment["POLICY_MODEL_ROUTER_MAX_RESPONSE_BYTES"] == (
+        "${POLICY_MODEL_ROUTER_MAX_RESPONSE_BYTES:-262144}"
+    )

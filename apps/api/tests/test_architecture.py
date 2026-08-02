@@ -107,6 +107,26 @@ def test_production_accepts_explicit_fail_closed_configuration() -> None:
     assert settings.cors_origin_list == ["https://governance.example.com"]
 
 
+def test_policy_model_router_requires_explicit_per_agent_credentials() -> None:
+    settings = Settings(
+        policy_model_router_enabled=True,
+        policy_model_router_base_url="https://router.example.com",
+        policy_model_router_api_keys_json='{"Knowledge agent":"secret"}',
+    )
+
+    assert settings.policy_model_router_api_key_map == {
+        "Knowledge agent": "secret"
+    }
+    assert "secret" not in repr(settings)
+
+    with pytest.raises(ValidationError, match="API_KEYS_JSON is required"):
+        Settings(
+            policy_model_router_enabled=True,
+            policy_model_router_base_url="https://router.example.com",
+            policy_model_router_api_keys_json="{}",
+        )
+
+
 @pytest.mark.parametrize(
     "relative_path",
     [
@@ -121,6 +141,7 @@ def test_production_accepts_explicit_fail_closed_configuration() -> None:
         "domain/directory_access.py",
         "domain/directory_authorization_cache.py",
         "domain/backups.py",
+        "domain/model_routing.py",
         "application/authentication.py",
         "application/corporate_directory.py",
         "application/directory_authorization.py",
@@ -128,6 +149,7 @@ def test_production_accepts_explicit_fail_closed_configuration() -> None:
         "application/directory_authorization_cache.py",
         "application/backups.py",
         "application/evidence.py",
+        "application/model_routing.py",
     ],
 )
 def test_application_core_does_not_import_delivery_or_persistence_frameworks(

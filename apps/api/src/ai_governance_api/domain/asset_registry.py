@@ -35,6 +35,7 @@ class AssetReviewState(StrEnum):
 
 MIGRATED_AGENT_VERSION = "unversioned"
 MIGRATED_DEPLOYMENT_REGION = "unspecified"
+MIGRATED_ROUTING_GROUP = "unassigned"
 
 
 MAX_REVIEW_INTERVAL = {
@@ -65,6 +66,7 @@ class ModelReviewCandidate:
     provider: str
     model_name: str
     model_version: str
+    routing_group: str
     deployment_region: str
     approved_use_cases: tuple[str, ...]
     prohibited_use_cases: tuple[str, ...]
@@ -111,6 +113,9 @@ def review_model_scope(
 ) -> AssetReviewDecision:
     """Approve an explicit model scope after independent architecture review."""
     _validate_review_context(context, required_area=ApprovalArea.ARCHITECTURE)
+    normalized_routing_group = candidate.routing_group.strip().casefold()
+    if not normalized_routing_group or normalized_routing_group == MIGRATED_ROUTING_GROUP:
+        raise AssetReviewError("Model review requires an explicit logical routing group")
     if not candidate.approved_use_cases:
         raise AssetReviewError("Model review requires at least one approved use case")
     if not candidate.allowed_data_classes:
@@ -135,6 +140,7 @@ def review_model_scope(
             "provider": candidate.provider,
             "model_name": candidate.model_name,
             "model_version": candidate.model_version,
+            "routing_group": candidate.routing_group,
             "deployment_region": candidate.deployment_region,
             "approved_use_cases": sorted(candidate.approved_use_cases),
             "prohibited_use_cases": sorted(candidate.prohibited_use_cases),
