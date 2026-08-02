@@ -1,4 +1,4 @@
-.PHONY: setup dev dev-api dev-web test lint format build quality migrate compose-up compose-down oidc-up oidc-verify oidc-down backup backup-verify backup-restore-test backup-restore
+.PHONY: setup dev dev-api dev-web test lint format build quality migrate compose-up compose-down oidc-up oidc-verify oidc-down backup backup-verify backup-restore-test backup-restore seed-demo
 
 BACKUP_DIR ?= backups/manual
 
@@ -66,3 +66,6 @@ backup-restore:
 	@test -n "$(RESTORE_DATABASE)" || (echo "RESTORE_DATABASE is required" && exit 2)
 	@test -n "$(RESTORE_BUCKET)" || (echo "RESTORE_BUCKET is required" && exit 2)
 	uv run python scripts/manage_backups.py restore --backup "$(BACKUP_DIR)" --database "$(RESTORE_DATABASE)" --bucket "$(RESTORE_BUCKET)"
+
+seed-demo:
+	uv run python scripts/seed_demo_data.py
