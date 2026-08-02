@@ -34,6 +34,10 @@ from ai_governance_api.domain.asset_registry import (
     AssetReviewState,
     asset_review_state,
 )
+from ai_governance_api.domain.incidents import (
+    ExceptionStatus,
+    IncidentStatus,
+)
 
 
 def new_id() -> str:
@@ -185,6 +189,9 @@ class AISystem(VersionedMixin, Base):
     agents: Mapped[list["Agent"]] = relationship(
         back_populates="ai_system", lazy="selectin"
     )
+    incidents: Mapped[list["Incident"]] = relationship(
+        back_populates="ai_system", lazy="selectin"
+    )
 
 
 class ModelAsset(ReviewableAssetMixin, VersionedMixin, Base):
@@ -237,6 +244,9 @@ class Agent(ReviewableAssetMixin, VersionedMixin, Base):
     max_runtime_seconds: Mapped[int | None] = mapped_column(Integer)
     human_approval_points: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     kill_switch_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    kill_switch_engaged: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    kill_switch_engaged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    kill_switch_engaged_by: Mapped[str | None] = mapped_column(String(200))
     status: Mapped[EntityStatus] = mapped_column(
         Enum(EntityStatus, native_enum=False), default=EntityStatus.DRAFT, nullable=False
     )
@@ -452,12 +462,53 @@ class Incident(VersionedMixin, Base):
         ForeignKey("ai_systems.id"), nullable=False, index=True
     )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
-    severity: Mapped[str] = mapped_column(String(50), nullable=False)
-    status: Mapped[str] = mapped_column(String(50), default="open", nullable=False)
+    severity: Mapped[RiskTier] = mapped_column(Enum(RiskTier, native_enum=False), nullable=False)
+    status: Mapped[IncidentStatus] = mapped_column(
+        Enum(IncidentStatus, native_enum=False), default=IncidentStatus.OPEN, nullable=False
+    )
     description: Mapped[str] = mapped_column(Text, nullable=False)
     detected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     owner_id: Mapped[str] = mapped_column(String(200), nullable=False)
     containment: Mapped[str | None] = mapped_column(Text)
+    remediation_owner_id: Mapped[str | None] = mapped_column(String(200))
+    remediation_description: Mapped[str | None] = mapped_column(Text)
+    remediation_due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    ai_system: Mapped[AISystem] = relationship(back_populates="incidents")
+    exceptions: Mapped[list["PolicyException"]] = relationship(
+        back_populates="incident", lazy="selectin"
+    )
+
+
+class PolicyException(VersionedMixin, Base):
+    """Temporary, expiring, independently-approved exception to a governance control."""
+
+    __tablename__ = "policy_exceptions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    incident_id: Mapped[str] = mapped_column(
+        ForeignKey("incidents.id"), nullable=False, index=True
+    )
+    ai_system_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_systems.id"), nullable=False, index=True
+    )
+    requested_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    purpose: Mapped[str] = mapped_column(Text, nullable=False)
+    scope_description: Mapped[str] = mapped_column(Text, nullable=False)
+    compensating_controls: Mapped[str] = mapped_column(Text, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
+    status: Mapped[ExceptionStatus] = mapped_column(
+        Enum(ExceptionStatus, native_enum=False), default=ExceptionStatus.PENDING, nullable=False
+    )
+    decided_by: Mapped[str | None] = mapped_column(String(200))
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    decision_reason: Mapped[str | None] = mapped_column(Text)
+
+    incident: Mapped[Incident] = relationship(back_populates="exceptions")
 
 
 class InternationalProcessing(VersionedMixin, Base):

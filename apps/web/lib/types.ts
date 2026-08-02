@@ -131,6 +131,7 @@ export interface AgentAsset {
   max_runtime_seconds: number | null;
   human_approval_points: string[];
   kill_switch_enabled: boolean;
+  kill_switch_engaged: boolean;
   approved_scope_digest: string | null;
   reviewed_by: string | null;
   reviewed_at: string | null;
@@ -215,4 +216,55 @@ export interface ReviewSubmission {
 export interface Identity {
   userId: string;
   areas?: string[];
+}
+
+export type IncidentStatus = "open" | "contained" | "remediating" | "closed";
+export type ExceptionStatus = "pending" | "approved" | "rejected" | "revoked";
+export type ExceptionState = "pending" | "active" | "expired" | "rejected" | "revoked";
+
+export interface Incident {
+  id: string;
+  ai_system_id: string;
+  title: string;
+  severity: RiskTier;
+  status: IncidentStatus;
+  description: string;
+  detected_at: string;
+  owner_id: string;
+  containment: string | null;
+  remediation_owner_id: string | null;
+  remediation_description: string | null;
+  remediation_due_at: string | null;
+  resolved_at: string | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AgentKillSwitchState {
+  id: string;
+  ai_system_id: string;
+  kill_switch_enabled: boolean;
+  kill_switch_engaged: boolean;
+  version: number;
+}
+
+export interface PolicyException {
+  id: string;
+  incident_id: string;
+  ai_system_id: string;
+  requested_by: string;
+  requested_at: string;
+  purpose: string;
+  scope_description: string;
+  compensating_controls: string;
+  expires_at: string;
+  status: ExceptionStatus;
+  state: ExceptionState;
+  decided_by: string | null;
+  decided_at: string | null;
+  decision_reason: string | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
 }

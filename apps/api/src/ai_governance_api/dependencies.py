@@ -27,6 +27,8 @@ from ai_governance_api.adapters import (
     SqlAlchemyDirectoryAuthorizationCacheTransaction,
     SqlAlchemyEvidenceAudit,
     SqlAlchemyEvidenceStore,
+    SqlAlchemyIncidentAudit,
+    SqlAlchemyIncidentRepository,
     SqlAlchemyInitiativeControlContextStore,
     SqlAlchemyModelRoutingAudit,
     SqlAlchemyModelRoutingDecisionStore,
@@ -46,6 +48,7 @@ from ai_governance_api.application import (
     DirectoryAccessUnavailable,
     DirectoryAuthorizationCacheUnavailable,
     EvaluateInitiativeControls,
+    IncidentService,
     InvalidateDirectoryAuthorization,
     ListAssessments,
     ListControlCatalog,
@@ -452,8 +455,18 @@ def get_inventory_service(session: DatabaseSession) -> InventoryService:
     return InventoryService(session)
 
 
+def get_incident_service(session: DatabaseSession) -> IncidentService:
+    """Build the request-scoped incident, kill-switch, and exception service."""
+    return IncidentService(
+        SqlAlchemyIncidentRepository(session),
+        SqlAlchemyIncidentAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
 InitiativeServiceDependency = Annotated[InitiativeService, Depends(get_initiative_service)]
 InventoryServiceDependency = Annotated[InventoryService, Depends(get_inventory_service)]
+IncidentServiceDependency = Annotated[IncidentService, Depends(get_incident_service)]
 
 
 @lru_cache

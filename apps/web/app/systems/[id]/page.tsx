@@ -10,6 +10,8 @@ import {
   createAgent,
   createModel,
   getAISystem,
+  listIncidents,
+  reportIncident,
   reviewAgent,
   reviewModel,
   retireAgent,
@@ -18,7 +20,7 @@ import {
 } from "@/lib/api";
 import { getPortalAuthConfig } from "@/lib/auth/config";
 import { label } from "@/lib/labels";
-import type { AISystem, AgentAsset, ModelAsset } from "@/lib/types";
+import type { AISystem, AgentAsset, Incident, ModelAsset } from "@/lib/types";
 
 function csv(value: FormDataEntryValue | null): string[] {
   return String(value ?? "")
@@ -278,14 +280,73 @@ function AgentForm({
   );
 }
 
+function IncidentReportForm({
+  systemId,
+  onCreated,
+}: {
+  systemId: string;
+  onCreated: (incident: Incident) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    try {
+      const incident = await reportIncident(systemId, {
+        title: String(data.get("title")),
+        severity: String(data.get("severity")),
+        description: String(data.get("description")),
+        detected_at: new Date(String(data.get("detected_at"))).toISOString(),
+      });
+      onCreated(incident);
+      form.reset();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Falha ao registrar o incidente.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form className="asset-form" onSubmit={submit}>
+      <h3>Reportar incidente</h3>
+      <div className="field-grid">
+        <label>Título<input name="title" required minLength={2} /></label>
+        <label>
+          Severidade
+          <select name="severity" defaultValue="medium">
+            <option value="low">Baixa</option>
+            <option value="medium">Média</option>
+            <option value="high">Alta</option>
+            <option value="critical">Crítica</option>
+          </select>
+        </label>
+        <label>Detectado em<input name="detected_at" required type="datetime-local" /></label>
+      </div>
+      <label>Descrição<textarea name="description" required minLength={10} rows={3} /></label>
+      {error && <div className="notice notice-error">{error}</div>}
+      <button className="button button-primary" disabled={busy}>
+        {busy ? "Registrando…" : "Registrar incidente"}
+      </button>
+    </form>
+  );
+}
+
 export default function AISystemPage() {
   const { id } = useParams<{ id: string }>();
   const [system, setSystem] = useState<AISystem | null>(null);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
 
   useEffect(() => {
     getAISystem(id).then(setSystem).catch((reason: Error) => setError(reason.message));
+    listIncidents(id).then(setIncidents).catch(() => undefined);
   }, [id]);
 
   function addModel(model: ModelAsset) {
@@ -298,6 +359,10 @@ export default function AISystemPage() {
     setSystem((current) =>
       current ? { ...current, agents: [...(current.agents ?? []), agent] } : current,
     );
+  }
+
+  function addIncident(incident: Incident) {
+    setIncidents((current) => [incident, ...current]);
   }
 
   function replaceModel(reviewed: ReviewableAsset) {
@@ -434,7 +499,10 @@ export default function AISystemPage() {
               <div className="asset-card" key={agent.id}>
                 <div className="asset-card-heading">
                   <div><strong>{agent.name}</strong><small>{agent.agent_version} · {agent.deployment_region}</small><small>{label(agent.autonomy_level)} · {agent.owner_id}</small></div>
-                  <StatusPill value={assetDisplayStatus(agent.status, agent.review_state)} />
+                  <div className="status-row">
+                    {agent.kill_switch_engaged && <StatusPill value="suspended" />}
+                    <StatusPill value={assetDisplayStatus(agent.status, agent.review_state)} />
+                  </div>
                 </div>
                 <p>{agent.purpose}</p>
                 {agent.reviewed_at && (
@@ -455,6 +523,32 @@ export default function AISystemPage() {
             {(system.agents?.length ?? 0) === 0 && <div className="empty compact-empty">Nenhum agente registrado.</div>}
           </div>
           {mutable && <AgentForm system={system} onCreated={addAgent} />}
+        </article>
+      </section>
+
+      <section className="asset-columns">
+        <article className="panel asset-panel">
+          <div className="panel-heading"><div><p className="eyebrow">INCIDENT RESPONSE</p><h2>Incidentes</h2></div></div>
+          <div className="asset-list">
+            {incidents.map((incident) => (
+              <Link
+                className="asset-card asset-card-link"
+                href={`/systems/${system.id}/incidents/${incident.id}`}
+                key={incident.id}
+              >
+                <div className="asset-card-heading">
+                  <div><strong>{incident.title}</strong><small>Detectado em {formatDate(incident.detected_at)}</small></div>
+                  <div className="status-row">
+                    <StatusPill value={incident.severity} />
+                    <StatusPill value={incident.status} />
+                  </div>
+                </div>
+                <p>{incident.description}</p>
+              </Link>
+            ))}
+            {incidents.length === 0 && <div className="empty compact-empty">Nenhum incidente registrado.</div>}
+          </div>
+          {mutable && <IncidentReportForm systemId={system.id} onCreated={addIncident} />}
         </article>
       </section>
     </div>

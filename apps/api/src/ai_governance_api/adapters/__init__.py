@@ -27,6 +27,10 @@ from ai_governance_api.adapters.evidence_persistence import (
     SqlAlchemyEvidenceAudit,
     SqlAlchemyEvidenceStore,
 )
+from ai_governance_api.adapters.incident_persistence import (
+    SqlAlchemyIncidentAudit,
+    SqlAlchemyIncidentRepository,
+)
 from ai_governance_api.adapters.malware import ClamAVScanner
 from ai_governance_api.adapters.microsoft_graph import MicrosoftGraphCorporateDirectory
 from ai_governance_api.adapters.model_routing_persistence import (
@@ -52,6 +56,8 @@ __all__ = [
     "SqlAlchemyDirectoryAuthorizationCacheTransaction",
     "SqlAlchemyEvidenceAudit",
     "SqlAlchemyEvidenceStore",
+    "SqlAlchemyIncidentAudit",
+    "SqlAlchemyIncidentRepository",
     "SqlAlchemyInitiativeControlContextStore",
     "SqlAlchemyModelRoutingAudit",
     "SqlAlchemyModelRoutingDecisionStore",

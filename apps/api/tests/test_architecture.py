@@ -142,6 +142,7 @@ def test_policy_model_router_requires_explicit_per_agent_credentials() -> None:
         "domain/directory_authorization_cache.py",
         "domain/backups.py",
         "domain/model_routing.py",
+        "domain/incidents.py",
         "application/authentication.py",
         "application/corporate_directory.py",
         "application/directory_authorization.py",
@@ -150,6 +151,7 @@ def test_policy_model_router_requires_explicit_per_agent_credentials() -> None:
         "application/backups.py",
         "application/evidence.py",
         "application/model_routing.py",
+        "application/incidents.py",
     ],
 )
 def test_application_core_does_not_import_delivery_or_persistence_frameworks(
