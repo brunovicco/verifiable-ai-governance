@@ -76,6 +76,10 @@ Em outro terminal:
 make dev-web
 ```
 
+Para popular o banco local com dez iniciativas de demonstração cobrindo as principais
+etapas e riscos do fluxo (rascunho, revisão, mudanças solicitadas, aprovação, rejeição,
+ativo e aposentado), rode `make seed-demo` uma única vez contra um banco recém-migrado.
+
 ## Qualidade
 
 ```bash
