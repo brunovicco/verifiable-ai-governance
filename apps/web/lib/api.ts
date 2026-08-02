@@ -1,14 +1,17 @@
 import type {
   AgentAsset,
+  AgentKillSwitchState,
   AISystem,
   Assessment,
   AssessmentKind,
   Evidence,
   EvidenceKind,
+  Incident,
   InitiativeControlReport,
   Identity,
   Initiative,
   ModelAsset,
+  PolicyException,
   ReviewSubmission,
 } from "@/lib/types";
 import { applyRequestAuthentication } from "@/lib/auth/request";
@@ -262,5 +265,117 @@ export function retireAgent(id: string, version: number): Promise<AgentAsset> {
       expected_version: version,
       reason: "Agente retirado pelo responsável no portal de governança.",
     }),
+  });
+}
+
+export function listIncidents(systemId: string): Promise<Incident[]> {
+  return request(`/api/v1/systems/${systemId}/incidents`);
+}
+
+export function getIncident(incidentId: string): Promise<Incident> {
+  return request(`/api/v1/incidents/${incidentId}`);
+}
+
+export function reportIncident(
+  systemId: string,
+  payload: Record<string, unknown>,
+): Promise<Incident> {
+  return request(`/api/v1/systems/${systemId}/incidents`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function containIncident(
+  incidentId: string,
+  containment: string,
+  expectedVersion: number,
+): Promise<Incident> {
+  return request(`/api/v1/incidents/${incidentId}/contain`, {
+    method: "POST",
+    body: JSON.stringify({ containment, expected_version: expectedVersion }),
+  });
+}
+
+export function setRemediationPlan(
+  incidentId: string,
+  payload: {
+    remediation_owner_id: string;
+    remediation_description: string;
+    remediation_due_at: string;
+    expected_version: number;
+  },
+): Promise<Incident> {
+  return request(`/api/v1/incidents/${incidentId}/remediation-plan`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function closeIncident(incidentId: string, expectedVersion: number): Promise<Incident> {
+  return request(`/api/v1/incidents/${incidentId}/close`, {
+    method: "POST",
+    body: JSON.stringify({ expected_version: expectedVersion }),
+  });
+}
+
+export function engageKillSwitch(
+  incidentId: string,
+  agentId: string,
+  expectedVersion: number,
+): Promise<AgentKillSwitchState> {
+  return request(`/api/v1/incidents/${incidentId}/agents/${agentId}/kill-switch/engage`, {
+    method: "POST",
+    body: JSON.stringify({ expected_version: expectedVersion }),
+  });
+}
+
+export function restoreKillSwitch(
+  incidentId: string,
+  agentId: string,
+  expectedVersion: number,
+): Promise<AgentKillSwitchState> {
+  return request(`/api/v1/incidents/${incidentId}/agents/${agentId}/kill-switch/restore`, {
+    method: "POST",
+    body: JSON.stringify({ expected_version: expectedVersion }),
+  });
+}
+
+export function listExceptions(incidentId: string): Promise<PolicyException[]> {
+  return request(`/api/v1/incidents/${incidentId}/exceptions`);
+}
+
+export function requestException(
+  incidentId: string,
+  payload: {
+    purpose: string;
+    scope_description: string;
+    compensating_controls: string;
+    expires_at: string;
+  },
+): Promise<PolicyException> {
+  return request(`/api/v1/incidents/${incidentId}/exceptions`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function decideException(
+  exceptionId: string,
+  payload: { approved: boolean; decision_reason: string; expected_version: number },
+): Promise<PolicyException> {
+  return request(`/api/v1/exceptions/${exceptionId}/decide`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function revokeException(
+  exceptionId: string,
+  payload: { decision_reason: string; expected_version: number },
+): Promise<PolicyException> {
+  return request(`/api/v1/exceptions/${exceptionId}/revoke`, {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }

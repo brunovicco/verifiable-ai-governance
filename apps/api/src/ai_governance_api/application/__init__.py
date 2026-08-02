@@ -69,6 +69,12 @@ from ai_governance_api.application.evidence import (
     ObjectStoragePort,
     UploadEvidence,
 )
+from ai_governance_api.application.incidents import (
+    IncidentAuditPort,
+    IncidentRepositoryPort,
+    IncidentService,
+    IncidentTransactionPort,
+)
 from ai_governance_api.application.model_routing import (
     ListModelRoutingDecisions,
     ModelRouterUnavailable,
@@ -117,6 +123,10 @@ __all__ = [
     "EvidenceTransactionPort",
     "InitiativeControlContextStore",
     "IdentityProviderUnavailable",
+    "IncidentAuditPort",
+    "IncidentRepositoryPort",
+    "IncidentService",
+    "IncidentTransactionPort",
     "InvalidAccessToken",
     "InvalidateDirectoryAuthorization",
     "ListAssessments",

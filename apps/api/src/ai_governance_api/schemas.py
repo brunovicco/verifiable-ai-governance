@@ -367,6 +367,7 @@ class AgentRead(ReviewableAssetRead):
     max_runtime_seconds: int | None
     human_approval_points: list[str]
     kill_switch_enabled: bool
+    kill_switch_engaged: bool
     status: EntityStatus
     version: int
     created_at: datetime

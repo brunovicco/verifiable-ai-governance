@@ -246,6 +246,8 @@ fieldset:disabled { opacity: .76; }
 .asset-card small { color: var(--muted); margin-top: 5px; font-size: 11px; }
 .asset-card p { color: var(--muted); margin: 14px 0 4px; font-size: 12px; line-height: 1.5; }
 .asset-card .link-button:disabled { opacity: .5; cursor: wait; }
+.asset-card-link { display: block; text-decoration: none; color: inherit; }
+.asset-card-link:hover { border-color: var(--green-2); }
 .asset-review-meta { display: grid; gap: 6px; margin: 12px 0; padding: 10px 12px; border-left: 3px solid var(--green-2); background: var(--paper); }
 .asset-review-meta code { color: var(--green); font-size: 11px; overflow-wrap: anywhere; }
 .asset-review { margin-top: 10px; border-top: 1px solid var(--line); }

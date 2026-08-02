@@ -52,6 +52,11 @@ const LABELS: Record<string, string> = {
   preventive: "Preventivo",
   detective: "Detectivo",
   corrective: "Corretivo",
+  open: "Aberto",
+  contained: "Contido",
+  remediating: "Em remediação",
+  closed: "Encerrado",
+  revoked: "Revogada",
 };
 
 export function label(value: string): string {

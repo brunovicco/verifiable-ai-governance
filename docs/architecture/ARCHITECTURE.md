@@ -256,6 +256,25 @@ indisponibilidade, resposta inválida, fora do tamanho esperado ou sem correspon
 pedido falha fechado como `dependency_unavailable`, traduzido para HTTP 503. Consulte o
 ADR 0021.
 
+### Incidentes, kill switch e exceções temporárias
+
+Um incidente segue um ciclo de vida linear e validado por domínio puro:
+`open → contained → remediating → closed`. Encerrar exige um plano de remediação
+completo (responsável, prazo e descrição) já registrado; nenhum estado incompleto é
+aceito. O kill switch em runtime (`kill_switch_engaged`) é uma ação distinta da
+capacidade declarada e revisada por Segurança (`kill_switch_enabled`): acioná-lo exige
+que o agente tenha declarado a capacidade e que o incidente não esteja encerrado.
+
+Exceções temporárias são sempre vinculadas a um incidente e exigem finalidade, escopo
+excepcionado, controles compensatórios e prazo de expiração explícitos. O status
+persistido nunca é reescrito pela passagem do tempo; a vigência
+(`pending`/`active`/`expired`/`rejected`/`revoked`) é calculada em tempo de leitura, no
+mesmo padrão usado para a vigência de revisões de ativos. Decidir uma exceção exige um
+administrador diferente de quem a solicitou — segregação de funções aplicada no
+domínio. Toda mutação de incidente, kill switch ou exceção reusa o mesmo mutex
+transacional por sistema já decidido para o inventário operacional. Consulte o
+ADR 0022.
+
 ## Modelo lógico inicial
 
 ```mermaid
@@ -270,6 +289,7 @@ erDiagram
   AI_SYSTEM ||--o{ MODEL_ASSET : uses
   AI_SYSTEM ||--o{ AGENT : includes
   AI_SYSTEM ||--o{ INCIDENT : experiences
+  INCIDENT ||--o{ POLICY_EXCEPTION : justifies
   APPROVAL ||--o{ EVIDENCE : cites
   INITIATIVE ||--o{ AUDIT_EVENT : records
   ASSESSMENT ||--o{ AUDIT_EVENT : records

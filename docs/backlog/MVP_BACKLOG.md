@@ -28,13 +28,13 @@
   - [x] Bloqueio/restauração emergencial persistente na plataforma, fail-closed e auditado.
   - [ ] Revogação de sessão no provedor e validação contra tenant Entra real.
 - [x] Model/agent registry com approved scope, região, versão e datas de revisão.
-- [ ] Adapter de decisão do `policy-model-router`.
+- [x] Adapter de decisão do `policy-model-router`.
 - [ ] Ingestão sanitizada de telemetria do `a2a-otel-kit`.
 - [ ] Contratos de evidência inspirados em `engineering-loop-schemas`.
 - [ ] Registro de execução isolada do `alicerce`.
 - [ ] Importação de avaliações e regressões do `ragforge`.
 - [ ] Dashboard de violações, blocked actions, drift, custo e revisões vencidas.
-- [ ] Incidentes, kill switch, exceções temporárias e plano de remediação.
+- [x] Incidentes, kill switch, exceções temporárias e plano de remediação.
 
 ## P2 — Escala e portfólio
 
