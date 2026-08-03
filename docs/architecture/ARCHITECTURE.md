@@ -275,6 +275,20 @@ domínio. Toda mutação de incidente, kill switch ou exceção reusa o mesmo mu
 transacional por sistema já decidido para o inventário operacional. Consulte o
 ADR 0022.
 
+### Dashboard operacional
+
+`GET /api/v1/dashboard` agrega, para qualquer principal autenticado (mesmo padrão de
+leitura de portfólio já usado por `GET /api/v1/systems`), quatro fontes reais:
+outcomes de roteamento de modelos e seus principais motivos de bloqueio, vigência de
+revisão de modelos e agentes por nível de risco, incidentes por status e remediações
+vencidas, e exceções temporárias por vigência. Vigência de revisão e de exceção são
+recomputadas a partir das mesmas funções puras de domínio já usadas em todo o resto do
+produto (`asset_review_state()`, `evaluate_exception_state()`), nunca duplicadas em
+SQL. "Custo" é mostrado como bloqueios por limite de custo, nunca como gasto real —
+nenhuma tabela de gasto observado existe. "Drift" é exibido como métrica
+explicitamente indisponível, pendente da integração ainda não construída com
+`ragforge`, em vez de omitida ou fabricada. Consulte o ADR 0023.
+
 ## Modelo lógico inicial
 
 ```mermaid

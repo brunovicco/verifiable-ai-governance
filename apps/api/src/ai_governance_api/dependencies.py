@@ -16,6 +16,7 @@ from ai_governance_api.adapters import (
     S3ObjectStorage,
     SqlAlchemyAssessmentAudit,
     SqlAlchemyAssessmentStore,
+    SqlAlchemyDashboardStore,
     SqlAlchemyDirectoryAccessAudit,
     SqlAlchemyDirectoryAccessCacheInvalidation,
     SqlAlchemyDirectoryAccessReader,
@@ -38,6 +39,7 @@ from ai_governance_api.adapters import (
 )
 from ai_governance_api.application import (
     BlockDirectoryAccess,
+    BuildDashboardSnapshot,
     CacheResolvedDirectoryAuthorization,
     ControlCatalogPort,
     CorporateDirectoryIdentityMismatch,
@@ -464,9 +466,17 @@ def get_incident_service(session: DatabaseSession) -> IncidentService:
     )
 
 
+def get_build_dashboard_snapshot(session: DatabaseSession) -> BuildDashboardSnapshot:
+    """Build the request-scoped dashboard aggregation use case."""
+    return BuildDashboardSnapshot(SqlAlchemyDashboardStore(session))
+
+
 InitiativeServiceDependency = Annotated[InitiativeService, Depends(get_initiative_service)]
 InventoryServiceDependency = Annotated[InventoryService, Depends(get_inventory_service)]
 IncidentServiceDependency = Annotated[IncidentService, Depends(get_incident_service)]
+BuildDashboardSnapshotDependency = Annotated[
+    BuildDashboardSnapshot, Depends(get_build_dashboard_snapshot)
+]
 
 
 @lru_cache

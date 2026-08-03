@@ -4,6 +4,7 @@ import type {
   AISystem,
   Assessment,
   AssessmentKind,
+  Dashboard,
   Evidence,
   EvidenceKind,
   Incident,
@@ -378,4 +379,8 @@ export function revokeException(
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export function getDashboard(): Promise<Dashboard> {
+  return request("/api/v1/dashboard");
 }

@@ -6,6 +6,7 @@ from ai_governance_api.adapters.assessment_persistence import (
     SqlAlchemyTransaction,
 )
 from ai_governance_api.adapters.control_context import SqlAlchemyInitiativeControlContextStore
+from ai_governance_api.adapters.dashboard_persistence import SqlAlchemyDashboardStore
 from ai_governance_api.adapters.directory_access import (
     SqlAlchemyDirectoryAccessAudit,
     SqlAlchemyDirectoryAccessCacheInvalidation,
@@ -54,6 +55,7 @@ __all__ = [
     "SqlAlchemyDirectoryAuthorizationCacheAudit",
     "SqlAlchemyDirectoryAuthorizationCacheReader",
     "SqlAlchemyDirectoryAuthorizationCacheTransaction",
+    "SqlAlchemyDashboardStore",
     "SqlAlchemyEvidenceAudit",
     "SqlAlchemyEvidenceStore",
     "SqlAlchemyIncidentAudit",
