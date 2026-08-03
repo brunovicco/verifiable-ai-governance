@@ -1,8 +1,8 @@
-# ADR 0009 - Migrações bloqueantes no startup do Compose
+# ADR 0009 - Blocking migrations at Compose startup
 
 ## Status
 
-Aceito.
+Accepted.
 
 ## Date
 
@@ -10,78 +10,79 @@ Aceito.
 
 ## Context
 
-O ambiente local usava `AUTO_CREATE_SCHEMA=true` no processo da API. O SQLAlchemy
-`create_all` cria tabelas ausentes, mas não transforma tabelas existentes. Depois que a
-migração `0004` adicionou `initiatives.current_review_round`, um volume persistente em
-`0003` continuou incompleto. A API iniciou normalmente e só revelou a incompatibilidade
-ao consultar iniciativas, retornando `500 UndefinedColumnError`.
+The local environment used `AUTO_CREATE_SCHEMA=true` in the API process. SQLAlchemy's
+`create_all` creates missing tables, but does not transform existing tables. After
+migration `0004` added `initiatives.current_review_round`, a persistent volume still
+at `0003` remained incomplete. The API started normally and only revealed the
+incompatibility when querying initiatives, returning a `500 UndefinedColumnError`.
 
-O banco afetado continha uma iniciativa, nove aprovações e uma evidência. Recriar o
-volume apagaria dados e ocultaria o defeito do processo de atualização.
+The affected database contained one initiative, nine approvals, and one piece of
+evidence. Recreating the volume would have erased data and hidden the defect in the
+update process.
 
 ## Decision
 
-- adicionar ao Compose um serviço one-shot `migrate` que executa
-  `alembic upgrade head` usando a mesma imagem e configuração da API;
-- iniciar esse serviço somente depois que PostgreSQL estiver saudável;
-- iniciar a API somente quando `migrate` terminar com código zero;
-- definir `AUTO_CREATE_SCHEMA=false` no Compose e no `.env.example`;
-- manter `create_all` somente como conveniência local explicitamente opt-in, não como
-  mecanismo de upgrade;
-- preservar volumes durante atualizações e documentar que `down -v` não é procedimento
-  de migração;
-- manter execução manual por `make migrate` quando API e banco forem iniciados fora do
-  fluxo completo do Compose.
+- add a one-shot `migrate` service to Compose that runs `alembic upgrade head` using
+  the same image and configuration as the API;
+- start that service only after PostgreSQL is healthy;
+- start the API only once `migrate` finishes with exit code zero;
+- set `AUTO_CREATE_SCHEMA=false` in Compose and in `.env.example`;
+- keep `create_all` only as an explicitly opt-in local convenience, not as an upgrade
+  mechanism;
+- preserve volumes during updates and document that `down -v` is not an update
+  procedure;
+- keep manual execution via `make migrate` available when the API and database are
+  started outside the full Compose flow.
 
 ## Alternatives considered
 
-- Continuar com `create_all`: rejeitado porque não aplica alterações em objetos
-  existentes e permite que a API sirva tráfego com schema incompatível.
-- Apagar o volume PostgreSQL: rejeitado porque perde dados e não representa uma
-  atualização real.
-- Executar Alembic no lifespan de cada processo da API: rejeitado porque mistura
-  migração com serving, dificulta distinguir falhas e cria concorrência ao escalar
-  réplicas.
-- Depender apenas de execução manual: rejeitado no Compose porque o esquecimento só
-  seria descoberto em runtime.
-- Executar migração no `CMD` da API: rejeitado porque acopla o processo web a uma tarefa
-  administrativa e repetiria a operação em cada réplica.
+- Keep using `create_all`: rejected because it does not apply changes to existing
+  objects and lets the API serve traffic against an incompatible schema.
+- Delete the PostgreSQL volume: rejected because it loses data and does not
+  represent a real update.
+- Run Alembic in the lifespan of every API process: rejected because it mixes
+  migration with serving, makes it harder to distinguish failures, and creates races
+  when scaling replicas.
+- Rely solely on manual execution: rejected for Compose because forgetting it would
+  only be discovered at runtime.
+- Run the migration in the API's `CMD`: rejected because it couples the web process
+  to an administrative task and would repeat the operation on every replica.
 
 ## Consequences
 
-- o primeiro startup após uma revisão de schema pode demorar mais;
-- falha de migração impede a API de iniciar, tornando o problema visível antes do
-  tráfego;
-- o Compose passa a mostrar um container `migrate` concluído com status zero;
-- migrations precisam permanecer idempotentes quando já aplicadas e seguras para dados
-  existentes;
-- o ambiente sem Compose exige `make migrate` antes de `make dev-api`.
+- the first startup after a schema revision may take longer;
+- a migration failure prevents the API from starting, making the problem visible
+  before it reaches traffic;
+- Compose now shows a `migrate` container that completed with a zero status;
+- migrations need to remain idempotent when already applied and safe for existing
+  data;
+- an environment without Compose requires `make migrate` before `make dev-api`.
 
 ## Security and privacy impact
 
-Preservar o volume evita perda acidental de evidências e registros de auditoria. A
-migração usa a conta de banco já configurada para a API no ambiente local; ambientes
-compartilhados deverão separar a identidade com privilégios de DDL da identidade de
-runtime. Logs do processo registram revisão e resultado, não conteúdo de iniciativas ou
-evidências. Backups e transformações de dados continuam sujeitos às mesmas regras de
-proteção, retenção e acesso do banco original.
+Preserving the volume avoids accidental loss of evidence and audit records. The
+migration uses the database account already configured for the API in the local
+environment; shared environments should separate the DDL-privileged identity from the
+runtime identity. Process logs record revision and outcome, not the content of
+initiatives or evidence. Backups and data transformations remain subject to the same
+protection, retention, and access rules as the original database.
 
 ## Operational impact
 
-`docker compose up --build` agora constrói a imagem, espera PostgreSQL, executa Alembic
-e só então inicia API e portal. O operador pode inspecionar o resultado com
-`docker compose logs migrate`. Uma nova tentativa segura é feita repetindo o startup
-após corrigir a causa; a API não recebe fallback para um schema parcial.
+`docker compose up --build` now builds the image, waits for PostgreSQL, runs Alembic,
+and only then starts the API and portal. The operator can inspect the result with
+`docker compose logs migrate`. A safe retry is done by repeating the startup after
+fixing the cause; the API receives no fallback to a partial schema.
 
-A validação desta decisão atualizou um volume real de `0003` para `0004`, preservou as
-contagens existentes, criou a projeção e o histórico de revisão e restaurou o endpoint
-de iniciativas para `200`.
+Validating this decision updated a real volume from `0003` to `0004`, preserved the
+existing counts, created the projection and review history, and restored the
+initiatives endpoint to `200`.
 
 ## Follow-up
 
-- testar e documentar backup e restauração completos;
-- definir uma identidade exclusiva de migração em ambientes compartilhados;
-- adicionar lock operacional para impedir dois jobs de migração simultâneos fora do
-  Compose local;
-- adicionar smoke test de schema e endpoint ao pipeline de entrega;
-- definir política de rollback por revisão, incluindo migrations não reversíveis.
+- test and document full backup and restore;
+- define a dedicated migration identity for shared environments;
+- add an operational lock to prevent two simultaneous migration jobs outside local
+  Compose;
+- add a schema and endpoint smoke test to the delivery pipeline;
+- define a rollback policy per revision, including non-reversible migrations.

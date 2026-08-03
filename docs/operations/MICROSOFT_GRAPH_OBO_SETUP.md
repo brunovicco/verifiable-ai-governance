@@ -1,42 +1,46 @@
-# Configuração do Microsoft Graph via On-Behalf-Of
+# Microsoft Graph setup via On-Behalf-Of
 
-## Escopo
+## Scope
 
-Este runbook habilita o enriquecimento opcional de `/api/v1/auth/me` com perfil e
-`department`, além de resolver internamente os grupos transitivos. Ele pressupõe
-que o login Entra, a validação tenant-specific e a identidade `(tid, oid)` já estejam
-configurados conforme `MICROSOFT_ENTRA_SETUP.md`.
+This runbook enables optional enrichment of `/api/v1/auth/me` with profile and
+`department` data, and resolves transitive groups internally. It assumes Entra
+sign-in, tenant-specific validation and the `(tid, oid)` identity are already
+configured per `MICROSOFT_ENTRA_SETUP.md`.
 
-Esta entrega não mapeia grupos para áreas de aprovação. `department`, e-mail, nome,
-`userType` e associações resolvidas são informativos. Nenhum deles concede capacidade.
+This capability does not map groups to approval areas. `department`, email, name,
+`userType` and resolved memberships are informational. None of them grant
+capability.
 
-## 1. Permissão delegada do Graph
+## 1. Graph delegated permission
 
-Na app registration confidencial da API:
+In the API's confidential app registration:
 
-1. abrir **API permissions**;
-2. adicionar a permissão delegada Microsoft Graph `User.Read`;
-3. aplicar consentimento administrativo quando a política do tenant exigir;
-4. confirmar que não foi adicionada `Directory.Read.All` ou permissão de aplicação;
-5. registrar owner de IAM, justificativa, ambiente e evidência do consentimento.
+1. open **API permissions**;
+2. add the Microsoft Graph delegated permission `User.Read`;
+3. apply admin consent when the tenant's policy requires it;
+4. confirm `Directory.Read.All` or any application permission was not added;
+5. record the IAM owner, justification, environment and consent evidence.
 
-O portal continua solicitando somente o scope delegado da API. A API usa OBO e
-`https://graph.microsoft.com/.default` para receber as permissões Graph já consentidas.
+The portal continues requesting only the API's delegated scope. The API uses OBO and
+`https://graph.microsoft.com/.default` to receive the Graph permissions already
+consented.
 
-## 2. Credencial confidencial
+## 2. Confidential credential
 
-A implementação atual aceita um client secret da app registration da API. Crie o
-segredo com o menor prazo compatível com a política corporativa e entregue o valor à
-aplicação por secret manager. Não coloque o valor em `.env`, Compose versionado,
-manifesto, imagem, log, issue ou pull request.
+The current implementation accepts a client secret from the API's app registration.
+Create the secret with the shortest lifetime compatible with corporate policy and
+deliver the value to the application via a secret manager. Do not place the value in
+`.env`, a versioned Compose file, a manifest, an image, a log, an issue or a pull
+request.
 
-Certificado ou credencial de workload é preferível para ambientes produtivos, mas exige
-uma evolução do adapter atual antes de habilitar essa opção.
+A certificate or workload credential is preferable for production environments, but
+requires an evolution of the current adapter before that option can be enabled.
 
-## 3. Configuração por ambiente
+## 3. Per-environment configuration
 
-O client ID é o Application (client) ID da app registration confidencial da API. O
-tenant é obtido do `OIDC_ISSUER` já validado e não possui uma variável Graph separada.
+The client ID is the Application (client) ID of the API's confidential app
+registration. The tenant is taken from the already-validated `OIDC_ISSUER` and has no
+separate Graph variable.
 
 ```dotenv
 OIDC_ENABLED=true
@@ -46,7 +50,7 @@ OIDC_ALLOWED_TENANT_IDS=<tenant-id>
 
 MICROSOFT_GRAPH_ENABLED=true
 MICROSOFT_GRAPH_CLIENT_ID=<api-client-id>
-MICROSOFT_GRAPH_CLIENT_SECRET=<valor-injetado-pelo-secret-manager>
+MICROSOFT_GRAPH_CLIENT_SECRET=<value-injected-by-secret-manager>
 MICROSOFT_GRAPH_TIMEOUT_SECONDS=5
 MICROSOFT_GRAPH_MAX_PAGES=20
 MICROSOFT_GRAPH_MAX_ATTEMPTS=3
@@ -56,101 +60,106 @@ MICROSOFT_GRAPH_MAX_RETRY_AFTER_SECONDS=300
 MICROSOFT_GRAPH_MAX_RESPONSE_BYTES=1048576
 ```
 
-A API falha no startup se Graph estiver habilitado fora do modo Entra, se client ID não
-for UUID ou se o segredo estiver ausente. Os endpoints de login, token e Graph são fixos
-para o Azure público; URLs recebidas em token ou resposta não controlam o destino.
+The API fails at startup if Graph is enabled outside Entra mode, if the client ID is
+not a UUID, or if the secret is missing. The login, token and Graph endpoints are
+fixed to public Azure; URLs received in a token or response do not control the
+destination.
 
-## 4. Contrato de dados
+## 4. Data contract
 
-O adapter executa:
+The adapter performs:
 
-- `POST /{tenant}/oauth2/v2.0/token` com o token da API como `assertion` OBO;
-- `GET https://graph.microsoft.com/v1.0/me` com `$select` mínimo;
+- `POST /{tenant}/oauth2/v2.0/token` with the API token as the OBO `assertion`;
+- `GET https://graph.microsoft.com/v1.0/me` with a minimal `$select`;
 - `GET https://graph.microsoft.com/v1.0/me/transitiveMemberOf/microsoft.graph.group`
-  com `$select=id`, paginação e limite local.
+  with `$select=id`, pagination and a local limit.
 
-O payload devolvido ao próprio usuário possui:
+The payload returned to the user themselves has:
 
 ```json
 {
   "directory_profile": {
-    "display_name": "Pessoa Usuária",
-    "email_or_upn": "pessoa@example.com",
-    "department": "Segurança da Informação",
+    "display_name": "Sample Person",
+    "email_or_upn": "person@example.com",
+    "department": "Information Security",
     "user_type": "Member",
     "source": "microsoft_graph"
   }
 }
 ```
 
-Quantidade e object IDs de grupos permanecem somente em memória e alimentam o catálogo
-governado descrito em `DIRECTORY_AUTHORIZATION_CATALOG.md`.
-Bearer tokens, segredo, resposta completa e lista integral de grupos não devem aparecer
-em logs, traces ou respostas HTTP.
+Group count and object IDs stay in memory only and feed the governed catalog
+described in `DIRECTORY_AUTHORIZATION_CATALOG.md`.
+Bearer tokens, the secret, the full response and the full group list must not appear
+in logs, traces or HTTP responses.
 
-Quando o access token possui um claim `groups` completo, seus UUIDs podem alimentar o
-catálogo sem criar uma chamada controlada pelo token. Se `hasgroups=true` ou
-`_claim_names.groups` indicar overage, a lista do token é considerada incompleta e o
-snapshot obtido do endpoint Graph fixo prevalece. `_claim_sources` é ignorado, inclusive
-quando aponta para Azure AD Graph legado ou para um host inesperado.
+When the access token has a complete `groups` claim, its UUIDs can feed the catalog
+without creating a call controlled by the token. If `hasgroups=true` or
+`_claim_names.groups` indicates overage, the token's list is considered incomplete
+and the snapshot obtained from the fixed Graph endpoint takes precedence.
+`_claim_sources` is ignored, including when it points to legacy Azure AD Graph or an
+unexpected host.
 
-## 5. Validação em tenant não produtivo
+## 5. Validation in a non-production tenant
 
-1. habilitar as variáveis no ambiente de teste;
-2. autenticar um member que possua `department` e grupo aninhado conhecido;
-3. chamar `/api/v1/auth/me` e validar nome, e-mail/UPN, `department` e `userType`;
-4. confirmar por teste controlado do adapter que o grupo aninhado é resolvido, sem
-   expor quantidade ou object IDs ao portal;
-5. remover temporariamente o consentimento e confirmar resposta `503`, sem detalhes do
-   token ou do Graph;
-6. simular segredo inválido e confirmar comportamento seguro;
-7. testar usuário guest e garantir que o enriquecimento não concede aprovação;
-8. revisar logs, traces e error tracker buscando token, segredo, corpo Graph, UPN e IDs
-   integrais de grupos;
-9. registrar evidência do teste, tenant, app registration, permissão e data, sem copiar
-   credenciais ou tokens.
+1. enable the variables in the test environment;
+2. authenticate a member who has a `department` and a known nested group;
+3. call `/api/v1/auth/me` and validate name, email/UPN, `department` and
+   `userType`;
+4. confirm via a controlled adapter test that the nested group is resolved, without
+   exposing count or object IDs to the portal;
+5. temporarily remove consent and confirm a `503` response, with no token or Graph
+   details;
+6. simulate an invalid secret and confirm safe behavior;
+7. test a guest user and ensure the enrichment does not grant approval;
+8. review logs, traces and the error tracker for tokens, the secret, the Graph body,
+   UPN and full group IDs;
+9. record test evidence, tenant, app registration, permission and date, without
+   copying credentials or tokens.
 
-A validação real de Conditional Access pode exigir interação e não é substituída pelos
-testes determinísticos do adapter.
+Real Conditional Access validation may require interaction and is not replaced by
+the adapter's deterministic tests.
 
-## 6. Rotação, revogação e falhas
+## 6. Rotation, revocation and failures
 
-- criar uma segunda credencial antes de revogar a atual;
-- atualizar o secret manager, reiniciar o deployment e validar OBO;
-- revogar a credencial anterior e registrar a evidência da rotação;
-- em comprometimento, revogar segredo, sessões e consentimentos conforme o playbook de
-  IAM, então revisar logs sem copiar material secreto;
-- leituras Graph com `429`, `500`, `502`, `503` ou `504` usam no máximo
-  `MICROSOFT_GRAPH_MAX_ATTEMPTS`, contando a primeira tentativa;
-- `Retry-After` numérico é usado quando não excede
-  `MICROSOFT_GRAPH_MAX_RETRY_DELAY_SECONDS`; valores maiores falham rápido e são
-  propagados ao chamador até o limite de `MICROSOFT_GRAPH_MAX_RETRY_AFTER_SECONDS`;
-- sem `Retry-After`, o atraso usa backoff exponencial a partir de
-  `MICROSOFT_GRAPH_BACKOFF_BASE_SECONDS`, com jitter e limite local;
-- a troca OBO não é repetida automaticamente, pois o retry fica restrito às leituras
-  idempotentes de perfil e grupos;
-- logs `microsoft_graph_retry`, `microsoft_graph_retry_deferred` e
-  `microsoft_graph_retry_exhausted` permitem alertas por operação, status e tentativa,
-  sem URL, token, usuário, tenant ou conteúdo de resposta;
-- decisões de autorização derivadas são armazenadas no PostgreSQL por
-  `DIRECTORY_AUTHORIZATION_CACHE_TTL_SECONDS`, entre 5 e 300 segundos;
-- snapshot expirado, invalidado ou vinculado a outro digest de catálogo nunca é
-  reutilizado; indisponibilidade do Graph após um miss falha de forma fechada;
-- `POST /api/v1/auth/directory-authorization-cache/invalidate` exige administrador,
-  usa motivo enumerado, é visível a todas as réplicas e registra auditoria minimizada;
-- `POST /api/v1/auth/directory-access/block` contém imediatamente a identidade na
-  plataforma e coordena estado, invalidação e auditoria em uma transação;
-- invalidação de cache apenas força revalidação. Incidentes ainda exigem revogar conta,
-  sessão, consentimento, App Role ou grupo no Entra conforme o caso;
-- indisponibilidade ou resposta inconsistente falha de forma fechada e nunca adiciona
-  capacidades de aprovação.
+- create a second credential before revoking the current one;
+- update the secret manager, restart the deployment and validate OBO;
+- revoke the previous credential and record evidence of the rotation;
+- on compromise, revoke secret, sessions and consents per the IAM playbook, then
+  review logs without copying secret material;
+- Graph reads with `429`, `500`, `502`, `503` or `504` use at most
+  `MICROSOFT_GRAPH_MAX_ATTEMPTS`, counting the first attempt;
+- a numeric `Retry-After` is used when it does not exceed
+  `MICROSOFT_GRAPH_MAX_RETRY_DELAY_SECONDS`; larger values fail fast and are
+  propagated to the caller up to the `MICROSOFT_GRAPH_MAX_RETRY_AFTER_SECONDS`
+  limit;
+- without `Retry-After`, the delay uses exponential backoff starting from
+  `MICROSOFT_GRAPH_BACKOFF_BASE_SECONDS`, with jitter and a local cap;
+- the OBO exchange is not retried automatically, since retry is restricted to the
+  idempotent profile and group reads;
+- the `microsoft_graph_retry`, `microsoft_graph_retry_deferred` and
+  `microsoft_graph_retry_exhausted` logs allow alerting by operation, status and
+  attempt, without URL, token, user, tenant or response content;
+- derived authorization decisions are stored in PostgreSQL for
+  `DIRECTORY_AUTHORIZATION_CACHE_TTL_SECONDS`, between 5 and 300 seconds;
+- an expired or invalidated snapshot, or one bound to a different catalog digest, is
+  never reused; Graph unavailability after a miss fails closed;
+- `POST /api/v1/auth/directory-authorization-cache/invalidate` requires an
+  administrator, uses an enumerated reason, is visible across all replicas and
+  records minimized audit evidence;
+- `POST /api/v1/auth/directory-access/block` immediately contains the identity on
+  the platform and coordinates state, invalidation and audit in one transaction;
+- cache invalidation only forces revalidation. Incidents still require revoking the
+  account, session, consent, App Role or group in Entra as appropriate;
+- unavailability or an inconsistent response fails closed and never adds approval
+  capabilities.
 
-## Referências oficiais
+## Official references
 
 - [OAuth 2.0 On-Behalf-Of](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-on-behalf-of-flow)
-- [Scope `.default`](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#the-default-scope)
-- [Obter o usuário autenticado](https://learn.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0)
-- [Associações transitivas do usuário](https://learn.microsoft.com/en-us/graph/api/user-list-transitivememberof?view=graph-rest-1.0)
-- [Throttling no Microsoft Graph](https://learn.microsoft.com/en-us/graph/throttling)
-- [Revogar acesso de usuário em emergência](https://learn.microsoft.com/pt-br/entra/identity/users/users-revoke-access)
+- [`.default` scope](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#the-default-scope)
+- [Get the signed-in user](https://learn.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0)
+- [User's transitive memberships](https://learn.microsoft.com/en-us/graph/api/user-list-transitivememberof?view=graph-rest-1.0)
+- [Throttling in Microsoft Graph](https://learn.microsoft.com/en-us/graph/throttling)
+- [Revoke user access in an emergency](https://learn.microsoft.com/en-us/entra/identity/users/users-revoke-access)
 - [`revokeSignInSessions`](https://learn.microsoft.com/en-us/graph/api/user-revokesigninsessions?view=graph-rest-1.0)

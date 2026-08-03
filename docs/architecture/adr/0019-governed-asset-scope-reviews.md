@@ -1,78 +1,80 @@
-# ADR 0019 - Revisões de escopo para modelos e agentes
+# ADR 0019 - Scope reviews for models and agents
 
 ## Status
 
-Aceito.
+Accepted.
 
-## Data
+## Date
 
 2026-08-01.
 
-## Contexto
+## Context
 
-Registrar provedor, versão ou ferramentas não prova que um ativo foi avaliado para um
-uso específico. Uma iniciativa aprovada também não autoriza automaticamente cada
-modelo ou agente associado. O inventário precisa distinguir cadastro de aprovação,
-vincular a decisão ao escopo material e perder essa aprovação quando o escopo muda.
+Registering a provider, version, or tools does not prove that an asset has been
+assessed for a specific use. An approved initiative also does not automatically
+authorize every associated model or agent. The inventory needs to distinguish
+registration from approval, tie the decision to the material scope, and lose that
+approval when the scope changes.
 
-O mecanismo deve funcionar sem confiar no frontend, evitar autoaprovação pelo owner,
-limitar a validade conforme o risco e preservar evidência sem copiar conteúdo sensível
-para a auditoria.
+The mechanism must work without trusting the frontend, prevent self-approval by the
+owner, bound validity according to risk, and preserve evidence without copying
+sensitive content into the audit trail.
 
-## Decisão
+## Decision
 
-Modelos e agentes permanecem em `draft` até uma revisão independente. Arquitetura
-revisa modelos; Segurança revisa agentes. O revisor precisa possuir a área exigida e
-não pode ser o owner do sistema nem, para agentes, o owner do próprio agente. O papel
-administrativo não substitui essa autoridade especializada nem a segregação de funções.
+Models and agents stay in `draft` until an independent review. Architecture reviews
+models; Security reviews agents. The reviewer must hold the required area and cannot be
+the system's owner, nor, for agents, the agent's own owner. The administrative role does
+not substitute for this specialized authority or for the separation of duties.
 
-Uma revisão aprovada produz a projeção corrente:
+An approved review produces the current projection:
 
-- identidade estável do revisor e instante da decisão;
-- próxima revisão limitada pelo risco: 365 dias para baixo, 180 para médio, 90 para
-  alto e 30 para crítico;
-- referência curta da evidência;
-- digest SHA-256 de JSON canônico com todo o escopo aprovado.
+- the reviewer's stable identity and the instant of the decision;
+- next review bounded by risk: 365 days for low, 180 for medium, 90 for high, and 30 for
+  critical;
+- a short evidence reference;
+- a SHA-256 digest of canonical JSON covering the entire approved scope.
 
-O modelo precisa declarar casos de uso aprovados, classes de dados autorizadas e uma
-baseline de avaliação. Casos aprovados e proibidos não podem se sobrepor, e a revisão
-não pode ultrapassar a data de descontinuação.
+The model must declare approved use cases, authorized data classes, and an evaluation
+baseline. Approved and prohibited use cases must not overlap, and the review cannot
+extend past the decommissioning date.
 
-O agente precisa declarar versão, região, modelos permitidos e kill switch. Ferramentas
-exigem permissões explícitas; autonomia A2 ou superior exige pontos de aprovação
-humana; A3 ou superior também exige limites de custo e tempo. Todos os modelos
-permitidos precisam estar aprovados e com revisão vigente; a validade do agente não
-pode ultrapassar a revisão de nenhuma dessas dependências.
+The agent must declare version, region, allowed models, and kill switch. Tools require
+explicit permissions; autonomy A2 or higher requires human approval checkpoints; A3 or
+higher also requires cost and time limits. All allowed models must be approved and have
+a current review; the agent's validity cannot extend past the review of any of those
+dependencies.
 
-Qualquer alteração material limpa a projeção de revisão e devolve o ativo para
-`draft`. Alterar ou aposentar um modelo também invalida agentes aprovados que dependam
-dele. Trocar o owner do sistema invalida todas as revisões vinculadas. O estado atual
-fica nas tabelas operacionais; decisões e invalidações permanecem no log hash-chained.
+Any material change clears the review projection and returns the asset to `draft`.
+Changing or retiring a model also invalidates approved agents that depend on it.
+Changing the system's owner invalidates all linked reviews. Current state lives in the
+operational tables; decisions and invalidations remain in the hash-chained log.
 
-## Consequências
+## Consequences
 
-- aprovação da iniciativa e aprovação do ativo são decisões diferentes;
-- o digest permite comparar a decisão com o escopo corrente sem registrar o conteúdo
-  inteiro na auditoria;
-- agentes não permanecem aprovados sobre modelos alterados, aposentados ou vencidos;
-- datas vencidas não mudam fisicamente o status, mas produzem `review_state=expired`,
-  deixam de satisfazer a política e impedem dependências novas até renovação;
-- registros de agentes migrados recebem `unversioned` e `unspecified` apenas como
-  marcadores de transição e não conseguem aprovação sem atualização explícita;
-- enforcement no runtime continua fora deste adapter e será integrado em entrega
-  posterior.
+- initiative approval and asset approval are different decisions;
+- the digest allows comparing the decision against the current scope without recording
+  the entire content in the audit trail;
+- agents do not stay approved over models that have been changed, retired, or expired;
+- expired dates do not physically change the status, but produce `review_state=expired`,
+  stop satisfying policy, and block new dependencies until renewal;
+- agent records migrated from before this feature receive `unversioned` and
+  `unspecified` purely as transition markers, and cannot be approved without an explicit
+  update;
+- runtime enforcement remains outside this adapter and will be integrated in a later
+  delivery.
 
-## Verificação
+## Verification
 
-- testes de domínio cobrem autoridade, segregação, cadência, readiness e digest;
-- testes de aplicação cobrem revisão, dependência entre ativos e invalidação em cascata;
-- contratos HTTP validam versão esperada, data timezone-aware e referência limitada;
-- o portal coleta os metadados obrigatórios e expõe as revisões especializadas;
-- a migração passa por upgrade, downgrade para `0006` e novo upgrade em PostgreSQL real.
+- domain tests cover authority, segregation, cadence, readiness, and digest;
+- application tests cover review, cross-asset dependency, and cascading invalidation;
+- HTTP contracts validate expected version, timezone-aware date, and bounded reference;
+- the portal collects the required metadata and exposes the specialized reviews;
+- the migration passes upgrade, downgrade to `0006`, and re-upgrade on real PostgreSQL.
 
 ## Follow-up
 
-- integrar decisões ao `policy-model-router` para enforcement em runtime;
-- alertar antecipadamente revisões próximas do vencimento;
-- incluir ativos vencidos e violações no dashboard operacional;
-- substituir referências textuais por vínculos opcionais com evidências verificadas.
+- integrate decisions with `policy-model-router` for runtime enforcement;
+- alert ahead of reviews approaching expiration;
+- include expired assets and violations in the operational dashboard;
+- replace textual references with optional links to verified evidence.

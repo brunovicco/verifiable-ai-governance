@@ -1,22 +1,22 @@
-# Runbook de backup e restauração
+# Backup and restore runbook
 
-## Objetivo e escopo
+## Purpose and scope
 
-Este runbook protege os dois backing services que formam o registro verificável:
+This runbook protects the two backing services that make up the verifiable registry:
 
-- PostgreSQL, que contém iniciativas, decisões, assessments, metadados e auditoria;
-- object storage S3, que contém os arquivos privados de evidência referenciados pelo
-  banco.
+- PostgreSQL, which holds initiatives, decisions, assessments, metadata and audit;
+- S3 object storage, which holds the private evidence files referenced by the
+  database.
 
-O utilitário do repositório é uma referência executável para ambiente local ou
-controlado. Produção deve usar as capacidades gerenciadas equivalentes, como PITR,
-snapshots criptografados, versionamento de objetos e replicação, preservando o mesmo
-manifesto, assurance e critérios de acesso.
+The repository's utility is an executable reference for a local or controlled
+environment. Production should use the equivalent managed capabilities, such as PITR,
+encrypted snapshots, object versioning and replication, preserving the same
+manifest, assurance and access criteria.
 
-## Garantias do pacote
+## Package guarantees
 
-Cada pacote é criado em diretório temporário privado e publicado por rename atômico
-somente depois da conclusão. Ele contém:
+Each package is created in a private temporary directory and published via atomic
+rename only after completion. It contains:
 
 ```text
 backup/
@@ -24,46 +24,47 @@ backup/
 ├── manifest.sha256
 ├── postgres.dump
 └── evidence/
-    └── arquivos identificados por índice e hash da chave
+    └── files identified by index and key hash
 ```
 
-O manifesto registra versão do formato, timestamp com fuso, origem lógica, revisão
-Alembic, quantidade de tabelas e, para cada artefato, caminho, tamanho e SHA-256. As
-chaves de objetos ficam no manifesto, mas não aparecem no output operacional. Hashes
-detectam corrupção; não substituem assinatura, controle de acesso ou armazenamento
-imutável contra um atacante capaz de substituir pacote e manifesto.
+The manifest records the format version, a timestamp with timezone, logical origin,
+Alembic revision, table count and, for each artifact, path, size and SHA-256. Object
+keys stay in the manifest but do not appear in operational output. Hashes detect
+corruption; they do not replace signing, access control or immutable storage against
+an attacker capable of replacing both package and manifest.
 
-A quantidade de objetos do bucket é comparada aos metadados de uploads confiáveis no
-banco. Um bucket ainda não criado só representa inventário vazio quando o banco também
-não referencia objetos; divergências interrompem a captura de forma fechada.
+The bucket's object count is compared against trusted upload metadata in the
+database. A bucket not yet materialized only represents an empty inventory when the
+database also references no objects; divergences stop the capture in a fail-closed
+manner.
 
-Diretórios existentes, bancos existentes e buckets existentes nunca são
-sobrescritos. O restore aceita apenas nomes de banco simples e um bucket S3 válido,
-sempre distintos das origens configuradas.
+Existing directories, existing databases and existing buckets are never overwritten.
+Restore accepts only plain database names and a valid S3 bucket, always distinct from
+the configured sources.
 
-## Pré-requisitos
+## Prerequisites
 
-- serviços `postgres` e `object-storage` do Compose saudáveis;
-- `uv` e dependências sincronizadas;
-- espaço livre suficiente para o dump e todos os objetos;
-- acesso exclusivo e destino criptografado para o pacote;
-- janela de manutenção ou outro mecanismo que impeça novos uploads e alterações.
+- healthy `postgres` and `object-storage` Compose services;
+- `uv` and dependencies synced;
+- enough free space for the dump and all objects;
+- exclusive access and an encrypted destination for the package;
+- a maintenance window or other mechanism preventing new uploads and changes.
 
-O utilitário lê configuração do ambiente conforme Twelve-Factor. Os defaults atendem
-ao Compose local. Em outra configuração, forneça `POSTGRES_DB`, `POSTGRES_USER`,
-`BACKUP_OBJECT_STORAGE_ENDPOINT_URL`, `OBJECT_STORAGE_REGION`,
-`OBJECT_STORAGE_BUCKET` e credenciais de curta duração por mecanismo seguro. As
-variáveis `BACKUP_OBJECT_STORAGE_ACCESS_KEY`, `BACKUP_OBJECT_STORAGE_SECRET_KEY` e
-`BACKUP_OBJECT_STORAGE_SESSION_TOKEN` têm precedência e permitem uma identidade de
-least privilege separada da aplicação; quando ausentes, o adapter aceita a cadeia
-padrão do SDK.
-Timeouts e retries também são configuração explícita por
+The utility reads configuration from the environment per Twelve-Factor. The defaults
+match the local Compose setup. In another configuration, provide `POSTGRES_DB`,
+`POSTGRES_USER`, `BACKUP_OBJECT_STORAGE_ENDPOINT_URL`, `OBJECT_STORAGE_REGION`,
+`OBJECT_STORAGE_BUCKET` and short-lived credentials via a secure mechanism. The
+variables `BACKUP_OBJECT_STORAGE_ACCESS_KEY`, `BACKUP_OBJECT_STORAGE_SECRET_KEY` and
+`BACKUP_OBJECT_STORAGE_SESSION_TOKEN` take precedence and allow a least-privilege
+identity separate from the application; when absent, the adapter accepts the SDK's
+default credential chain.
+Timeouts and retries are also explicit configuration via
 `BACKUP_DATABASE_COMMAND_TIMEOUT_SECONDS`, `BACKUP_S3_CONNECT_TIMEOUT_SECONDS`,
-`BACKUP_S3_READ_TIMEOUT_SECONDS` e `BACKUP_S3_MAX_ATTEMPTS`.
+`BACKUP_S3_READ_TIMEOUT_SECONDS` and `BACKUP_S3_MAX_ATTEMPTS`.
 
-## Criar e verificar
+## Create and verify
 
-Escolha um diretório novo; o comando falha se ele já existir.
+Choose a new directory; the command fails if it already exists.
 
 ```bash
 docker compose stop web api
@@ -73,24 +74,24 @@ make backup-restore-test BACKUP_DIR=backups/2026-08-01
 docker compose start api web
 ```
 
-`backup-verify` recalcula todos os hashes e pede ao `pg_restore` para ler o catálogo.
-`backup-restore-test` cria destinos aleatórios, restaura todo o conteúdo, compara o
-estado do banco, relê os objetos para validar SHA-256 e remove os destinos isolados.
-Um teste que não conclui a limpeza retorna falha e exige intervenção operacional.
+`backup-verify` recomputes all hashes and asks `pg_restore` to read the catalog.
+`backup-restore-test` creates random destinations, restores all content, compares
+database state, re-reads objects to validate SHA-256, and removes the isolated
+destinations. A test that fails to complete cleanup returns failure and requires
+operational intervention.
 
-Após sucesso:
+After success:
 
-1. registrar identificador, horário, ambiente, revisão Alembic, contagens e resultado;
-2. criptografar o pacote com chave administrada fora do próprio backup;
-3. mover uma cópia para local com domínio de falha e acesso independentes;
-4. aplicar retenção e descarte aprovados por Privacidade, Segurança e Records
-   Management;
-5. monitorar idade do último backup válido e do último restore testado.
+1. record the identifier, time, environment, Alembic revision, counts and outcome;
+2. encrypt the package with a key managed outside the backup itself;
+3. move a copy to a location with an independent failure domain and access;
+4. apply retention and disposal approved by Privacy, Security and Records Management;
+5. monitor the age of the last valid backup and the last tested restore.
 
-## Restauração controlada
+## Controlled restore
 
-O comando restaura apenas para destinos inexistentes. Isso permite validar e promover
-por cutover, sem destruir a origem:
+The command restores only to destinations that do not yet exist. This allows
+validating and promoting via cutover, without destroying the source:
 
 ```bash
 make backup-restore \
@@ -99,46 +100,49 @@ make backup-restore \
   RESTORE_BUCKET=governance-evidence-recovered
 ```
 
-Antes do cutover:
+Before cutover:
 
-1. confirmar o resultado JSON e executar smoke tests com configuração isolada;
-2. conferir revisão Alembic, contagens, amostra autorizada de evidências e cadeia de
-   auditoria;
-3. registrar aprovação de Operações, owner do sistema e Segurança/Privacidade quando
-   aplicável;
-4. trocar endpoints por configuração de deploy, sem renomear ou apagar a origem;
-5. manter rollback até o aceite e só então aplicar a política de descarte.
+1. confirm the JSON result and run smoke tests with isolated configuration;
+2. check the Alembic revision, counts, an authorized evidence sample and the audit
+   chain;
+3. record approval from Operations, the system owner and Security/Privacy when
+   applicable;
+4. switch endpoints via deploy configuration, without renaming or deleting the
+   source;
+5. keep rollback available until acceptance and only then apply the disposal policy.
 
-O restore não executa migrations adicionais. O pacote deve ser restaurado no estado
-em que foi capturado; qualquer upgrade ocorre depois, pelo processo explícito e
-bloqueante já adotado pelo projeto.
+Restore does not run additional migrations. The package must be restored in the
+state it was captured; any upgrade happens afterward, through the project's existing
+explicit, blocking process.
 
-## Política organizacional mínima
+## Minimum organizational policy
 
-RPO, RTO, frequência e retenção devem ser aprovados por risco e obrigação legal; o
-framework não inventa um valor universal. A política da organização precisa definir:
+RPO, RTO, frequency and retention must be approved based on risk and legal
+obligation; the framework does not invent a universal value. The organization's
+policy needs to define:
 
-- objetivos mensuráveis por tier e owner responsável;
-- backups automáticos, alertas e teste periódico de restauração;
-- criptografia em trânsito e repouso, segregação de funções e least privilege;
-- imutabilidade ou proteção contra exclusão maliciosa e ransomware;
-- localização de backups, subprocessadores e avaliação de transferência
-  internacional;
-- retenção coerente entre banco, evidências, auditoria e solicitações de titulares;
-- procedimento de incidente, comunicação e coleta de evidência operacional.
+- measurable objectives per tier and a responsible owner;
+- automatic backups, alerts and periodic restore testing;
+- encryption in transit and at rest, segregation of duties and least privilege;
+- immutability or protection against malicious deletion and ransomware;
+- location of backups, subprocessors and international transfer assessment;
+- retention consistent across database, evidence, audit and data subject requests;
+- incident procedure, communication and operational evidence collection.
 
-Nunca inclua credenciais, chaves de criptografia ou logs com conteúdo de evidência no
-mesmo pacote. Não publique backups em Git, artifacts de CI públicos ou buckets sem
-política privada explícita.
+Never include credentials, encryption keys or logs with evidence content in the same
+package. Do not publish backups to Git, public CI artifacts, or buckets without an
+explicit private policy.
 
-## Falhas e recuperação operacional
+## Failures and operational recovery
 
-- Falha no create: o diretório temporário não é publicado e é removido.
-- Hash divergente ou catálogo ilegível: coloque o pacote em quarentena e use outra
-  cópia; não force o restore.
-- Destino já existente: escolha um destino novo e investigue a origem do conflito.
-- Restore parcial: o caso de uso remove destinos criados por aquela tentativa.
-- Cleanup do restore test falhou: trate como incidente operacional e remova somente os
-  destinos exatos informados no resultado/erro após confirmação independente.
-- Fonte indisponível: preserve logs técnicos minimizados e acione o owner do backing
-  service; não degrade para backup parcial.
+- Create failure: the temporary directory is not published and is removed.
+- Mismatched hash or unreadable catalog: quarantine the package and use another
+  copy; do not force the restore.
+- Destination already exists: choose a new destination and investigate the source
+  of the conflict.
+- Partial restore: the use case removes destinations created by that attempt.
+- Restore-test cleanup failed: treat it as an operational incident and remove only
+  the exact destinations reported in the result/error, after independent
+  confirmation.
+- Source unavailable: preserve minimized technical logs and engage the backing
+  service owner; do not degrade to a partial backup.

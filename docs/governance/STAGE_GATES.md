@@ -1,25 +1,25 @@
 # Stage gates
 
-| Gate | Entrada | Saída obrigatória | Bloqueios típicos |
+| Gate | Entry | Mandatory exit | Typical blockers |
 |---|---|---|---|
-| G0 Intake | objetivo e owner | registro e ID | owner/finalidade ausente |
-| G1 Triage | questionário completo | risk tier, documentos e gates | respostas incompatíveis |
-| G2 Assessment | system card e AIA | riscos e tratamentos propostos | RIPD/transferência ausente |
-| G3 Design | arquitetura e fornecedores | aprovações técnicas condicionais | ameaça, região ou acesso sem controle |
-| G4 Validation | versão candidata e plano de testes | relatório de avaliação e limites | métrica abaixo do threshold |
-| G5 Go-live | gates aprovados e evidências | decisão versionada, rollback e owner operacional | qualquer gate pendente/rejeitado |
-| G6 Operation | telemetria e baseline | revisões, alertas e incidentes tratados | drift, violação ou modelo não aprovado |
-| G7 Change/Retire | change assessment ou plano de saída | nova decisão ou evidência de descontinuação | mudança material sem reavaliação |
+| G0 Intake | objective and owner | registration and ID | missing owner/purpose |
+| G1 Triage | completed questionnaire | risk tier, documents and gates | inconsistent answers |
+| G2 Assessment | system card and AIA | proposed risks and treatments | missing RIPD/transfer |
+| G3 Design | architecture and vendors | conditional technical approvals | threat, region or access without a control |
+| G4 Validation | candidate version and test plan | evaluation report and limits | metric below threshold |
+| G5 Go-live | approved gates and evidence | versioned decision, rollback and operational owner | any pending/rejected gate |
+| G6 Operation | telemetry and baseline | reviews, alerts and handled incidents | drift, violation or unapproved model |
+| G7 Change/Retire | change assessment or exit plan | new decision or discontinuation evidence | material change without reassessment |
 
-## Mudanças materiais
+## Material changes
 
-Troca de modelo/versão, novo país, nova categoria de dados, ferramenta ou permissão,
-aumento de autonomia, mudança de finalidade, novo público afetado e alteração de
-threshold devem reabrir assessment. O sistema não reaproveitará aprovação anterior por
-similaridade implícita.
+Switching model/version, a new country, a new data category, a new tool or
+permission, increased autonomy, a change of purpose, a new affected audience and a
+threshold change must reopen the assessment. The system will not reuse a prior
+approval by implicit similarity.
 
-Uma solicitação de ajuste em G2–G5 encerra a rodada corrente, preserva o snapshot
-avaliado e reabre os assessments existentes como rascunhos versionados. Depois das
-correções, o owner fornece um resumo, reenvia os assessments e cria uma nova rodada com
-política e gates recalculados. Rejeição definitiva não pode ser convertida em
-ressubmissão sem um novo processo formal.
+A change request in G2-G5 closes the current round, preserves the evaluated snapshot
+and reopens the existing assessments as versioned drafts. After corrections, the
+owner provides a summary, resubmits the assessments and creates a new round with
+recalculated policy and gates. A definitive rejection cannot be converted into a
+resubmission without a new formal process.

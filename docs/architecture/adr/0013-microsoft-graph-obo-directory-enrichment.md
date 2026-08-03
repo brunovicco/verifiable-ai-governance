@@ -1,8 +1,8 @@
-# ADR 0013 - Enriquecimento de identidade com Microsoft Graph via OBO
+# ADR 0013 - Identity enrichment with Microsoft Graph via OBO
 
 ## Status
 
-Aceito.
+Accepted.
 
 ## Date
 
@@ -10,109 +10,115 @@ Aceito.
 
 ## Context
 
-A API já valida access tokens destinados à própria audience e forma a identidade
-corporativa estável por `(tid, oid)`. O portal também precisa exibir nome e área
-organizacional sem solicitar esses dados manualmente. O futuro catálogo de autorização
-precisará receber os object IDs dos grupos transitivos, sem confiar em nomes de grupos
-ou no texto livre de `department`.
+The API already validates access tokens targeted at its own audience and forms the
+stable corporate identity via `(tid, oid)`. The portal also needs to display name
+and organizational area without asking the user to enter them manually. The future
+authorization catalog will need to receive transitive group object IDs, without
+trusting group names or the `department` free-text field.
 
-O access token enviado pelo portal foi emitido para a API e não pode ser reutilizado
-diretamente no Microsoft Graph. A integração acrescenta uma credencial confidencial,
-tratamento de dados pessoais e uma nova dependência de rede no caminho de identidade.
+The access token sent by the portal was issued for the API and cannot be reused
+directly against Microsoft Graph. The integration adds a confidential credential,
+personal-data handling, and a new network dependency in the identity path.
 
 ## Decision
 
-A aplicação define a porta assíncrona `CorporateDirectoryPort` e o caso de uso
-`ResolveCorporateDirectory`. O adapter Microsoft implementa OAuth 2.0 On-Behalf-Of
-(OBO): troca o token validado da API por um token delegado destinado ao Graph usando o
-scope `https://graph.microsoft.com/.default`.
+The application defines the async port `CorporateDirectoryPort` and the
+`ResolveCorporateDirectory` use case. The Microsoft adapter implements OAuth 2.0
+On-Behalf-Of (OBO): it exchanges the API's validated token for a delegated token
+targeted at Graph using the `https://graph.microsoft.com/.default` scope.
 
-O adapter:
+The adapter:
 
-- usa endpoint de token tenant-specific derivado somente do tenant configurado e já
-  validado pelo boundary Entra;
-- chama os endpoints fixos do Azure público `GET /v1.0/me` e
+- uses a tenant-specific token endpoint derived only from the configured tenant,
+  which is already validated by the Entra boundary;
+- calls the fixed public-Azure endpoints `GET /v1.0/me` and
   `GET /v1.0/me/transitiveMemberOf/microsoft.graph.group`;
-- solicita de `/me` apenas `id`, `displayName`, `mail`, `userPrincipalName`,
-  `department` e `userType`;
-- coleta somente o `id` dos grupos e deduplica os valores em memória;
-- usa paginação limitada e segue `@odata.nextLink` apenas quando o esquema, host e
-  caminho permanecem na coleção Graph permitida;
-- aplica timeout explícito, não segue redirects e converte respostas inválidas,
-  falhas de rede e throttling em erros tipados sem conteúdo remoto;
-- limita o `Retry-After` numérico antes de encaminhá-lo ao cliente;
-- verifica o tenant antes da troca e o object ID retornado antes de consultar grupos;
-- lê respostas em streaming com limite de bytes configurável.
+- requests from `/me` only `id`, `displayName`, `mail`, `userPrincipalName`,
+  `department`, and `userType`;
+- collects only the `id` of groups and deduplicates values in memory;
+- uses bounded pagination and follows `@odata.nextLink` only while the scheme,
+  host, and path remain within the allowed Graph collection;
+- applies an explicit timeout, does not follow redirects, and converts invalid
+  responses, network failures, and throttling into typed errors with no remote
+  content;
+- caps the numeric `Retry-After` before forwarding it to the client;
+- verifies the tenant before the exchange and the returned object ID before
+  querying groups;
+- reads responses as a stream with a configurable byte limit.
 
-A integração é opt-in por ambiente. Quando desabilitada, `/api/v1/auth/me` mantém o
-comportamento anterior e retorna `directory_profile=null`. Quando habilitada, o
-endpoint inclui somente perfil mínimo, `department` e tipo do usuário. A quantidade e
-a lista de object IDs não são expostas ao portal e, nesta etapa, não alteram
-`ApprovalArea`, administração ou qualquer decisão de autorização.
+The integration is opt-in per environment. When disabled, `/api/v1/auth/me` keeps
+its previous behavior and returns `directory_profile=null`. When enabled, the
+endpoint includes only a minimal profile, `department`, and user type. The count
+and list of object IDs are not exposed to the portal and, at this stage, do not
+change `ApprovalArea`, admin, or any authorization decision.
 
 ## Alternatives considered
 
-- Chamar o Graph diretamente do portal: rejeitado porque ampliaria permissões e
-  exposição de dados no navegador e duplicaria regras de confiança no cliente.
-- Encaminhar ao Graph o token destinado à API: rejeitado por violar a separação de
-  audiences e o fluxo delegado suportado.
-- Inferir área por `department` ou nome de grupo: rejeitado porque são valores mutáveis,
-  textuais e não governados para autorização.
-- Usar somente claims de grupos do token: adiado para a etapa de group overage e cache;
-  não substitui a resolução transitiva consistente nem o catálogo versionado.
-- Adicionar o SDK Microsoft Graph ou MSAL ao núcleo: rejeitado nesta etapa. O contrato
-  HTTP OBO é pequeno e permanece isolado no adapter, preservando o núcleo
-  vendor-neutral e assíncrono.
-- Persistir o perfil e os grupos no primeiro acesso: adiado até existir política de
-  cache, retenção, revogação e auditoria de stale identity.
+- Call Graph directly from the portal: rejected because it would widen
+  permissions and data exposure in the browser and duplicate trust rules on the
+  client.
+- Forward the API-targeted token to Graph: rejected for violating audience
+  separation and the supported delegated flow.
+- Infer area from `department` or group name: rejected because they are mutable,
+  textual, and ungoverned values for authorization.
+- Use only the token's group claims: deferred to the group-overage-and-cache
+  stage; it does not replace consistent transitive resolution or the versioned
+  catalog.
+- Add the Microsoft Graph SDK or MSAL to the core: rejected at this stage. The
+  HTTP OBO contract is small and stays isolated in the adapter, preserving a
+  vendor-neutral, async core.
+- Persist the profile and groups on first access: deferred until a cache,
+  retention, revocation, and stale-identity audit policy exists.
 
 ## Consequences
 
-O endpoint identifica automaticamente nome, e-mail/UPN e departamento quando Graph
-está habilitado. O próximo catálogo pode consumir object IDs transitivos já
-normalizados, mas precisa continuar sendo a única fonte de mapeamento para áreas de
-aprovação.
+The endpoint automatically identifies name, email/UPN, and department when Graph
+is enabled. The next catalog can consume already-normalized transitive object
+IDs, but must remain the sole mapping source for approval areas.
 
-Cada leitura de `/auth/me` enriquecida faz uma troca OBO e chamadas ao Graph. Cache,
-retry com jitter e invalidação não pertencem a esta entrega; indisponibilidade resulta
-em falha segura e não promove privilégios.
+Each enriched read of `/auth/me` performs an OBO exchange and Graph calls. Cache,
+retry with jitter, and invalidation are not part of this delivery; unavailability
+results in a safe failure and does not promote privileges.
 
-`httpx` passa a ser dependência de runtime da API para manter o adapter assíncrono e
-testável com transporte injetável.
+`httpx` becomes a runtime dependency of the API to keep the adapter async and
+testable with an injectable transport.
 
 ## Security and privacy impact
 
-O segredo do confidential client vem do ambiente e é excluído da representação de
-configuração. Em produção, ele deve ser injetado por secret manager. Bearer tokens,
-segredo, respostas completas do Graph e inventário de grupos não são persistidos,
-retornados ao portal nem incluídos em mensagens de erro.
+The confidential client's secret comes from the environment and is excluded from
+the configuration representation. In production, it must be injected via a
+secrets manager. Bearer tokens, the secret, full Graph responses, and group
+inventories are not persisted, returned to the portal, or included in error
+messages.
 
-A validação rígida de destinos reduz risco de SSRF por paginação controlada por resposta
-remota. UUIDs ausentes, nulos ou malformados, identidade divergente, corpo remoto além
-do limite e paginação excessiva falham de forma fechada. `department` é dado pessoal
-organizacional e permanece informativo, sem conceder autorização.
+Strict destination validation reduces SSRF risk from response-controlled
+pagination. Missing, null, or malformed UUIDs, divergent identity, remote body
+beyond the limit, and excessive pagination fail closed. `department` is
+organizational personal data and remains informational, granting no
+authorization.
 
-O tratamento deve constar no inventário de privacidade, RIPD quando aplicável e análise
-de processamento internacional do deployment.
+Handling must appear in the privacy inventory, in the RIPD when applicable, and
+in the deployment's international-processing analysis.
 
 ## Operational impact
 
-IAM deve conceder à app registration da API a permissão delegada mínima do Graph,
-configurar a credencial confidencial e aplicar o consentimento exigido pela organização.
-Os deployments precisam definir `MICROSOFT_GRAPH_ENABLED`, client ID, segredo, timeout
-e limites. O segredo deve ser rotacionado sem commit e a rotação precisa ser testada em
-ambiente não produtivo.
+IAM must grant the API's app registration the minimal delegated Graph
+permission, configure the confidential credential, and apply the consent
+required by the organization. Deployments need to set `MICROSOFT_GRAPH_ENABLED`,
+client ID, secret, timeout, and limits. The secret must be rotated without a
+commit, and rotation must be tested in a non-production environment.
 
-Esta implementação suporta somente endpoints do Azure público e autenticação por client
-secret. Certificados, managed identity e clouds soberanas exigem adapter ou decisão
-adicional.
+This implementation supports only public-Azure endpoints and client-secret
+authentication. Certificates, managed identity, and sovereign clouds require an
+additional adapter or decision.
 
 ## Follow-up
 
-- Validar OBO, consentimento e Conditional Access contra tenant Entra real.
-- Implementar catálogo versionado App Role/object ID para `ApprovalArea`.
-- Tratar group overage usando somente endpoints Graph construídos pela aplicação.
-- Adicionar cache curto, revogação, stale identity fail-closed e auditoria minimizada.
-- Implementar retry limitado com jitter e métricas de latência, falhas e throttling.
-- Substituir client secret por certificado ou credencial de workload quando o ambiente
-  de implantação suportar.
+- Validate OBO, consent, and Conditional Access against a real Entra tenant.
+- Implement a versioned App Role/object ID catalog for `ApprovalArea`.
+- Handle group overage using only application-built Graph endpoints.
+- Add a short cache, revocation, fail-closed stale identity, and minimized
+  audit.
+- Implement bounded retry with jitter and latency/failure/throttling metrics.
+- Replace the client secret with a certificate or workload credential when the
+  deployment environment supports it.

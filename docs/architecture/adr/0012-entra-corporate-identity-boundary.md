@@ -1,8 +1,8 @@
-# ADR 0012 - Identidade corporativa Entra por tenant e object ID
+# ADR 0012 - Corporate Entra identity by tenant and object ID
 
 ## Status
 
-Aceito.
+Accepted.
 
 ## Date
 
@@ -10,90 +10,95 @@ Aceito.
 
 ## Context
 
-O adapter OIDC existente usava somente `sub` como identidade do principal. Esse claim
-continua adequado ao contrato genérico porque é imutável e pairwise para uma aplicação,
-mas não oferece a chave corporativa estável necessária para correlacionar a mesma conta
-entre API, Microsoft Graph, auditoria e futuros catálogos de autorização.
+The existing OIDC adapter used only `sub` as the principal's identity. That claim
+remains adequate for the generic contract because it is immutable and pairwise per
+application, but it does not provide the stable corporate key needed to correlate
+the same account across the API, Microsoft Graph, audit, and future authorization
+catalogs.
 
-No Microsoft Entra ID, `oid` identifica o objeto dentro de um diretório e precisa ser
-combinado com `tid`, pois uma pessoa pode possuir objetos distintos em tenants
-diferentes. A aplicação também precisa evitar que tokens de tenants não autorizados ou
-contas guest obtenham capacidades de aprovação por ambiguidade de claims.
+In Microsoft Entra ID, `oid` identifies the object within a directory and needs to
+be combined with `tid`, since a person can own distinct objects in different
+tenants. The application also needs to prevent tokens from unauthorized tenants or
+guest accounts from gaining approval capabilities through claim ambiguity.
 
 ## Decision
 
-O mapeamento OIDC passa a oferecer dois modos configuráveis:
+The OIDC mapping now offers two configurable modes:
 
-- `subject`, compatível com provedores OIDC gerais e com a validação local Keycloak;
-- `entra`, que exige `tid` e `oid` como UUIDs não nulos e forma `user_id` como
+- `subject`, compatible with general OIDC providers and with local Keycloak
+  validation;
+- `entra`, which requires `tid` and `oid` as non-null UUIDs and forms `user_id` as
   `{tenant_id}:{object_id}`.
 
-No modo Entra:
+In Entra mode:
 
-- `OIDC_ALLOWED_TENANT_IDS` é obrigatório;
-- o issuer deve ser `https://login.microsoftonline.com/{tenant_id}/v2.0`;
-- o UUID presente no issuer e no claim `tid` deve estar na allowlist;
-- o claim opcional `acct` classifica `0` como member e `1` como guest;
-- claim `acct` ausente ou inválido produz a classificação `unknown`;
-- member pode receber capacidades provenientes dos claims configurados;
-- guest perde áreas de aprovação e administração por padrão;
-- `unknown` sempre perde essas capacidades;
-- guest só pode receber áreas de aprovação quando
-  `OIDC_GUEST_APPROVALS_ENABLED=true` for definido explicitamente.
-- administração permanece exclusiva de member classificado, independentemente da
-  política de aprovação para guest.
+- `OIDC_ALLOWED_TENANT_IDS` is mandatory;
+- the issuer must be `https://login.microsoftonline.com/{tenant_id}/v2.0`;
+- the UUID present in the issuer and in the `tid` claim must be in the allowlist;
+- the optional `acct` claim classifies `0` as member and `1` as guest;
+- a missing or invalid `acct` claim produces the `unknown` classification;
+- a member can receive capabilities from the configured claims;
+- a guest loses approval and admin areas by default;
+- `unknown` always loses those capabilities;
+- a guest can only receive approval areas when
+  `OIDC_GUEST_APPROVALS_ENABLED=true` is explicitly set.
+- admin remains exclusive to a classified member, regardless of the approval policy
+  for guests.
 
-A validação criptográfica de assinatura, issuer, audience e tempo continua pertencendo
-ao adapter PyJWT. O domínio recebe somente claims já verificados e aplica identidade,
-allowlist e least privilege sem depender de FastAPI, Pydantic ou bibliotecas Microsoft.
+Cryptographic validation of signature, issuer, audience, and time continues to
+belong to the PyJWT adapter. The domain receives only already-verified claims and
+applies identity, allowlisting, and least privilege without depending on FastAPI,
+Pydantic, or Microsoft libraries.
 
 ## Alternatives considered
 
-- Continuar usando somente `sub`: rejeitado para o modo corporativo porque é pairwise
-  por aplicação e não é a chave usada pelo Microsoft Graph.
-- Usar e-mail, UPN ou nome exibido: rejeitado porque são mutáveis e inadequados para
-  autorização ou ownership.
-- Usar somente `oid`: rejeitado porque object IDs são únicos apenas dentro do tenant.
-- Inferir guest pelo e-mail, UPN ou `idp`: rejeitado por não representar de forma
-  determinística o tipo do objeto no tenant de recurso.
-- Rejeitar qualquer token sem `acct`: rejeitado nesta etapa porque `acct` é opcional;
-  a conta pode autenticar para jornadas sem aprovação, mas permanece sem capacidades.
-- Conceder capacidades quando `acct` estiver ausente: rejeitado por violar o princípio
-  fail-closed.
+- Keep using only `sub`: rejected for the corporate mode because it is pairwise per
+  application and is not the key used by Microsoft Graph.
+- Use email, UPN, or display name: rejected because they are mutable and
+  unsuitable for authorization or ownership.
+- Use only `oid`: rejected because object IDs are unique only within the tenant.
+- Infer guest status from email, UPN, or `idp`: rejected because it does not
+  deterministically represent the object's type in the resource tenant.
+- Reject any token without `acct`: rejected at this stage because `acct` is
+  optional; the account can authenticate for journeys without approval, but
+  remains without capabilities.
+- Grant capabilities when `acct` is absent: rejected as a violation of the
+  fail-closed principle.
 
 ## Consequences
 
-Auditoria e ownership passam a receber uma chave estável por tenant no modo Entra. O
-endpoint `/api/v1/auth/me` expõe também tenant ID, object ID e classificação da conta
-para o próprio usuário.
+Audit and ownership now receive a stable per-tenant key in Entra mode. The
+`/api/v1/auth/me` endpoint also exposes tenant ID, object ID, and account
+classification to the user themself.
 
-Deployments OIDC genéricos continuam usando `subject` sem mudança de identidade.
-Deployments Entra precisam configurar a allowlist e emitir o claim opcional `acct` para
-que membros possam receber áreas de aprovação.
+Generic OIDC deployments continue to use `subject` with no identity change. Entra
+deployments need to configure the allowlist and emit the optional `acct` claim so
+members can receive approval areas.
 
 ## Security and privacy impact
 
-Tokens de outro tenant são rejeitados mesmo que tenham assinatura válida para uma
-configuração indevida. UUIDs inválidos, ausentes ou nulos não produzem identidade. Guest
-e classificações ambíguas não recebem privilégios por padrão, incluindo administração.
+Tokens from another tenant are rejected even if they have a valid signature, in
+case of a misconfiguration. Invalid, missing, or null UUIDs produce no identity.
+Guests and ambiguous classifications receive no privileges by default, including
+admin.
 
-Tenant ID e object ID são identificadores pessoais pseudônimos e podem correlacionar
-atividade corporativa. Eles são expostos apenas ao próprio principal e usados na trilha
-de auditoria necessária; bearer tokens e inventários completos de grupos continuam
-proibidos em logs.
+Tenant ID and object ID are pseudonymous personal identifiers and can correlate
+corporate activity. They are exposed only to the principal themself and used in
+the necessary audit trail; bearer tokens and full group inventories remain
+prohibited in logs.
 
 ## Operational impact
 
-IAM deve configurar `acct` como optional claim no access token da API, manter issuer e
-tenant allowlist coerentes e testar member, guest, claim ausente e tenant incorreto.
-Mudanças na allowlist ou na política de guest exigem revisão, redeploy e evidência de
-validação. Esta implementação cobre o Azure público; clouds soberanas exigirão decisão
-e configuração específicas.
+IAM must configure `acct` as an optional claim on the API's access token, keep the
+issuer and tenant allowlist consistent, and test member, guest, missing claim, and
+wrong-tenant scenarios. Changes to the allowlist or guest policy require review,
+redeploy, and validation evidence. This implementation covers public Azure;
+sovereign clouds will require a specific decision and configuration.
 
 ## Follow-up
 
-- Validar tokens reais de member e guest em tenant Entra não produtivo.
-- Implementar Microsoft Graph via OBO com seleção mínima de atributos.
-- Implementar catálogo versionado de App Roles e object IDs.
-- Tratar groups overage, paginação, throttling, cache e stale identity.
-- Registrar provenance do catálogo aplicado sem persistir inventários integrais.
+- Validate real member and guest tokens against a non-production Entra tenant.
+- Implement Microsoft Graph via OBO with minimal attribute selection.
+- Implement a versioned catalog of App Roles and object IDs.
+- Handle group overage, pagination, throttling, cache, and stale identity.
+- Record the applied catalog's provenance without persisting full inventories.

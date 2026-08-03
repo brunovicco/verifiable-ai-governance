@@ -1,44 +1,43 @@
-# ADR 0005 - Catálogo declarativo de controles
+# ADR 0005 - Declarative control catalog
 
-- Status: aceito
-- Data: 2026-07-31
+- Status: accepted
+- Date: 2026-07-31
 
-## Contexto
+## Context
 
-O framework precisa ligar risco, controle, implementação e evidência sem codificar cada
-controle em routers ou componentes do portal. Também precisa explicar por que um
-controle se aplica e identificar a versão usada na decisão.
+The framework needs to link risk, control, implementation, and evidence without
+hardcoding each control into routers or portal components. It also needs to explain
+why a control applies and identify the version used in the decision.
 
-## Decisão
+## Decision
 
-- manter um catálogo baseline de 25 controles em YAML dentro do `policy-engine`;
-- validar o arquivo com contratos Pydantic imutáveis e `extra=forbid`;
-- exigir IDs únicos, requisitos, evidências e regras de aplicabilidade não ambíguas;
-- avaliar seletores de risco, flags, impacto, dados, autonomia e hospedagem por funções
-  determinísticas sem I/O;
-- retornar resultado e razões para todos os controles, inclusive não aplicáveis;
-- derivar o relatório sob consulta em vez de persistir uma cópia;
-- expor catálogo e avaliação por portas definidas na camada de aplicação;
-- carregar o catálogo uma vez por processo e permitir override por
-  `CONTROL_CATALOG_PATH`;
-- falhar de forma fechada para arquivo ausente, YAML inválido, schema incompatível,
-  IDs duplicados ou quantidade diferente da baseline esperada.
+- maintain a baseline catalog of 25 controls in YAML inside `policy-engine`;
+- validate the file with immutable Pydantic contracts and `extra=forbid`;
+- require unique IDs, requirements, evidence, and unambiguous applicability rules;
+- evaluate risk, flag, impact, data, autonomy, and hosting selectors through
+  deterministic, I/O-free functions;
+- return a result and reasons for every control, including non-applicable ones;
+- derive the report on query instead of persisting a copy;
+- expose the catalog and evaluation through ports defined in the application layer;
+- load the catalog once per process and allow override via `CONTROL_CATALOG_PATH`;
+- fail closed for a missing file, invalid YAML, an incompatible schema, duplicate IDs,
+  or a count different from the expected baseline.
 
-O desenho aplica Open/Closed para inclusão ou ajuste de controles que utilizem os
-seletores existentes, Single Responsibility entre schema, loader, evaluator, caso de
-uso e UI, e Dependency Inversion na integração da API.
+The design applies Open/Closed for adding or adjusting controls that use the existing
+selectors, Single Responsibility across schema, loader, evaluator, use case, and UI,
+and Dependency Inversion in the API integration.
 
 ## Twelve-Factor
 
-O catálogo padrão é política versionada junto ao código. Organizações podem anexar uma
-configuração externa por variável de ambiente, sem alterar a imagem. A avaliação é
-stateless, a dependência YAML é declarada no lockfile e o relatório identifica a versão
-da política que produziu o resultado.
+The default catalog is policy versioned alongside the code. Organizations can attach
+an external configuration via environment variable, without changing the image.
+Evaluation is stateless, the YAML dependency is declared in the lockfile, and the
+report identifies the policy version that produced the result.
 
-## Consequências
+## Consequences
 
-- uma mudança de catálogo pode ser revisada como código e testada isoladamente;
-- novos tipos de seletor exigem evolução explícita do contrato e do evaluator;
-- aplicabilidade não equivale a implementação nem conformidade do controle;
-- o relatório atual usa fatos declarados da iniciativa e deverá incorporar evidências
-  e status de efetividade em uma etapa posterior.
+- a catalog change can be reviewed as code and tested in isolation;
+- new selector types require explicit evolution of the contract and the evaluator;
+- applicability does not equal control implementation or compliance;
+- the current report uses facts declared by the initiative and will need to
+  incorporate evidence and effectiveness status at a later stage.

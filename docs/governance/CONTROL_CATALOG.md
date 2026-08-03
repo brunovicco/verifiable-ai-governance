@@ -1,74 +1,72 @@
-# Catálogo de controles
+# Control catalog
 
-O catálogo baseline conecta características da iniciativa a controles verificáveis. Ele
-é uma referência operacional e não constitui certificação ou declaração automática de
-conformidade.
+The baseline catalog connects initiative characteristics to verifiable controls. It
+is an operational reference and does not constitute certification or an automatic
+declaration of compliance.
 
-## Estrutura de um controle
+## Structure of a control
 
-| Campo | Finalidade |
+| Field | Purpose |
 |---|---|
-| `control_id` | Identificador estável usado em evidências e integrações |
-| `domain` | Domínio responsável pela organização do catálogo |
-| `objective` | Risco ou resultado que o controle pretende tratar |
-| `control_type` | Preventivo, detectivo ou corretivo |
-| `owner` | Função responsável pelo desenho e acompanhamento |
-| `review_frequency` | Cadência mínima ou evento de revisão |
-| `requirements` | Condições verificáveis da implementação |
-| `evidence` | Evidências esperadas para assurance |
-| `implementation_reference` | Implementação técnica opcional do portfólio |
-| `applicability` | Regra declarativa avaliada contra a iniciativa |
+| `control_id` | Stable identifier used in evidence and integrations |
+| `domain` | Domain responsible for organizing the catalog |
+| `objective` | Risk or outcome the control is intended to address |
+| `control_type` | Preventive, detective or corrective |
+| `owner` | Role responsible for design and follow-up |
+| `review_frequency` | Minimum cadence or review-triggering event |
+| `requirements` | Verifiable implementation conditions |
+| `evidence` | Evidence expected for assurance |
+| `implementation_reference` | Optional technical implementation from the portfolio |
+| `applicability` | Declarative rule evaluated against the initiative |
 
-## Semântica de aplicabilidade
+## Applicability semantics
 
-`always: true` identifica controles baseline. Os demais podem selecionar tiers de risco,
-flags, impactos, classificações de dados, autonomia e hospedagem. `match: any` aplica o
-controle quando qualquer grupo configurado corresponde; `match: all` exige todos os
-grupos. Uma regra vazia ou que combine `always` com seletores é rejeitada.
+`always: true` identifies baseline controls. The others can select risk tiers, flags,
+impacts, data classifications, autonomy and hosting. `match: any` applies the control
+when any configured group matches; `match: all` requires all groups. An empty rule, or
+one that combines `always` with selectors, is rejected.
 
-O relatório registra tanto correspondências quanto condições não atendidas. A interface
-mostra controles aplicáveis por padrão e permite consultar o catálogo completo.
+The report records both matches and unmet conditions. The interface shows applicable
+controls by default and allows browsing the full catalog.
 
-## Governança do arquivo
+## File governance
 
-- qualquer alteração deve atualizar a versão semântica do catálogo;
-- IDs existentes não devem ser reutilizados para objetivos diferentes;
-- requisitos e evidências devem ser testáveis e compreensíveis;
-- mudanças de regra devem incluir cenários positivos e negativos;
-- overlays setoriais serão adicionados sem alterar silenciosamente a baseline.
+- any change must update the catalog's semantic version;
+- existing IDs must not be reused for different objectives;
+- requirements and evidence must be testable and understandable;
+- rule changes must include positive and negative scenarios;
+- sector overlays will be added without silently changing the baseline.
 
-## Crosswalk de apoio com frameworks externos
+## Supporting crosswalk with external frameworks
 
-`packages/policy-engine/src/policy_engine/control_crosswalk.yaml` mapeia cada
-controle a referências do NIST AI RMF (NIST AI 100-1), do NIST AI 600-1 (perfil de IA
-generativa), do OWASP Top 10 for LLM Applications & Generative AI, do OWASP Top 10 for
-Agentic Applications e do MITRE ATLAS. É um arquivo próprio, versionado separadamente
-do catálogo baseline - não altera `applicability` nem qualquer decisão de política.
+`packages/policy-engine/src/policy_engine/control_crosswalk.yaml` maps each control to
+references from the NIST AI RMF (NIST AI 100-1), NIST AI 600-1 (Generative AI
+Profile), the OWASP Top 10 for LLM Applications & Generative AI, the OWASP Top 10 for
+Agentic Applications and MITRE ATLAS. It is its own file, versioned separately from
+the baseline catalog - it does not change `applicability` or any policy decision.
 
-As citações foram construídas a partir da leitura direta dos textos-fonte oficiais:
-NIST AI 100-1 (AI RMF 1.0, jan/2023), NIST AI 600-1 (Generative AI Profile, jul/2024),
-OWASP Top 10 for LLM Applications & Generative AI 2025 (nov/2024), OWASP Top 10 for
-Agentic Applications 2026 (dez/2025) e MITRE ATLAS, conferido contra o relatório MITRE
-SAFE-AI (abr/2025) e as referências cruzadas que o próprio OWASP Top 10 faz para IDs
-de técnica do ATLAS. Mesmo assim, o crosswalk não constitui parecer jurídico,
-certificação ou declaração de conformidade - deve ser revisado por jurídico/compliance
-antes de uso formal, e cada referência pode ser reconferida contra o texto oficial do
-framework correspondente. Os controles de domínio `agent` (GOV-AGT-*) usam o OWASP
-Agentic Top 10 (códigos ASI01-ASI10) como referência principal para riscos
-específicos de sistemas multiagente, complementar ao OWASP LLM Top 10.
+The citations were built from a direct reading of the official source texts: NIST AI
+100-1 (AI RMF 1.0, Jan/2023), NIST AI 600-1 (Generative AI Profile, Jul/2024), OWASP
+Top 10 for LLM Applications & Generative AI 2025 (Nov/2024), OWASP Top 10 for Agentic
+Applications 2026 (Dec/2025), and MITRE ATLAS, cross-checked against the MITRE
+SAFE-AI report (Apr/2025) and the cross-references OWASP's own Top 10 makes to ATLAS
+technique IDs. Even so, the crosswalk does not constitute legal opinion, certification
+or a declaration of compliance - it should be reviewed by legal/compliance before
+formal use, and each reference can be reconfirmed against the corresponding
+framework's official text. `agent`-domain controls (GOV-AGT-*) use the OWASP Agentic
+Top 10 (codes ASI01-ASI10) as the primary reference for risks specific to
+multi-agent systems, complementing the OWASP LLM Top 10.
 
-Citações do NIST AI RMF usam função/categoria nomeada (ex.: "GOVERN 2") como
-granularidade padrão; subcategoria numerada (ex.: "GOVERN 1.6") só aparece nos
-poucos casos em que corresponde de forma direta e inequívoca ao controle - escolha
-editorial deliberada, não uma limitação de acesso à fonte. O concept note "NIST AI
-RMF: Trustworthy Use of AI in Critical Infrastructure Profile" (abr/2026) ainda não
-define categorias de risco citáveis (é um documento de planejamento, não um perfil
-publicado) e por isso não está referenciado; será avaliado quando um perfil completo
-for publicado.
+NIST AI RMF citations use named function/category (e.g., "GOVERN 2") as the default
+granularity; a numbered subcategory (e.g., "GOVERN 1.6") only appears in the few cases
+where it maps directly and unambiguously to the control - a deliberate editorial
+choice, not a source-access limitation. The concept note "NIST AI RMF: Trustworthy
+Use of AI in Critical Infrastructure Profile" (Apr/2026) does not yet define citable
+risk categories (it is a planning document, not a published profile) and is therefore
+not referenced; it will be assessed once a complete profile is published.
 
-ISO/IEC 42001 está listado como pendente (`frameworks_pending`) por ser norma
-licenciada; nenhuma referência é citada contra ela até haver acesso ao texto oficial.
-O carregador (`GovernanceControlCrosswalk`) falha de forma fechada se uma entrada
-referenciar um `control_id` que não existe no catálogo carregado, e pode ser
-substituído por `CONTROL_CROSSWALK_PATH`, no mesmo padrão de
-`CONTROL_CATALOG_PATH`.
+ISO/IEC 42001 is listed as pending (`frameworks_pending`) because it is a licensed
+standard; no reference is cited against it until the official text is accessible. The
+loader (`GovernanceControlCrosswalk`) fails closed if an entry references a
+`control_id` that does not exist in the loaded catalog, and can be overridden via
+`CONTROL_CROSSWALK_PATH`, following the same pattern as `CONTROL_CATALOG_PATH`.

@@ -1,18 +1,18 @@
-# Catálogo de autorização do diretório corporativo
+# Corporate directory authorization catalog
 
-## Objetivo
+## Purpose
 
-O catálogo converte valores estáveis do Microsoft Entra ID em áreas de aprovação da
-plataforma. Ele é uma política versionada e fail-closed: App Role, grupo, nome,
-`department` ou outra informação não mapeada não concede capacidade.
+The catalog converts stable Microsoft Entra ID values into platform approval areas.
+It is a versioned, fail-closed policy: an App Role, group, name, `department` or any
+other unmapped information grants no capability.
 
-O catálogo padrão empacotado não contém mapeamentos. Uma organização deve criar seu
-arquivo tenant-specific, revisá-lo e disponibilizá-lo ao deployment por caminho
-explícito.
+The packaged default catalog contains no mappings. An organization must create its
+own tenant-specific file, review it, and make it available to the deployment via an
+explicit path.
 
-## Estrutura
+## Structure
 
-Use `docs/examples/entra-authorization-catalog.yaml` como referência:
+Use `docs/examples/entra-authorization-catalog.yaml` as a reference:
 
 ```yaml
 catalog_id: enterprise-entra-authorization
@@ -28,107 +28,112 @@ mappings:
     mapping_version: 1
 ```
 
-Campos:
+Fields:
 
-- `catalog_id`: identidade estável da política;
-- `catalog_version`: versão integral alterada a cada publicação;
-- `mapping_id`: identidade estável do mapeamento, usada em auditoria;
-- `tenant_id`: UUID do tenant ao qual o mapeamento pertence;
-- `source_type`: `app_role` ou `group`;
-- `source_value`: valor exato da App Role ou object ID UUID do grupo;
-- `approval_area`: valor da taxonomia corporativa `ApprovalArea`;
-- `enabled`: booleano YAML real, nunca texto;
-- `owner`: área responsável pela origem e revisão;
-- `mapping_version`: inteiro positivo incrementado quando o registro muda.
+- `catalog_id`: the policy's stable identity;
+- `catalog_version`: full version bumped on every publication;
+- `mapping_id`: the mapping's stable identity, used in audit;
+- `tenant_id`: UUID of the tenant the mapping belongs to;
+- `source_type`: `app_role` or `group`;
+- `source_value`: exact App Role value or the group's UUID object ID;
+- `approval_area`: value from the corporate `ApprovalArea` taxonomy;
+- `enabled`: a real YAML boolean, never text;
+- `owner`: area responsible for the source and its review;
+- `mapping_version`: positive integer incremented whenever the record changes.
 
-App Roles são case-sensitive. Grupos são comparados somente por object ID canônico.
-`displayName`, e-mail, UPN, cargo e `department` nunca participam da decisão.
+App Roles are case-sensitive. Groups are compared only by canonical object ID.
+`displayName`, email, UPN, job title and `department` never participate in the
+decision.
 
-## Configuração
+## Configuration
 
-O access token da API deve conter o claim de App Roles configurado. Para Entra, o
-default é `roles`:
+The API's access token must contain the configured App Roles claim. For Entra, the
+default is `roles`:
 
 ```dotenv
 OIDC_ENTRA_APP_ROLES_CLAIM=roles
 DIRECTORY_AUTHORIZATION_CATALOG_PATH=/run/governance/entra-authorization.yaml
 ```
 
-Monte o arquivo como read-only no container. Caminho ausente, YAML inválido, campo
-desconhecido, tipo ambíguo, UUID inválido ou mapeamento duplicado impedem o startup. A
-aplicação não retorna ao catálogo empacotado quando o override falha.
+Mount the file as read-only in the container. A missing path, invalid YAML, unknown
+field, ambiguous type, invalid UUID or duplicate mapping prevents startup. The
+application does not fall back to the packaged catalog when the override fails.
 
-Mapeamentos `app_role` funcionam somente a partir do claim verificado. Mapeamentos
-`group` exigem Microsoft Graph habilitado para resolver associações transitivas. Se o
-Graph estiver desabilitado, um claim `groups` completo e validado também pode fornecer
-os object IDs. Overage, claim ausente ou inválido nunca concede capacidade de grupo; se
-um snapshot Graph confiável existir, ele prevalece sobre o token.
+`app_role` mappings work only from the verified claim. `group` mappings require
+Microsoft Graph to be enabled to resolve transitive memberships. If Graph is
+disabled, a complete and validated `groups` claim can also supply the object IDs.
+Overage, a missing or invalid claim never grants group capability; if a trusted
+Graph snapshot exists, it takes precedence over the token.
 
-## Workflow de mudança
+## Change workflow
 
-1. IAM confirma o tenant, App Role ou object ID, owner e necessidade de acesso.
-2. Governança de IA confirma a correspondência com `ApprovalArea` e o escopo da área.
-3. Segurança revisa menor privilégio, segregação de funções e impacto de guest.
-4. O autor altera o mapping e incrementa `mapping_version` e `catalog_version`.
-5. CI executa validação de YAML, testes de domínio e quality gate completo.
-6. Revisores independentes aprovam o pull request conforme branch protection.
-7. O deployment recebe o arquivo aprovado como configuração read-only e reinicia.
-8. A validação confirma `/api/v1/auth/me`, decisão permitida e decisão negada.
+1. IAM confirms the tenant, App Role or object ID, owner and need for access.
+2. AI Governance confirms the match to `ApprovalArea` and the area's scope.
+3. Security reviews least privilege, segregation of duties and guest impact.
+4. The author changes the mapping and increments `mapping_version` and
+   `catalog_version`.
+5. CI runs YAML validation, domain tests and the full quality gate.
+6. Independent reviewers approve the pull request per branch protection.
+7. The deployment receives the approved file as read-only configuration and
+   restarts.
+8. Validation confirms `/api/v1/auth/me`, an allowed decision and a denied decision.
 
-O repositório demonstra o workflow, mas a organização precisa configurar os reviewers
-reais de IAM, Segurança e Governança de IA no GitHub.
+The repository demonstrates the workflow, but the organization needs to configure
+the real IAM, Security and AI Governance reviewers in GitHub.
 
-## Auditoria e minimização
+## Audit and minimization
 
-`/api/v1/auth/me` retorna:
+`/api/v1/auth/me` returns:
 
-- áreas efetivas;
-- ID e versão do catálogo;
-- digest SHA-256 semântico do catálogo;
-- IDs dos mappings aplicados;
-- tipos de fonte aplicados.
+- effective areas;
+- catalog ID and version;
+- semantic SHA-256 digest of the catalog;
+- IDs of the applied mappings;
+- applied source types.
 
-O endpoint não retorna App Roles brutas, grupos, quantidade de grupos ou nomes. Uma
-decisão de aprovação registra a mesma provenance no evento hash-chained. Isso vincula
-a decisão à política sem persistir o inventário integral de associações do usuário.
+The endpoint does not return raw App Roles, groups, group count or names. An
+approval decision records the same provenance in the hash-chained event. This binds
+the decision to the policy without persisting the user's full membership
+inventory.
 
-## Revogação e rollback
+## Revocation and rollback
 
-Para revogar capacidade:
+To revoke a capability:
 
-1. desabilite ou remova o mapping;
-2. incremente as versões;
-3. conclua revisão emergencial conforme o processo de acesso;
-4. publique e reinicie o deployment;
-5. o novo digest torna os snapshots anteriores inelegíveis;
-6. valide que a área desapareceu e a decisão é negada.
+1. disable or remove the mapping;
+2. increment the versions;
+3. complete an emergency review per the access process;
+4. publish and restart the deployment;
+5. the new digest makes prior snapshots ineligible;
+6. validate that the area disappeared and the decision is denied.
 
-Rollback significa republicar uma versão anteriormente aprovada do arquivo, nunca
-editar a trilha Git.
+Rollback means republishing a previously approved version of the file, never editing
+the Git trail.
 
-Para forçar revalidação imediata de uma única identidade, um administrador chama
-`POST /api/v1/auth/directory-authorization-cache/invalidate` com `tenant_id`,
-`object_id`, um motivo enumerado e uma referência opcional de ticket. A operação limpa
-o snapshot no PostgreSQL e grava evento auditável na mesma transação, sem copiar os IDs
-do alvo para o payload do evento. O tenant deve constar em
-`OIDC_ALLOWED_TENANT_IDS`. A próxima operação sensível precisa obter um novo resultado
-confiável. Isso não remove App Role, grupo, sessão ou conta no Entra; a revogação
-definitiva continua sob responsabilidade de IAM.
+To force an immediate revalidation of a single identity, an administrator calls
+`POST /api/v1/auth/directory-authorization-cache/invalidate` with `tenant_id`,
+`object_id`, an enumerated reason and an optional ticket reference. The operation
+clears the snapshot in PostgreSQL and writes an auditable event in the same
+transaction, without copying the target's IDs into the event payload. The tenant
+must be listed in `OIDC_ALLOWED_TENANT_IDS`. The next sensitive operation must
+obtain a fresh, trusted result. This does not remove an App Role, group, session or
+account in Entra; definitive revocation remains IAM's responsibility.
 
-Se a identidade inteira precisar ser contida, use
-`POST /api/v1/auth/directory-access/block`. Esse comando impede a próxima request
-protegida em todas as réplicas, invalida o cache e grava auditoria na mesma transação.
-Restauração usa `/directory-access/restore` e exige nova resolução de autorização. O
-procedimento completo está em `DIRECTORY_ACCESS_INCIDENT_RESPONSE.md`.
+If the entire identity needs to be contained, use
+`POST /api/v1/auth/directory-access/block`. This command blocks the next protected
+request across all replicas, invalidates the cache and writes audit evidence in the
+same transaction. Restoration uses `/directory-access/restore` and requires a new
+authorization resolution. The full procedure is in
+`DIRECTORY_ACCESS_INCIDENT_RESPONSE.md`.
 
-## Validação mínima
+## Minimum validation
 
-- App Role exata concede somente a área mapeada;
-- App Role com capitalização diferente não concede;
-- grupo transitivo mapeado concede somente com Graph confiável;
-- grupo com mesmo nome e outro object ID não concede;
-- mapping de outro tenant, desabilitado ou duplicado não concede;
-- guest não concede por padrão;
-- conta com tipo desconhecido não concede;
-- falha de catálogo ou Graph bloqueia a operação sensível;
-- auditoria contém mapping IDs, versão e digest, sem valores brutos da origem.
+- exact App Role grants only the mapped area;
+- App Role with different capitalization grants nothing;
+- a mapped transitive group grants only with a trusted Graph;
+- a group with the same name but a different object ID grants nothing;
+- a mapping from another tenant, disabled or duplicated grants nothing;
+- guest grants nothing by default;
+- an account with unknown type grants nothing;
+- catalog or Graph failure blocks the sensitive operation;
+- audit contains mapping IDs, version and digest, without raw source values.
