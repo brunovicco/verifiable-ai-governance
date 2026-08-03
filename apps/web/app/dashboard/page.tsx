@@ -16,6 +16,12 @@ function formatDateTime(value: string): string {
   }).format(new Date(value));
 }
 
+function formatHours(value: number | null): string {
+  if (value === null) return "Sem dados";
+  if (value >= 24) return `${(value / 24).toFixed(1)} dias`;
+  return `${value.toFixed(1)} horas`;
+}
+
 export default function OperationalMonitoringPage() {
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [error, setError] = useState("");
@@ -60,6 +66,10 @@ export default function OperationalMonitoringPage() {
         <article className="panel"><span>Remediações vencidas</span><strong>{dashboard.incidents.overdue_remediation}</strong></article>
         <article className="panel"><span>Ações bloqueadas</span><strong>{dashboard.routing_outcomes.blocked}</strong></article>
         <article className="panel"><span>Revisões vencidas</span><strong>{expiredReviews}</strong></article>
+        <article className="panel">
+          <span>Cobertura de avaliações</span>
+          <strong>{dashboard.assessment_coverage.submitted} / {dashboard.assessment_coverage.required}</strong>
+        </article>
       </section>
 
       <section className="asset-columns">
@@ -132,12 +142,58 @@ export default function OperationalMonitoringPage() {
         </article>
       </section>
 
-      <section className="panel asset-panel">
-        <div className="panel-heading"><div><p className="eyebrow">MODEL EVALUATION</p><h2>Drift de modelos e agentes</h2></div></div>
-        <div className="notice">
-          Métrica ainda não disponível nesta plataforma. Depende da futura integração com
-          avaliações e regressões (ragforge), item separado do backlog.
-        </div>
+      <section className="asset-columns">
+        <article className="panel asset-panel">
+          <div className="panel-heading"><div><p className="eyebrow">RESIDUAL RISK</p><h2>Risco residual das avaliações</h2></div></div>
+          <table>
+            <tbody>
+              {RISK_TIERS.map((tier) => (
+                <tr key={tier}><td>{label(tier)}</td><td>{dashboard.residual_risk_by_tier[tier] ?? 0}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </article>
+
+        <article className="panel asset-panel">
+          <div className="panel-heading"><div><p className="eyebrow">CYCLE TIME</p><h2>Tempo médio de ciclo</h2></div></div>
+          <table>
+            <tbody>
+              <tr>
+                <td>Rodada de revisão</td>
+                <td>{formatHours(dashboard.cycle_times.review_round_avg_hours)}</td>
+              </tr>
+              <tr><td colSpan={2}><small>{dashboard.cycle_times.review_round_samples} rodadas resolvidas</small></td></tr>
+              <tr>
+                <td>Remediação de incidente</td>
+                <td>{formatHours(dashboard.cycle_times.incident_remediation_avg_hours)}</td>
+              </tr>
+              <tr><td colSpan={2}><small>{dashboard.cycle_times.incident_remediation_samples} incidentes encerrados</small></td></tr>
+            </tbody>
+          </table>
+          <p><small>
+            Tempo médio observado, não percentual de cumprimento de meta — nenhum prazo-alvo
+            está declarado nesta plataforma.
+          </small></p>
+        </article>
+      </section>
+
+      <section className="asset-columns">
+        <article className="panel asset-panel">
+          <div className="panel-heading"><div><p className="eyebrow">MODEL EVALUATION</p><h2>Drift de modelos e agentes</h2></div></div>
+          <div className="notice">
+            Métrica ainda não disponível nesta plataforma. Depende da futura integração com
+            avaliações e regressões (ragforge), item separado do backlog.
+          </div>
+        </article>
+
+        <article className="panel asset-panel">
+          <div className="panel-heading"><div><p className="eyebrow">CONTROL CATALOG</p><h2>Efetividade de controles</h2></div></div>
+          <div className="notice">
+            Métrica ainda não disponível nesta plataforma. O catálogo hoje só registra
+            aplicabilidade estática de cada controle, nunca se a evidência exigida foi
+            verificada ou se o controle preveniu algo.
+          </div>
+        </article>
       </section>
     </div>
   );

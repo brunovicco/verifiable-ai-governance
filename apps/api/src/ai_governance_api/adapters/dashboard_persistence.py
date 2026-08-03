@@ -1,12 +1,16 @@
 """SQLAlchemy adapter aggregating governance facts for the portfolio dashboard."""
 
+from collections import defaultdict
 from datetime import UTC, datetime
 
+from governance_schemas import EntityStatus, RiskTier
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_governance_api.application.dashboard import (
+    AssessmentCoverageRow,
     AssetReviewRow,
+    CycleTimeSamples,
     ExceptionRow,
     IncidentCounts,
     RoutingOutcomeCounts,
@@ -16,10 +20,13 @@ from ai_governance_api.domain.model_routing import RoutingBlockCode, RoutingEnfo
 from ai_governance_api.models import (
     Agent,
     AISystem,
+    Assessment,
     Incident,
+    Initiative,
     ModelAsset,
     ModelRoutingDecisionEntry,
     PolicyException,
+    ReviewSubmission,
 )
 
 _TOP_BLOCKED_REASON_LIMIT = 5
@@ -125,6 +132,73 @@ class SqlAlchemyDashboardStore:
             for status, expires_at in rows
         ]
 
+    async def list_residual_risk_values(self) -> list[RiskTier]:
+        """Return one residual-risk tier per submitted structured assessment."""
+        rows = await self._session.execute(
+            select(Assessment.risk_tier).where(
+                Assessment.status != EntityStatus.DRAFT,
+                Assessment.risk_tier.is_not(None),
+            )
+        )
+        return [tier for (tier,) in rows if tier is not None]
+
+    async def list_assessment_coverage_rows(self) -> list[AssessmentCoverageRow]:
+        """Return required documents and submitted kinds for every triaged initiative."""
+        initiative_rows = await self._session.execute(
+            select(Initiative.id, Initiative.required_documents).where(
+                Initiative.status != EntityStatus.DRAFT
+            )
+        )
+        required_by_initiative = {
+            initiative_id: tuple(documents) for initiative_id, documents in initiative_rows
+        }
+
+        submitted_rows = await self._session.execute(
+            select(Assessment.initiative_id, Assessment.assessment_type).where(
+                Assessment.status != EntityStatus.DRAFT
+            )
+        )
+        submitted_by_initiative: dict[str, set[str]] = defaultdict(set)
+        for initiative_id, assessment_type in submitted_rows:
+            submitted_by_initiative[initiative_id].add(assessment_type)
+
+        return [
+            AssessmentCoverageRow(
+                required_documents=required_documents,
+                submitted_kinds=frozenset(submitted_by_initiative.get(initiative_id, set())),
+            )
+            for initiative_id, required_documents in required_by_initiative.items()
+        ]
+
+    async def list_cycle_time_samples(self) -> CycleTimeSamples:
+        """Return raw observed review-round and incident-remediation durations."""
+        review_rows = await self._session.execute(
+            select(ReviewSubmission.submitted_at, ReviewSubmission.resolved_at).where(
+                ReviewSubmission.resolved_at.is_not(None)
+            )
+        )
+        review_round_hours = tuple(
+            _hours_between(_as_utc(submitted_at), _as_utc(resolved_at))
+            for submitted_at, resolved_at in review_rows
+            if resolved_at is not None
+        )
+
+        incident_rows = await self._session.execute(
+            select(Incident.detected_at, Incident.resolved_at).where(
+                Incident.resolved_at.is_not(None)
+            )
+        )
+        incident_remediation_hours = tuple(
+            _hours_between(_as_utc(detected_at), _as_utc(resolved_at))
+            for detected_at, resolved_at in incident_rows
+            if resolved_at is not None
+        )
+
+        return CycleTimeSamples(
+            review_round_hours=review_round_hours,
+            incident_remediation_hours=incident_remediation_hours,
+        )
+
 
 def _optional_utc(value: datetime | None) -> datetime | None:
     """Normalize an optional database timestamp to UTC."""
@@ -136,3 +210,8 @@ def _as_utc(value: datetime) -> datetime:
     if value.tzinfo is None or value.utcoffset() is None:
         return value.replace(tzinfo=UTC)
     return value.astimezone(UTC)
+
+
+def _hours_between(start: datetime, end: datetime) -> float:
+    """Return the elapsed time between two UTC timestamps, in hours."""
+    return (end - start).total_seconds() / 3600

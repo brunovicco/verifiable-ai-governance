@@ -42,7 +42,7 @@
 - [ ] Crosswalk de apoio com NIST AI RMF, ISO/IEC 42001, NIST AI 600-1 e OWASP.
 - [ ] Exportação de pacote de evidências para auditoria.
 - [ ] APIs/webhooks para CMDB, catálogo de dados, CI/CD e GRC.
-- [ ] Métricas executivas de cobertura, SLA, risco residual e efetividade de controles.
+- [x] Métricas executivas de cobertura, tempo de ciclo (sem meta declarada), risco residual e efetividade de controles (indisponível).
 
 ## Definition of done
 

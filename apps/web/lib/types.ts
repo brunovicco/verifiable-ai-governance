@@ -234,13 +234,30 @@ export interface DashboardIncidentCounts {
   overdue_remediation: number;
 }
 
+export interface AssessmentCoverage {
+  required: number;
+  submitted: number;
+  ratio: number | null;
+}
+
+export interface CycleTimes {
+  review_round_avg_hours: number | null;
+  review_round_samples: number;
+  incident_remediation_avg_hours: number | null;
+  incident_remediation_samples: number;
+}
+
 export interface Dashboard {
   generated_at: string;
   routing_outcomes: DashboardRoutingOutcomes;
   review_status_by_risk_tier: Record<string, Record<string, number>>;
   incidents: DashboardIncidentCounts;
   exceptions_by_state: Record<string, number>;
+  residual_risk_by_tier: Record<string, number>;
+  assessment_coverage: AssessmentCoverage;
+  cycle_times: CycleTimes;
   drift_available: boolean;
+  control_effectiveness_available: boolean;
 }
 
 export type IncidentStatus = "open" | "contained" | "remediating" | "closed";
