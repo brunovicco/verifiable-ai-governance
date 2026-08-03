@@ -1,4 +1,4 @@
-# ADR 0013 — Enriquecimento de identidade com Microsoft Graph via OBO
+# ADR 0013 - Enriquecimento de identidade com Microsoft Graph via OBO
 
 ## Status
 

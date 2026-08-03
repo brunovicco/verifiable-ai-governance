@@ -1,11 +1,12 @@
 """FastAPI adapter for the versioned governance control catalog."""
 
 from fastapi import APIRouter
-from governance_schemas import ControlCatalog, InitiativeControlReport
+from governance_schemas import ControlCatalog, ControlCrosswalk, InitiativeControlReport
 
 from ai_governance_api.dependencies import (
     CurrentPrincipal,
     EvaluateInitiativeControlsDependency,
+    GetControlCrosswalkDependency,
     ListControlCatalogDependency,
 )
 
@@ -18,6 +19,15 @@ async def list_control_catalog(
     _: CurrentPrincipal,
 ) -> ControlCatalog:
     """Return the active catalog and its versioned definitions."""
+    return use_case.execute()
+
+
+@router.get("/controls/crosswalk", response_model=ControlCrosswalk)
+async def get_control_crosswalk(
+    use_case: GetControlCrosswalkDependency,
+    _: CurrentPrincipal,
+) -> ControlCrosswalk:
+    """Return the non-authoritative external-framework crosswalk."""
     return use_case.execute()
 
 

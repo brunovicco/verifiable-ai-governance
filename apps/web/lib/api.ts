@@ -4,6 +4,8 @@ import type {
   AISystem,
   Assessment,
   AssessmentKind,
+  ControlCatalog,
+  ControlCrosswalk,
   Dashboard,
   Evidence,
   EvidenceKind,
@@ -106,6 +108,14 @@ export function listAssessments(initiativeId: string): Promise<Assessment[]> {
 
 export function getInitiativeControls(initiativeId: string): Promise<InitiativeControlReport> {
   return request(`/api/v1/initiatives/${initiativeId}/controls`);
+}
+
+export function getControlCatalog(): Promise<ControlCatalog> {
+  return request("/api/v1/controls");
+}
+
+export function getControlCrosswalk(): Promise<ControlCrosswalk> {
+  return request("/api/v1/controls/crosswalk");
 }
 
 export function listEvidence(initiativeId: string): Promise<Evidence[]> {

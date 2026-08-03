@@ -1,4 +1,4 @@
-# Plano de integração — Microsoft Entra ID e Microsoft Graph
+# Plano de integração - Microsoft Entra ID e Microsoft Graph
 
 ## Objetivo
 
@@ -157,21 +157,21 @@ persistente, auditado, fail-closed e aplicado antes de todas as rotas protegidas
 Validação contra tenant real, revogação de sessão no provedor e assurance permanecem
 pendentes.
 
-### Fase 1 — Fundação Entra
+### Fase 1 - Fundação Entra
 
 - app registrations separadas para portal e API;
 - tenant allowlist e issuer tenant-specific;
 - scopes, App Roles, redirect URIs e consentimentos documentados;
 - configuração por ambiente e runbook de rotação de credencial.
 
-### Fase 2 — Login do portal
+### Fase 2 - Login do portal
 
 - MSAL com authorization code e PKCE;
 - identidade automática sem headers de desenvolvimento;
 - logout, expiração, reautenticação e tratamento de Conditional Access;
 - testes de token para tenant, issuer, audience e usuário guest.
 
-### Fase 3 — Enriquecimento Graph
+### Fase 3 - Enriquecimento Graph
 
 - [x] porta de aplicação `CorporateDirectoryPort`;
 - [x] adapter Microsoft Graph com OBO, timeout e paginação validada;
@@ -180,7 +180,7 @@ pendentes.
 - [x] retry limitado com jitter e monitoramento básico de throttling;
 - [x] cache curto com freshness explícita e invalidação distribuída.
 
-### Fase 4 — Mapeamento governado
+### Fase 4 - Mapeamento governado
 
 - [x] catálogo versionado grupo/App Role → `ApprovalArea`;
 - [x] workflow de alteração como código com IAM, Segurança e Governança de IA;
@@ -190,7 +190,7 @@ pendentes.
 - [x] restrição emergencial local com auditoria e invalidação atômica do cache;
 - [ ] auditoria de sincronização e revogação no provedor.
 
-### Fase 5 — Assurance
+### Fase 5 - Assurance
 
 - [x] testes de group overage e grupos aninhados;
 - [ ] testes de guest e usuário desabilitado contra tenant real;

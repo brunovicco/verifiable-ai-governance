@@ -1,4 +1,4 @@
-# ADR 0003 — OIDC, versionamento e auditoria
+# ADR 0003 - OIDC, versionamento e auditoria
 
 - Status: aceito
 - Data: 2026-07-31

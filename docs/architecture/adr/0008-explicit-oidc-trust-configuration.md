@@ -1,4 +1,4 @@
-# ADR 0008 — Configuração explícita de confiança OIDC
+# ADR 0008 - Configuração explícita de confiança OIDC
 
 - Status: aceito
 - Data: 2026-08-01

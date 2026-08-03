@@ -114,6 +114,7 @@ class Settings(BaseSettings):
 
     audit_hash_salt: str = Field(default="local-development-only", repr=False)
     control_catalog_path: str = ""
+    control_crosswalk_path: str = ""
 
     evidence_max_bytes: int = Field(default=10 * 1024 * 1024, ge=1, le=50 * 1024 * 1024)
     evidence_request_overhead_bytes: int = Field(default=64 * 1024, ge=4096, le=1024 * 1024)

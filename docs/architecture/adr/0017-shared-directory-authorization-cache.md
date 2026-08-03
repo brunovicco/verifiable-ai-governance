@@ -1,4 +1,4 @@
-# ADR 0017 — Cache compartilhado de autorização de diretório
+# ADR 0017 - Cache compartilhado de autorização de diretório
 
 ## Status
 

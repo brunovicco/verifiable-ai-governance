@@ -55,6 +55,41 @@ export interface InitiativeControlReport {
   controls: ControlEvaluation[];
 }
 
+export interface ControlCatalog {
+  catalog_id: string;
+  version: string;
+  controls: ControlDefinition[];
+}
+
+export type CrosswalkFramework =
+  | "nist_ai_rmf"
+  | "nist_ai_600_1"
+  | "owasp_llm_top10"
+  | "owasp_agentic_top10"
+  | "mitre_atlas"
+  | "iso_iec_42001";
+
+export interface CrosswalkReference {
+  framework: CrosswalkFramework;
+  reference: string;
+  title: string;
+  note: string | null;
+}
+
+export interface ControlCrosswalkEntry {
+  control_id: string;
+  references: CrosswalkReference[];
+}
+
+export interface ControlCrosswalk {
+  crosswalk_id: string;
+  version: string;
+  frameworks_covered: CrosswalkFramework[];
+  frameworks_pending: CrosswalkFramework[];
+  disclaimer: string;
+  entries: ControlCrosswalkEntry[];
+}
+
 export type EvidenceKind =
   | "policy"
   | "assessment"

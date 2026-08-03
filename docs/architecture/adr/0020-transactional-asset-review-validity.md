@@ -1,4 +1,4 @@
-# ADR 0020 — Consistência transacional e vigência das revisões de ativos
+# ADR 0020 - Consistência transacional e vigência das revisões de ativos
 
 ## Status
 

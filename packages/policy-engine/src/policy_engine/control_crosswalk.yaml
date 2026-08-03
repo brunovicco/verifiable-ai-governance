@@ -1,0 +1,426 @@
+crosswalk_id: verifiable-ai-governance-crosswalk
+version: "2.1.0"
+frameworks_covered:
+  - nist_ai_rmf
+  - nist_ai_600_1
+  - owasp_llm_top10
+  - owasp_agentic_top10
+  - mitre_atlas
+frameworks_pending:
+  - iso_iec_42001
+disclaimer: >
+  Referência de apoio construída a partir da leitura direta dos textos-fonte oficiais:
+  NIST AI 100-1 (AI RMF 1.0, jan/2023, nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf),
+  NIST AI 600-1 (Generative AI Profile, jul/2024, doi.org/10.6028/NIST.AI.600-1), OWASP
+  Top 10 for LLM Applications & Generative AI 2025 (nov/2024, genai.owasp.org), OWASP
+  Top 10 for Agentic Applications 2026 (dez/2025, genai.owasp.org) e MITRE ATLAS, cujas
+  táticas e técnicas foram conferidas contra o relatório MITRE SAFE-AI (abr/2025,
+  atlas.mitre.org) e as referências cruzadas que o próprio OWASP Top 10 faz para IDs de
+  técnica do ATLAS. Não constitui parecer jurídico, certificação ou declaração de
+  conformidade, e deve ser revisada por jurídico/compliance antes de qualquer uso
+  formal. Citações do NIST AI RMF usam função/categoria nomeada (ex.: "GOVERN 2") como
+  granularidade padrão em todo o crosswalk; subcategoria numerada (ex.: "GOVERN 1.6")
+  só é citada nos poucos casos em que ela corresponde de forma direta e inequívoca ao
+  controle - uma escolha editorial deliberada de manter a maioria das citações no nível
+  mais estável, não uma limitação de acesso à fonte. O concept note "NIST AI RMF:
+  Trustworthy Use of AI in Critical Infrastructure Profile" (abr/2026) ainda não define
+  categorias de risco citáveis - é um documento de planejamento, não um perfil
+  publicado - e por isso não está referenciado aqui; será avaliado quando (e se) um
+  perfil completo for publicado. ISO/IEC 42001 permanece pendente por ser norma
+  licenciada, sem acesso ao texto oficial.
+entries:
+  - control_id: GOV-ORG-001
+    references:
+      - framework: nist_ai_rmf
+        reference: "GOVERN 2"
+        title: Accountability structures
+
+  - control_id: GOV-ORG-002
+    references:
+      - framework: nist_ai_rmf
+        reference: "GOVERN 1.6"
+        title: "Mechanisms are in place to inventory AI systems and are resourced according to organizational risk priorities."
+      - framework: nist_ai_rmf
+        reference: "MAP 1"
+        title: Context established
+
+  - control_id: GOV-RSK-001
+    references:
+      - framework: nist_ai_rmf
+        reference: "MAP 5.1"
+        title: "Likelihood and magnitude of each identified impact are identified and documented."
+
+  - control_id: GOV-RSK-002
+    references:
+      - framework: nist_ai_rmf
+        reference: "MAP 2"
+        title: AI system categorized
+      - framework: nist_ai_rmf
+        reference: "MEASURE 1"
+        title: Appropriate methods for measuring AI risks identified
+
+  - control_id: GOV-HUM-001
+    references:
+      - framework: nist_ai_rmf
+        reference: "MAP 3.5"
+        title: "Processes for human oversight are defined, assessed, and documented in accordance with organizational policies from the GOVERN function."
+      - framework: nist_ai_rmf
+        reference: "GOVERN 3.2"
+        title: "Policies and procedures define and differentiate roles and responsibilities for human-AI configurations and oversight."
+      - framework: nist_ai_600_1
+        reference: "2.7 Human-AI Configuration"
+        title: Human-AI Configuration
+      - framework: owasp_llm_top10
+        reference: "LLM06:2025"
+        title: Excessive Agency
+
+  - control_id: GOV-HUM-002
+    references:
+      - framework: nist_ai_rmf
+        reference: "GOVERN 5.1"
+        title: "Organizational policies and practices collect, consider, prioritize, and integrate external feedback on AI risks."
+      - framework: nist_ai_rmf
+        reference: "MEASURE 3.3"
+        title: "Feedback processes for end users and impacted communities to report problems and appeal system outcomes are established."
+      - framework: nist_ai_600_1
+        reference: "2.7 Human-AI Configuration"
+        title: Human-AI Configuration
+
+  - control_id: GOV-DAT-001
+    references:
+      - framework: nist_ai_rmf
+        reference: "MAP 1"
+        title: Context established
+      - framework: nist_ai_600_1
+        reference: "2.4 Data Privacy"
+        title: Data Privacy
+      - framework: owasp_llm_top10
+        reference: "LLM02:2025"
+        title: Sensitive Information Disclosure
+      - framework: mitre_atlas
+        reference: "AML.T0048"
+        title: External Harms
+        note: >
+          MITRE SAFE-AI (2025) associa AML.T0048 aos cenários de "sensitive data
+          exposure" e "sensitive information disclosure".
+
+  - control_id: GOV-DAT-002
+    references:
+      - framework: nist_ai_rmf
+        reference: "GOVERN 1"
+        title: Policies, processes, and procedures
+      - framework: nist_ai_600_1
+        reference: "2.4 Data Privacy"
+        title: Data Privacy
+      - framework: owasp_llm_top10
+        reference: "LLM02:2025"
+        title: Sensitive Information Disclosure
+      - framework: mitre_atlas
+        reference: "AML.T0048"
+        title: External Harms
+        note: >
+          MITRE SAFE-AI (2025) associa AML.T0048 aos cenários de "sensitive data
+          exposure" e "sensitive information disclosure".
+
+  - control_id: GOV-DAT-003
+    references:
+      - framework: nist_ai_rmf
+        reference: "MAP 5"
+        title: Impacts to individuals, groups, and society mapped
+      - framework: nist_ai_600_1
+        reference: "2.4 Data Privacy"
+        title: Data Privacy
+      - framework: owasp_llm_top10
+        reference: "LLM02:2025"
+        title: Sensitive Information Disclosure
+      - framework: mitre_atlas
+        reference: "AML.T0048"
+        title: External Harms
+        note: >
+          MITRE SAFE-AI (2025) associa AML.T0048 aos cenários de "sensitive data
+          exposure" e "sensitive information disclosure".
+
+  - control_id: GOV-DAT-004
+    references:
+      - framework: nist_ai_rmf
+        reference: "MAP 5"
+        title: Impacts to individuals, groups, and society mapped
+      - framework: nist_ai_600_1
+        reference: "2.4 Data Privacy"
+        title: Data Privacy
+
+  - control_id: GOV-DAT-005
+    references:
+      - framework: nist_ai_rmf
+        reference: "MEASURE 2"
+        title: AI systems evaluated for trustworthy characteristics
+      - framework: nist_ai_rmf
+        reference: "MAP 3"
+        title: AI capabilities, benefits, and costs assessed
+      - framework: nist_ai_600_1
+        reference: "2.8 Information Integrity"
+        title: Information Integrity
+      - framework: owasp_llm_top10
+        reference: "LLM08:2025"
+        title: Vector and Embedding Weaknesses
+      - framework: owasp_llm_top10
+        reference: "LLM09:2025"
+        title: Misinformation
+
+  - control_id: GOV-MOD-001
+    references:
+      - framework: nist_ai_rmf
+        reference: "GOVERN 6"
+        title: Third-party and supply chain risk policies
+      - framework: nist_ai_rmf
+        reference: "MAP 2"
+        title: AI system categorized
+      - framework: nist_ai_rmf
+        reference: "MANAGE 3.2"
+        title: "Pre-trained models which are used for development are monitored as part of AI system regular monitoring and maintenance."
+      - framework: nist_ai_600_1
+        reference: "2.12 Value Chain and Component Integration"
+        title: Value Chain and Component Integration
+      - framework: owasp_llm_top10
+        reference: "LLM03:2025"
+        title: Supply Chain
+      - framework: mitre_atlas
+        reference: "AML.T0010"
+        title: ML Supply Chain Compromise
+
+  - control_id: GOV-MOD-002
+    references:
+      - framework: nist_ai_rmf
+        reference: "MEASURE 1"
+        title: Appropriate methods for measuring AI risks identified
+      - framework: nist_ai_rmf
+        reference: "MEASURE 2"
+        title: AI systems evaluated for trustworthy characteristics
+      - framework: nist_ai_600_1
+        reference: "2.2 Confabulation"
+        title: Confabulation
+      - framework: owasp_llm_top10
+        reference: "LLM09:2025"
+        title: Misinformation
+      - framework: mitre_atlas
+        reference: "AML.T0020"
+        title: Poison Training Data
+      - framework: mitre_atlas
+        reference: "AML.T0031"
+        title: Erode Model Integrity
+
+  - control_id: GOV-MOD-003
+    references:
+      - framework: nist_ai_rmf
+        reference: "MANAGE 1"
+        title: Risks prioritized and acted upon
+      - framework: nist_ai_rmf
+        reference: "MANAGE 3.1"
+        title: "AI risks and benefits from third-party resources are regularly monitored, and risk controls are applied and documented."
+      - framework: nist_ai_600_1
+        reference: "2.12 Value Chain and Component Integration"
+        title: Value Chain and Component Integration
+      - framework: owasp_llm_top10
+        reference: "LLM03:2025"
+        title: Supply Chain
+      - framework: mitre_atlas
+        reference: "AML.T0010"
+        title: ML Supply Chain Compromise
+
+  - control_id: GOV-AGT-001
+    references:
+      - framework: nist_ai_rmf
+        reference: "GOVERN 2"
+        title: Accountability structures
+      - framework: nist_ai_rmf
+        reference: "MAP 2"
+        title: AI system categorized
+      - framework: owasp_llm_top10
+        reference: "LLM06:2025"
+        title: Excessive Agency
+      - framework: owasp_agentic_top10
+        reference: "ASI03"
+        title: Identity and Privilege Abuse
+
+  - control_id: GOV-AGT-002
+    references:
+      - framework: nist_ai_rmf
+        reference: "MANAGE 1"
+        title: Risks prioritized and acted upon
+      - framework: nist_ai_rmf
+        reference: "MAP 3"
+        title: AI capabilities, benefits, and costs assessed
+      - framework: nist_ai_600_1
+        reference: "2.12 Value Chain and Component Integration"
+        title: Value Chain and Component Integration
+      - framework: owasp_llm_top10
+        reference: "LLM06:2025"
+        title: Excessive Agency
+      - framework: owasp_llm_top10
+        reference: "LLM03:2025"
+        title: Supply Chain
+      - framework: mitre_atlas
+        reference: "AML.T0053"
+        title: LLM Plugin Compromise
+      - framework: owasp_agentic_top10
+        reference: "ASI02"
+        title: Tool Misuse and Exploitation
+      - framework: owasp_agentic_top10
+        reference: "ASI04"
+        title: Agentic Supply Chain Vulnerabilities
+        note: >
+          Cobre especificamente descritores de ferramenta MCP maliciosos ou
+          adulterados, o cenário direto da allowlist deste controle.
+
+  - control_id: GOV-AGT-003
+    references:
+      - framework: nist_ai_rmf
+        reference: "MANAGE 1"
+        title: Risks prioritized and acted upon
+      - framework: owasp_llm_top10
+        reference: "LLM06:2025"
+        title: Excessive Agency
+      - framework: owasp_agentic_top10
+        reference: "ASI03"
+        title: Identity and Privilege Abuse
+        note: >
+          Mitigação nº1 do ASI03 é "Enforce Task-Scoped, Time-Bound Permissions" -
+          correspondência direta com este controle.
+
+  - control_id: GOV-AGT-004
+    references:
+      - framework: nist_ai_rmf
+        reference: "GOVERN 3.2"
+        title: "Policies and procedures define and differentiate roles and responsibilities for human-AI configurations and oversight."
+      - framework: nist_ai_rmf
+        reference: "MAP 3.5"
+        title: "Processes for human oversight are defined, assessed, and documented in accordance with organizational policies from the GOVERN function."
+      - framework: nist_ai_600_1
+        reference: "2.7 Human-AI Configuration"
+        title: Human-AI Configuration
+      - framework: owasp_llm_top10
+        reference: "LLM06:2025"
+        title: Excessive Agency
+      - framework: owasp_agentic_top10
+        reference: "ASI09"
+        title: Human-Agent Trust Exploitation
+
+  - control_id: GOV-SEC-001
+    references:
+      - framework: nist_ai_rmf
+        reference: "MAP 3"
+        title: AI capabilities, benefits, and costs assessed
+      - framework: nist_ai_rmf
+        reference: "MEASURE 2"
+        title: AI systems evaluated for trustworthy characteristics
+      - framework: nist_ai_600_1
+        reference: "2.9 Information Security"
+        title: Information Security
+      - framework: owasp_llm_top10
+        reference: "Top 10 (geral)"
+        title: Referência ampla para modelagem de ameaças
+        note: >
+          Não é um item específico da lista; usar a lista completa como checklist
+          de ameaças ao construir o threat model.
+      - framework: mitre_atlas
+        reference: "ATLAS Matrix (geral)"
+        title: Referência ampla de táticas e técnicas adversárias contra IA
+        note: >
+          Não é uma técnica específica; usar a matriz completa do MITRE ATLAS (14
+          táticas, de reconhecimento a impacto) como checklist ao construir o
+          threat model, como o próprio OWASP Top 10 recomenda para cada item.
+      - framework: owasp_agentic_top10
+        reference: "ASI Top 10 (geral)"
+        title: Referência ampla para modelagem de ameaças em sistemas agênticos
+        note: >
+          Não é um item específico da lista; usar os dez itens (ASI01-ASI10) como
+          checklist adicional quando o sistema usa agentes, ferramentas ou
+          protocolos multi-agente.
+
+  - control_id: GOV-SEC-002
+    references:
+      - framework: nist_ai_rmf
+        reference: "MEASURE 2"
+        title: AI systems evaluated for trustworthy characteristics
+      - framework: nist_ai_rmf
+        reference: "MANAGE 1"
+        title: Risks prioritized and acted upon
+      - framework: nist_ai_600_1
+        reference: "2.9 Information Security"
+        title: Information Security
+      - framework: owasp_llm_top10
+        reference: "LLM01:2025"
+        title: Prompt Injection
+      - framework: mitre_atlas
+        reference: "AML.T0051"
+        title: "LLM Prompt Injection (Direct/Indirect)"
+      - framework: mitre_atlas
+        reference: "AML.T0054"
+        title: "LLM Jailbreak Injection: Direct"
+      - framework: owasp_agentic_top10
+        reference: "ASI01"
+        title: Agent Goal Hijack
+        note: >
+          Evolução agêntica do prompt injection; aplica-se quando o sistema usa
+          agentes (uses_agents) além de RAG/tools simples.
+
+  - control_id: GOV-OPS-001
+    references:
+      - framework: nist_ai_rmf
+        reference: "MEASURE 3"
+        title: Mechanisms for tracking identified risks over time
+      - framework: nist_ai_rmf
+        reference: "MANAGE 4"
+        title: Risk treatments monitored regularly
+      - framework: owasp_agentic_top10
+        reference: "ASI10"
+        title: Rogue Agents
+        note: >
+          Mitigações de "Governance & Logging" e "Monitoring & Detection" do ASI10
+          correspondem diretamente ao registro de ferramentas/aprovações/loops e à
+          detecção de comportamento anômalo deste controle.
+
+  - control_id: GOV-OPS-002
+    references:
+      - framework: nist_ai_rmf
+        reference: "MANAGE 1"
+        title: Risks prioritized and acted upon
+      - framework: nist_ai_600_1
+        reference: "2.5 Environmental Impacts"
+        title: Environmental Impacts
+      - framework: owasp_llm_top10
+        reference: "LLM10:2025"
+        title: Unbounded Consumption
+      - framework: mitre_atlas
+        reference: "AML.T0029"
+        title: Denial of ML Service
+      - framework: mitre_atlas
+        reference: "AML.T0034"
+        title: Cost Harvesting
+
+  - control_id: GOV-EVD-001
+    references:
+      - framework: nist_ai_rmf
+        reference: "GOVERN 1"
+        title: Policies, processes, and procedures
+      - framework: nist_ai_rmf
+        reference: "MEASURE 2"
+        title: AI systems evaluated for trustworthy characteristics
+
+  - control_id: GOV-EVD-002
+    references:
+      - framework: nist_ai_rmf
+        reference: "MEASURE 1.3"
+        title: "Internal experts who did not serve as front-line developers and/or independent assessors are involved in regular assessments and updates."
+      - framework: nist_ai_rmf
+        reference: "MEASURE 4"
+        title: Feedback about measurement efficacy
+
+  - control_id: GOV-CHG-001
+    references:
+      - framework: nist_ai_rmf
+        reference: "GOVERN 1.7"
+        title: "Processes and procedures are in place for decommissioning and phasing out AI systems safely and in a manner that does not increase risks or decrease trustworthiness."
+      - framework: nist_ai_rmf
+        reference: "MANAGE 4.1"
+        title: "Post-deployment AI system monitoring plans include decommissioning and change management."

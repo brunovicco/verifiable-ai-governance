@@ -76,3 +76,57 @@ async def test_initiative_control_report_fails_closed_for_unknown_id(
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Initiative not found"}
+
+
+async def test_crosswalk_endpoint_maps_every_control_and_declares_iso_pending(
+    client: AsyncClient,
+) -> None:
+    response = await client.get("/api/v1/controls/crosswalk", headers=OWNER_HEADERS)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["entries"]) == 25
+    assert {entry["control_id"] for entry in body["entries"]} == {
+        f"GOV-{domain}-{index:03d}"
+        for domain, count in {
+            "ORG": 2,
+            "RSK": 2,
+            "HUM": 2,
+            "DAT": 5,
+            "MOD": 3,
+            "AGT": 4,
+            "SEC": 2,
+            "OPS": 2,
+            "EVD": 2,
+            "CHG": 1,
+        }.items()
+        for index in range(1, count + 1)
+    }
+    assert "iso_iec_42001" in body["frameworks_pending"]
+    assert "iso_iec_42001" not in body["frameworks_covered"]
+    assert "mitre_atlas" in body["frameworks_covered"]
+    assert "owasp_agentic_top10" in body["frameworks_covered"]
+    least_privilege = next(
+        entry for entry in body["entries"] if entry["control_id"] == "GOV-AGT-003"
+    )
+    agentic_refs = [
+        reference["reference"]
+        for reference in least_privilege["references"]
+        if reference["framework"] == "owasp_agentic_top10"
+    ]
+    assert "ASI03" in agentic_refs
+    prompt_injection = next(
+        entry for entry in body["entries"] if entry["control_id"] == "GOV-SEC-002"
+    )
+    owasp_refs = [
+        reference["reference"]
+        for reference in prompt_injection["references"]
+        if reference["framework"] == "owasp_llm_top10"
+    ]
+    assert "LLM01:2025" in owasp_refs
+    atlas_refs = [
+        reference["reference"]
+        for reference in prompt_injection["references"]
+        if reference["framework"] == "mitre_atlas"
+    ]
+    assert "AML.T0051" in atlas_refs

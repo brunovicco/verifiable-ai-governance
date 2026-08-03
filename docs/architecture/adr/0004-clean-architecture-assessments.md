@@ -1,4 +1,4 @@
-# ADR 0004 — Clean Architecture para assessments estruturados
+# ADR 0004 - Clean Architecture para assessments estruturados
 
 - Status: aceito
 - Data: 2026-07-31

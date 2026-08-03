@@ -1,4 +1,4 @@
-# ADR 0015 — Retry limitado para leituras do Microsoft Graph
+# ADR 0015 - Retry limitado para leituras do Microsoft Graph
 
 ## Status
 

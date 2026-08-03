@@ -6,7 +6,11 @@ from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
-from policy_engine import GovernanceControlCatalog, GovernancePolicyEngine
+from policy_engine import (
+    GovernanceControlCatalog,
+    GovernanceControlCrosswalk,
+    GovernancePolicyEngine,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_governance_api.adapters import (
@@ -42,6 +46,7 @@ from ai_governance_api.application import (
     BuildDashboardSnapshot,
     CacheResolvedDirectoryAuthorization,
     ControlCatalogPort,
+    ControlCrosswalkPort,
     CorporateDirectoryIdentityMismatch,
     CorporateDirectoryNotApplicable,
     CorporateDirectoryProfile,
@@ -50,6 +55,7 @@ from ai_governance_api.application import (
     DirectoryAccessUnavailable,
     DirectoryAuthorizationCacheUnavailable,
     EvaluateInitiativeControls,
+    GetControlCrosswalk,
     IncidentService,
     InvalidateDirectoryAuthorization,
     ListAssessments,
@@ -106,8 +112,21 @@ def get_control_catalog() -> ControlCatalogPort:
     )
 
 
+@lru_cache
+def get_control_crosswalk() -> ControlCrosswalkPort:
+    """Load the packaged or explicitly configured control crosswalk once per process."""
+    path = get_settings().control_crosswalk_path
+    catalog = get_control_catalog().catalog
+    return (
+        GovernanceControlCrosswalk.from_path(path, catalog)
+        if path
+        else GovernanceControlCrosswalk.from_package(catalog)
+    )
+
+
 PolicyEvaluatorDependency = Annotated[PolicyEvaluator, Depends(get_policy_evaluator)]
 ControlCatalogDependency = Annotated[ControlCatalogPort, Depends(get_control_catalog)]
+ControlCrosswalkDependency = Annotated[ControlCrosswalkPort, Depends(get_control_crosswalk)]
 
 
 @lru_cache
@@ -558,6 +577,11 @@ def get_list_control_catalog(catalog: ControlCatalogDependency) -> ListControlCa
     return ListControlCatalog(catalog)
 
 
+def get_control_crosswalk_query(crosswalk: ControlCrosswalkDependency) -> GetControlCrosswalk:
+    """Build the active control-crosswalk query."""
+    return GetControlCrosswalk(crosswalk)
+
+
 def get_evaluate_initiative_controls(
     session: DatabaseSession,
     catalog: ControlCatalogDependency,
@@ -576,6 +600,10 @@ ListControlCatalogDependency = Annotated[
 EvaluateInitiativeControlsDependency = Annotated[
     EvaluateInitiativeControls,
     Depends(get_evaluate_initiative_controls),
+]
+GetControlCrosswalkDependency = Annotated[
+    GetControlCrosswalk,
+    Depends(get_control_crosswalk_query),
 ]
 
 

@@ -1,4 +1,4 @@
-# ADR 0016 — Claims de grupos Entra e group overage
+# ADR 0016 - Claims de grupos Entra e group overage
 
 ## Status
 

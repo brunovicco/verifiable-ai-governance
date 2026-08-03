@@ -1,4 +1,4 @@
-# ADR 0001 — Monorepo e stack inicial
+# ADR 0001 - Monorepo e stack inicial
 
 - Status: aceito
 - Data: 2026-07-31
