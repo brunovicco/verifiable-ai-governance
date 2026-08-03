@@ -1,4 +1,4 @@
-# Never commit filled-in variables (holds the Basic Auth password) or local state.
+# Never commit filled-in variables or local state.
 terraform.tfvars
 *.tfvars.json
 .terraform/

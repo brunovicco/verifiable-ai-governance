@@ -80,15 +80,3 @@ variable "api_domain" {
   type        = string
   description = "Domínio público da API (ex: api.seudominio.com)"
 }
-
-variable "basic_auth_user" {
-  type        = string
-  default     = "demo"
-  description = "Usuário do Basic Auth temporário no Caddy (Opção A, antes do Entra ID entrar)"
-}
-
-variable "basic_auth_password" {
-  type        = string
-  sensitive   = true
-  description = "Senha do Basic Auth temporário — defina via terraform.tfvars ou TF_VAR_basic_auth_password"
-}

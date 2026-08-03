@@ -47,14 +47,12 @@ resource "oci_core_instance" "vai_demo" {
   metadata = {
     ssh_authorized_keys = file(var.ssh_public_key_path)
     user_data = base64encode(templatefile("${path.module}/cloud-init.sh.tpl", {
-      git_repo_url        = var.git_repo_url
-      postgres_password   = random_password.postgres.result
-      minio_password      = random_password.minio.result
-      audit_salt          = random_password.audit_salt.result
-      app_domain          = var.app_domain
-      api_domain          = var.api_domain
-      basic_auth_user     = var.basic_auth_user
-      basic_auth_password = var.basic_auth_password
+      git_repo_url      = var.git_repo_url
+      postgres_password = random_password.postgres.result
+      minio_password    = random_password.minio.result
+      audit_salt        = random_password.audit_salt.result
+      app_domain        = var.app_domain
+      api_domain        = var.api_domain
     }))
   }
 }

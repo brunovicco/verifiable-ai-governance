@@ -53,14 +53,12 @@ resource "google_compute_instance" "vai_demo" {
     # a chave de metadado "user-data" da mesma forma que AWS/OCI - o mesmo
     # cloud-init.sh.tpl usado no modulo OCI funciona aqui sem alteracoes.
     user-data = templatefile("${path.module}/cloud-init.sh.tpl", {
-      git_repo_url        = var.git_repo_url
-      postgres_password   = random_password.postgres.result
-      minio_password      = random_password.minio.result
-      audit_salt          = random_password.audit_salt.result
-      app_domain          = var.app_domain
-      api_domain          = var.api_domain
-      basic_auth_user     = var.basic_auth_user
-      basic_auth_password = var.basic_auth_password
+      git_repo_url      = var.git_repo_url
+      postgres_password = random_password.postgres.result
+      minio_password    = random_password.minio.result
+      audit_salt        = random_password.audit_salt.result
+      app_domain        = var.app_domain
+      api_domain        = var.api_domain
     })
   }
 }

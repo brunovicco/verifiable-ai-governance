@@ -26,5 +26,5 @@ output "audit_hash_salt" {
 }
 
 output "next_step" {
-  value = "Aponte ${var.app_domain} e ${var.api_domain} (DNS tipo A) para o IP acima. O cloud-init já instala Docker, sobe o docker compose e configura o Caddy com TLS automático + Basic Auth temporário."
+  value = "Aponte ${var.app_domain} e ${var.api_domain} (DNS tipo A) para o IP acima. O cloud-init já instala Docker, sobe o docker compose e configura o Caddy com TLS automático (demo pública somente leitura, sem credencial)."
 }
