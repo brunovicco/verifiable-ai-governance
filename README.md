@@ -2,6 +2,7 @@
 
 [Português](README.pt-BR.md)
 
+[![Release](https://img.shields.io/github/v/release/brunovicco/verifiable-ai-governance)](https://github.com/brunovicco/verifiable-ai-governance/releases/tag/v0.1.0)
 [![CI](https://github.com/brunovicco/verifiable-ai-governance/actions/workflows/ci.yml/badge.svg)](https://github.com/brunovicco/verifiable-ai-governance/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)
@@ -29,7 +30,8 @@ model/agent review.*
 
 A public, read-only demonstration is available at:
 
-**[https://vaigov-app.duckdns.org](https://vaigov-app.duckdns.org)**
+**[https://vaigov-app.duckdns.org](https://vaigov-app.duckdns.org)** — running
+[v0.1.0](https://github.com/brunovicco/verifiable-ai-governance/releases/tag/v0.1.0).
 
 The environment contains synthetic data. Anyone can browse in with a
 self-declared local identity (no real authentication yet); write operations,

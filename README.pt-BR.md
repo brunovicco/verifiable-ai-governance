@@ -2,6 +2,7 @@
 
 [English](README.md)
 
+[![Release](https://img.shields.io/github/v/release/brunovicco/verifiable-ai-governance)](https://github.com/brunovicco/verifiable-ai-governance/releases/tag/v0.1.0)
 [![CI](https://github.com/brunovicco/verifiable-ai-governance/actions/workflows/ci.yml/badge.svg)](https://github.com/brunovicco/verifiable-ai-governance/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)
@@ -29,7 +30,8 @@ modelo/agente de um sistema.*
 
 Uma demonstração pública e somente leitura está disponível em:
 
-**[https://vaigov-app.duckdns.org](https://vaigov-app.duckdns.org)**
+**[https://vaigov-app.duckdns.org](https://vaigov-app.duckdns.org)** — rodando a
+[v0.1.0](https://github.com/brunovicco/verifiable-ai-governance/releases/tag/v0.1.0).
 
 O ambiente contém dados sintéticos. Qualquer pessoa consegue navegar com uma
 identidade local autodeclarada (ainda sem autenticação real); operações de
