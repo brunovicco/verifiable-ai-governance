@@ -8,7 +8,7 @@ dependencies = [
   "alembic>=1.16.0,<2",
   "asyncpg>=0.30.0,<1",
   "boto3>=1.39.0,<2",
-  "fastapi>=0.139.2,<0.140",
+  "fastapi>=0.141.1,<0.142",
   "governance-schemas",
   "httpx>=0.28.1,<0.29",
   "policy-engine",
