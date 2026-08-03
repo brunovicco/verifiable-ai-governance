@@ -7,11 +7,13 @@ from ai_governance_api.domain.incidents import ExceptionStatus, IncidentStatus
 from ai_governance_api.models import (
     Agent,
     AISystem,
+    Assessment,
     Incident,
     Initiative,
     ModelAsset,
     ModelRoutingDecisionEntry,
     PolicyException,
+    ReviewSubmission,
 )
 from governance_schemas import (
     AutonomyLevel,
@@ -59,7 +61,7 @@ async def seed_dashboard_fixtures() -> None:
             risk_tier=RiskTier.HIGH,
             policy_id="governance-policy",
             policy_version="2026.08",
-            required_documents=[],
+            required_documents=["ai-impact-assessment", "ripd"],
         )
         ai_system = AISystem(
             id="dashboard-system",
@@ -153,6 +155,33 @@ async def seed_dashboard_fixtures() -> None:
             remediation_due_at=NOW - timedelta(days=1),
             version=2,
         )
+        assessment = Assessment(
+            id="dashboard-assessment",
+            initiative_id=initiative.id,
+            assessment_type="ai-impact-assessment",
+            schema_version="1.0",
+            status=EntityStatus.UNDER_REVIEW,
+            answers={},
+            risk_score=60,
+            risk_tier=RiskTier.HIGH,
+            assessed_by="dashboard-owner",
+        )
+        review_submission = ReviewSubmission(
+            id="dashboard-review-submission",
+            initiative_id=initiative.id,
+            review_round=1,
+            status=EntityStatus.APPROVED,
+            submitted_by="dashboard-owner",
+            submitted_at=NOW - timedelta(hours=48),
+            resolved_at=NOW - timedelta(hours=24),
+            revision_summary="Initial submission.",
+            policy_id="governance-policy",
+            policy_version="2026.08",
+            risk_score=60,
+            risk_tier=RiskTier.HIGH,
+            initiative_snapshot={},
+            assessment_snapshots=[],
+        )
         exception = PolicyException(
             id="dashboard-exception",
             incident_id=incident.id,
@@ -168,7 +197,17 @@ async def seed_dashboard_fixtures() -> None:
             decided_at=NOW,
         )
         session.add_all(
-            [initiative, ai_system, model, agent, routing_decision, incident, exception]
+            [
+                initiative,
+                ai_system,
+                model,
+                agent,
+                routing_decision,
+                incident,
+                assessment,
+                review_submission,
+                exception,
+            ]
         )
         await session.commit()
 
@@ -194,7 +233,19 @@ async def test_dashboard_aggregates_every_metric_source(client: AsyncClient) -> 
 
     assert body["exceptions_by_state"]["active"] == 1
 
+    assert body["residual_risk_by_tier"]["high"] == 1
+
+    assert body["assessment_coverage"]["required"] == 2
+    assert body["assessment_coverage"]["submitted"] == 1
+    assert body["assessment_coverage"]["ratio"] == 0.5
+
+    assert body["cycle_times"]["review_round_avg_hours"] == 24.0
+    assert body["cycle_times"]["review_round_samples"] == 1
+    assert body["cycle_times"]["incident_remediation_avg_hours"] is None
+    assert body["cycle_times"]["incident_remediation_samples"] == 0
+
     assert body["drift_available"] is False
+    assert body["control_effectiveness_available"] is False
 
 
 async def test_dashboard_requires_only_authentication_not_ownership(

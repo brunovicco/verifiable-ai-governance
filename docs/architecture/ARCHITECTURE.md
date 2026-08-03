@@ -289,6 +289,15 @@ nenhuma tabela de gasto observado existe. "Drift" é exibido como métrica
 explicitamente indisponível, pendente da integração ainda não construída com
 `ragforge`, em vez de omitida ou fabricada. Consulte o ADR 0023.
 
+O mesmo endpoint também agrega risco residual (`Assessment.risk_tier`, o valor
+informado na resposta estruturada e persistido na submissão), cobertura de avaliações
+estruturadas (interseção entre `required_documents` da iniciativa e os três valores
+conhecidos de `AssessmentKind`) e tempo médio de ciclo observado (rodadas de revisão e
+remediação de incidentes) — nunca como "% dentro do SLA", já que nenhum prazo-alvo é
+declarado nesta plataforma. Efetividade de controles recebe o mesmo tratamento de
+indisponibilidade explícita que "drift", porque o catálogo hoje só registra
+aplicabilidade estática, nunca verificação de evidência. Consulte o ADR 0024.
+
 ## Modelo lógico inicial
 
 ```mermaid

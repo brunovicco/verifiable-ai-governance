@@ -7,6 +7,7 @@ from typing import Protocol
 
 from governance_schemas import RiskTier
 
+from ai_governance_api.domain.assessments import AssessmentKind
 from ai_governance_api.domain.asset_registry import AssetReviewState, asset_review_state
 from ai_governance_api.domain.incidents import (
     ExceptionState,
@@ -57,6 +58,41 @@ class IncidentCounts:
 
 
 @dataclass(frozen=True, slots=True)
+class AssessmentCoverageRow:
+    """One non-draft initiative's required documents and submitted assessment kinds."""
+
+    required_documents: tuple[str, ...]
+    submitted_kinds: frozenset[str]
+
+
+@dataclass(frozen=True, slots=True)
+class AssessmentCoverage:
+    """Aggregated coverage of structured assessments across the portfolio."""
+
+    required: int
+    submitted: int
+    ratio: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class CycleTimeSamples:
+    """Raw observed durations, in hours, for review rounds and incident remediation."""
+
+    review_round_hours: tuple[float, ...]
+    incident_remediation_hours: tuple[float, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class CycleTimes:
+    """Aggregated average cycle times and how many observations back each average."""
+
+    review_round_avg_hours: float | None
+    review_round_samples: int
+    incident_remediation_avg_hours: float | None
+    incident_remediation_samples: int
+
+
+@dataclass(frozen=True, slots=True)
 class DashboardSnapshot:
     """Portfolio-wide governance monitoring snapshot."""
 
@@ -65,7 +101,11 @@ class DashboardSnapshot:
     review_status_by_risk_tier: dict[RiskTier, dict[AssetReviewState, int]]
     incidents: IncidentCounts
     exceptions_by_state: dict[ExceptionState, int]
+    residual_risk_by_tier: dict[RiskTier, int]
+    assessment_coverage: AssessmentCoverage
+    cycle_times: CycleTimes
     drift_available: bool
+    control_effectiveness_available: bool
 
 
 class DashboardStore(Protocol):
@@ -85,6 +125,18 @@ class DashboardStore(Protocol):
 
     async def list_exception_rows(self) -> list[ExceptionRow]:
         """Return every policy exception's status and expiry."""
+        ...
+
+    async def list_residual_risk_values(self) -> list[RiskTier]:
+        """Return one residual-risk tier per submitted structured assessment."""
+        ...
+
+    async def list_assessment_coverage_rows(self) -> list[AssessmentCoverageRow]:
+        """Return required and submitted assessment facts for every triaged initiative."""
+        ...
+
+    async def list_cycle_time_samples(self) -> CycleTimeSamples:
+        """Return raw observed review-round and incident-remediation durations."""
         ...
 
 
@@ -124,11 +176,49 @@ class BuildDashboardSnapshot:
             )
             exceptions_by_state[exception_state] += 1
 
+        residual_risk_values = await self._store.list_residual_risk_values()
+        residual_risk_by_tier: dict[RiskTier, int] = dict.fromkeys(RiskTier, 0)
+        for tier in residual_risk_values:
+            residual_risk_by_tier[tier] += 1
+
+        coverage_rows = await self._store.list_assessment_coverage_rows()
+        structured_kinds = frozenset(kind.value for kind in AssessmentKind)
+        required_total = 0
+        submitted_total = 0
+        for coverage_row in coverage_rows:
+            required_kinds = set(coverage_row.required_documents) & structured_kinds
+            required_total += len(required_kinds)
+            submitted_total += len(required_kinds & coverage_row.submitted_kinds)
+        assessment_coverage = AssessmentCoverage(
+            required=required_total,
+            submitted=submitted_total,
+            ratio=(submitted_total / required_total) if required_total else None,
+        )
+
+        cycle_time_samples = await self._store.list_cycle_time_samples()
+        cycle_times = CycleTimes(
+            review_round_avg_hours=_average(cycle_time_samples.review_round_hours),
+            review_round_samples=len(cycle_time_samples.review_round_hours),
+            incident_remediation_avg_hours=_average(
+                cycle_time_samples.incident_remediation_hours
+            ),
+            incident_remediation_samples=len(cycle_time_samples.incident_remediation_hours),
+        )
+
         return DashboardSnapshot(
             generated_at=now,
             routing_outcomes=routing_outcomes,
             review_status_by_risk_tier=review_status,
             incidents=incidents,
             exceptions_by_state=exceptions_by_state,
+            residual_risk_by_tier=residual_risk_by_tier,
+            assessment_coverage=assessment_coverage,
+            cycle_times=cycle_times,
             drift_available=False,
+            control_effectiveness_available=False,
         )
+
+
+def _average(values: tuple[float, ...]) -> float | None:
+    """Return the arithmetic mean, or None when there is no observation yet."""
+    return sum(values) / len(values) if values else None
