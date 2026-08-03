@@ -10,7 +10,7 @@ COPY packages/governance-schemas/src packages/governance-schemas/src
 COPY packages/policy-engine/src packages/policy-engine/src
 RUN uv sync --frozen --package ai-governance-api --no-dev --no-editable
 
-FROM python:3.12-slim-bookworm
+FROM python:3.14-slim-bookworm
 WORKDIR /workspace
 RUN addgroup --system governance && adduser --system --ingroup governance governance
 COPY --from=builder /workspace/.venv /workspace/.venv
