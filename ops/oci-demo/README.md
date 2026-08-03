@@ -111,11 +111,25 @@ apply/destroy fica auditável no próprio Console.
 - **Cota Always Free**: `instance_ocpus`/`instance_memory_gb` default para
   2/12, refletindo o corte de junho/2026. Se sua conta ainda mostrar 4 OCPU/24
   GB disponíveis, ajuste as variáveis livremente.
+- **Ref fixo (`git_ref`)**: o cloud-init clona com `git fetch --depth 1 origin
+  "$GIT_REF" && git checkout --detach FETCH_HEAD`, não um `git clone` simples
+  — duas execuções do mesmo `terraform apply` (com o mesmo `git_ref`) sempre
+  instalam o mesmo commit. O default de `git_ref` é `main`; passe uma tag ou
+  SHA em `terraform.tfvars` para um deploy reprodutível. O SHA curto
+  efetivamente resolvido aparece no rodapé do portal (`NEXT_PUBLIC_GIT_SHA`).
 - **Idempotência do cloud-init**: o script roda uma única vez no primeiro
   boot. Para reaplicar mudanças de app (nova versão do repo, etc.), entre via
-  SSH e rode `git pull && docker compose up --build -d` manualmente, ou
-  destrua e reaplique a instância (`terraform taint oci_core_instance.vai_demo`
-  seguido de `terraform apply`) para reprovisionar do zero.
+  SSH e rode `git fetch --depth 1 origin <ref> && git checkout --detach
+  FETCH_HEAD && docker compose up --build -d` manualmente (o HEAD fica
+  desanexado, então `git pull` sozinho não funciona), ou destrua e reaplique a
+  instância (`terraform taint oci_core_instance.vai_demo` seguido de
+  `terraform apply`) para reprovisionar do zero.
+- **Swagger/OpenAPI públicos**: `/docs`, `/redoc` e `/openapi.json` da API
+  ficam acessíveis publicamente na demo (são `GET`, não bloqueados pelo
+  matcher `@write` do Caddy). Isso é intencional — mostram a qualidade da API
+  para quem está avaliando o projeto — e não uma omissão; se preferir
+  esconder, adicione um matcher de caminho (`/docs*`, `/redoc*`,
+  `/openapi.json`) respondendo `404` no site do `$API_DOMAIN`.
 - **Dados de exemplo**: como o cloud-init só roda no primeiro boot, a
   semeadura também só acontece nesse momento — reprovisionar do zero (item
   acima) gera um Postgres novo e semeia de novo automaticamente, mas um

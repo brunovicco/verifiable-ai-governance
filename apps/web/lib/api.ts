@@ -18,6 +18,7 @@ import type {
   ReviewSubmission,
 } from "@/lib/types";
 import { applyRequestAuthentication } from "@/lib/auth/request";
+import { isDemoReadOnly, isWriteMethod } from "@/lib/demo";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 export const DEMO_REQUESTER: Identity = { userId: "demo.requester" };
@@ -36,6 +37,9 @@ async function request<T>(
   options: RequestInit = {},
   identity: Identity = DEMO_REQUESTER,
 ): Promise<T> {
+  if (isDemoReadOnly() && isWriteMethod(options.method)) {
+    throw new ApiError("Demo pública somente leitura — esta ação está desabilitada.", 403);
+  }
   const headers = new Headers(options.headers);
   if (!(options.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");

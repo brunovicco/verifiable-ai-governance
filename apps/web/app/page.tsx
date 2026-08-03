@@ -7,6 +7,7 @@ import { Icon } from "@/components/ui/Icon";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { listInitiatives } from "@/lib/api";
+import { isDemoReadOnly } from "@/lib/demo";
 import type { Initiative } from "@/lib/types";
 
 const ALL = "all";
@@ -40,7 +41,7 @@ export default function PortfolioPage() {
 
   return (
     <div className="vg-page">
-      <PageHeader eyebrow="Portfólio de IA" title="Visão consolidada das iniciativas" description={<p>Gerencie propostas, acompanhe risco, aprovações e operação em um inventário verificável.</p>} actions={<Link className="vg-button vg-button--primary" href="/initiatives/new"><Icon name="plus" size={17} />Nova iniciativa</Link>} />
+      <PageHeader eyebrow="Portfólio de IA" title="Visão consolidada das iniciativas" description={<p>Gerencie propostas, acompanhe risco, aprovações e operação em um inventário verificável.</p>} actions={isDemoReadOnly() ? undefined : <Link className="vg-button vg-button--primary" href="/initiatives/new"><Icon name="plus" size={17} />Nova iniciativa</Link>} />
 
       <section aria-label="Resumo do portfólio" className="vg-kpi-grid">
         <KpiCard helper="Todas as iniciativas registradas" icon="portfolio" label="Total" value={summary.total} />

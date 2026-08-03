@@ -1,9 +1,10 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 exec > >(tee /var/log/vai-cloud-init.log) 2>&1
 
 APP_DIR=/opt/vai-governance
 GIT_REPO_URL="${git_repo_url}"
+GIT_REF="${git_ref}"
 POSTGRES_PASSWORD="${postgres_password}"
 MINIO_PASSWORD="${minio_password}"
 AUDIT_SALT="${audit_salt}"
@@ -41,9 +42,12 @@ apt-get update -y
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 usermod -aG docker ubuntu
 
-# --- 5. Clonar o projeto ---
-git clone "$GIT_REPO_URL" "$APP_DIR"
+# --- 5. Clonar o projeto (ref fixo, nao o HEAD do branch a cada boot) ---
+git clone --no-checkout "$GIT_REPO_URL" "$APP_DIR"
 cd "$APP_DIR"
+git fetch --depth 1 origin "$GIT_REF"
+git checkout --detach FETCH_HEAD
+GIT_SHA="$(git rev-parse --short HEAD)"
 cp .env.example .env
 
 # Ajusta as variaveis criticas do .env (mantendo o restante do exemplo)
@@ -56,6 +60,9 @@ sed -i "s|^AUDIT_HASH_SALT=.*|AUDIT_HASH_SALT=$AUDIT_SALT|" .env || echo "AUDIT_
   echo "APP_ENV=local"
   echo "OIDC_ENABLED=false"
   echo "NEXT_PUBLIC_AUTH_MODE=local"
+  echo "NEXT_PUBLIC_DEMO_READ_ONLY=true"
+  echo "NEXT_PUBLIC_DEPLOYMENT_LABEL=Demo pública — GCP"
+  echo "NEXT_PUBLIC_GIT_SHA=$GIT_SHA"
 } >> .env
 
 # --- 6. Override de producao: restart policy + bind em loopback ---
@@ -112,10 +119,24 @@ apt-get install -y caddy
 # de chegarem ao backend, mantendo a demo navegavel mas somente leitura.
 cat > /etc/caddy/Caddyfile <<CADDY_EOF
 $APP_DOMAIN {
+    header {
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        X-Frame-Options "DENY"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    }
     reverse_proxy 127.0.0.1:3000
 }
 
 $API_DOMAIN {
+    header {
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        X-Frame-Options "DENY"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    }
     @write {
         not method GET HEAD OPTIONS
     }
