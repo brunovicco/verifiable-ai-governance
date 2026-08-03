@@ -33,7 +33,7 @@
 - [ ] Contratos de evidência inspirados em `engineering-loop-schemas`.
 - [ ] Registro de execução isolada do `alicerce`.
 - [ ] Importação de avaliações e regressões do `ragforge`.
-- [ ] Dashboard de violações, blocked actions, drift, custo e revisões vencidas.
+- [x] Dashboard de violações, blocked actions, drift (indisponível), custo (limites) e revisões vencidas.
 - [x] Incidentes, kill switch, exceções temporárias e plano de remediação.
 
 ## P2 — Escala e portfólio

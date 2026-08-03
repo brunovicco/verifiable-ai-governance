@@ -218,6 +218,31 @@ export interface Identity {
   areas?: string[];
 }
 
+export interface DashboardRoutingOutcomes {
+  allowed: number;
+  blocked: number;
+  dependency_unavailable: number;
+  top_blocked_reason_codes: [string, number][];
+  cost_limit_exceeded: number;
+}
+
+export interface DashboardIncidentCounts {
+  open: number;
+  contained: number;
+  remediating: number;
+  closed: number;
+  overdue_remediation: number;
+}
+
+export interface Dashboard {
+  generated_at: string;
+  routing_outcomes: DashboardRoutingOutcomes;
+  review_status_by_risk_tier: Record<string, Record<string, number>>;
+  incidents: DashboardIncidentCounts;
+  exceptions_by_state: Record<string, number>;
+  drift_available: boolean;
+}
+
 export type IncidentStatus = "open" | "contained" | "remediating" | "closed";
 export type ExceptionStatus = "pending" | "approved" | "rejected" | "revoked";
 export type ExceptionState = "pending" | "active" | "expired" | "rejected" | "revoked";

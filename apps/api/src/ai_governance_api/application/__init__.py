@@ -31,6 +31,7 @@ from ai_governance_api.application.corporate_directory import (
     CorporateDirectoryUnavailable,
     ResolveCorporateDirectory,
 )
+from ai_governance_api.application.dashboard import BuildDashboardSnapshot, DashboardStore
 from ai_governance_api.application.directory_access import (
     BlockDirectoryAccess,
     DirectoryAccessAuditPort,
@@ -103,6 +104,8 @@ __all__ = [
     "CorporateDirectoryUnavailable",
     "CacheResolvedDirectoryAuthorization",
     "BlockDirectoryAccess",
+    "BuildDashboardSnapshot",
+    "DashboardStore",
     "DirectoryAccessAuditPort",
     "DirectoryAccessCacheInvalidationPort",
     "DirectoryAccessReaderPort",

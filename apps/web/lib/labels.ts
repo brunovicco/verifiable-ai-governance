@@ -57,6 +57,11 @@ const LABELS: Record<string, string> = {
   remediating: "Em remediação",
   closed: "Encerrado",
   revoked: "Revogada",
+  allowed: "Permitido",
+  blocked: "Bloqueado",
+  dependency_unavailable: "Indisponível",
+  not_reviewed: "Não revisado",
+  current: "Vigente",
 };
 
 export function label(value: string): string {

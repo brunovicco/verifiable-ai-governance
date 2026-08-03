@@ -152,6 +152,7 @@ def test_policy_model_router_requires_explicit_per_agent_credentials() -> None:
         "application/evidence.py",
         "application/model_routing.py",
         "application/incidents.py",
+        "application/dashboard.py",
     ],
 )
 def test_application_core_does_not_import_delivery_or_persistence_frameworks(

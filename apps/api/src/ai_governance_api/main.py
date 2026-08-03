@@ -21,6 +21,7 @@ from ai_governance_api.models import Base
 from ai_governance_api.routers.assessments import router as assessments_router
 from ai_governance_api.routers.authentication import router as authentication_router
 from ai_governance_api.routers.controls import router as controls_router
+from ai_governance_api.routers.dashboard import router as dashboard_router
 from ai_governance_api.routers.evidence import router as evidence_router
 from ai_governance_api.routers.health import router as health_router
 from ai_governance_api.routers.incidents import router as incidents_router
@@ -158,6 +159,7 @@ def create_app() -> FastAPI:
     app.include_router(inventory_router)
     app.include_router(model_routing_router)
     app.include_router(incidents_router)
+    app.include_router(dashboard_router)
 
     @app.exception_handler(ApplicationError)
     async def handle_application_error(
