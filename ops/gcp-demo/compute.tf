@@ -18,6 +18,14 @@ resource "random_password" "audit_salt" {
   special = false
 }
 
+# Service account dedicada para a instancia da demo, sem papeis de projeto
+# adicionais -- so o escopo minimo de logging, para nao depender da service
+# account default (com escopo de projeto amplo) do Compute Engine.
+resource "google_service_account" "demo" {
+  account_id   = "vai-governance-demo"
+  display_name = "Verifiable AI Governance - demo instance"
+}
+
 # IP externo estatico -- opcional, evita que o IP mude se a instancia for
 # recriada. Se preferir o IP efemero padrao, defina use_static_ip = false.
 resource "google_compute_address" "static" {
@@ -47,6 +55,11 @@ resource "google_compute_instance" "vai_demo" {
     }
   }
 
+  service_account {
+    email  = google_service_account.demo.email
+    scopes = ["https://www.googleapis.com/auth/logging.write"]
+  }
+
   metadata = {
     ssh-keys = "${var.ssh_username}:${file(var.ssh_public_key_path)}"
     # A imagem Canonical do GCP roda cloud-init com o datasource GCE, que le
@@ -54,6 +67,7 @@ resource "google_compute_instance" "vai_demo" {
     # cloud-init.sh.tpl usado no modulo OCI funciona aqui sem alteracoes.
     user-data = templatefile("${path.module}/cloud-init.sh.tpl", {
       git_repo_url      = var.git_repo_url
+      git_ref           = var.git_ref
       postgres_password = random_password.postgres.result
       minio_password    = random_password.minio.result
       audit_salt        = random_password.audit_salt.result

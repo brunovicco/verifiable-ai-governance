@@ -61,6 +61,12 @@ variable "git_repo_url" {
   default = "https://github.com/brunovicco/verifiable-ai-governance.git"
 }
 
+variable "git_ref" {
+  type        = string
+  description = "Tag, branch ou commit SHA a implantar (default: HEAD do branch main). Fixe em uma tag/SHA para deploys reproduziveis."
+  default     = "main"
+}
+
 variable "app_domain" {
   type        = string
   description = "Dominio publico do portal (ex: app.seudominio.com). Aponte o DNS para o IP de saida deste apply antes de usar."

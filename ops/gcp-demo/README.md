@@ -104,11 +104,25 @@ borda.
   `audit_hash_salt` ficam no `terraform.tfstate` em texto plano
   (comportamento padrao do provider `random`). Nao versione o state em um
   repositorio publico.
+- **Ref fixo (`git_ref`)**: o cloud-init clona com `git fetch --depth 1 origin
+  "$GIT_REF" && git checkout --detach FETCH_HEAD`, nao um `git clone` simples
+  — duas execucoes do mesmo `terraform apply` (com o mesmo `git_ref`) sempre
+  instalam o mesmo commit. O default de `git_ref` e `main`; passe uma tag ou
+  SHA em `terraform.tfvars` para um deploy reprodutivel. O SHA curto
+  efetivamente resolvido aparece no rodape do portal (`NEXT_PUBLIC_GIT_SHA`).
 - **Idempotencia do cloud-init**: o script roda uma unica vez no primeiro
   boot. Para reaplicar mudancas de app, entre via SSH e rode
-  `git pull && docker compose up --build -d` manualmente, ou destrua e
-  reaplique a instancia (`terraform taint google_compute_instance.vai_demo`
-  seguido de `terraform apply`) para reprovisionar do zero.
+  `git fetch --depth 1 origin <ref> && git checkout --detach FETCH_HEAD &&
+  docker compose up --build -d` manualmente (o HEAD fica desanexado, entao
+  `git pull` sozinho nao funciona), ou destrua e reaplique a instancia
+  (`terraform taint google_compute_instance.vai_demo` seguido de
+  `terraform apply`) para reprovisionar do zero.
+- **Swagger/OpenAPI publicos**: `/docs`, `/redoc` e `/openapi.json` da API
+  ficam acessiveis publicamente na demo (sao `GET`, nao bloqueados pelo
+  matcher `@write` do Caddy). Isso e intencional — mostram a qualidade da API
+  para quem esta avaliando o projeto — e nao uma omissao; se preferir
+  esconder, adicione um matcher de caminho (`/docs*`, `/redoc*`,
+  `/openapi.json`) respondendo `404` no site do `$API_DOMAIN`.
 - **Dados de exemplo**: como o cloud-init so roda no primeiro boot, a
   semeadura tambem so acontece nesse momento — reprovisionar do zero (item
   acima) gera um Postgres novo e semeia de novo automaticamente, mas um
