@@ -19,6 +19,12 @@ manuais desconectados da operação.
 > **Maturidade:** implementação funcional e orientada à produção. Algumas integrações
 > corporativas ainda precisam ser validadas em ambiente organizacional real.
 
+![Tour pelo painel: portfólio, monitoramento operacional, uma iniciativa de risco crítico com sua composição de risco e controles, e a revisão de modelo/agente de um sistema](docs/assets/dashboard-demo.gif)
+
+*Dados de exemplo (`make seed-demo`) — portfólio, monitoramento operacional,
+controles e gates de aprovação de uma iniciativa crítica, e a revisão de
+modelo/agente de um sistema.*
+
 ## O problema
 
 Iniciativas de IA frequentemente começam em documentos, tickets, planilhas e conversas.

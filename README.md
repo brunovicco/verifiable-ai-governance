@@ -19,6 +19,12 @@ files and manual checklists.
 > **Maturity:** functional, production-oriented reference implementation. Selected
 > enterprise integrations still require validation in a real organizational environment.
 
+![Portal walkthrough: portfolio, operational dashboard, a critical-risk initiative with its risk breakdown and controls, and a system's model/agent review](docs/assets/dashboard-demo.gif)
+
+*Sample data from `make seed-demo` — portfolio, operational dashboard, a
+critical-risk initiative's controls and approval gates, and a system's
+model/agent review.*
+
 ## The problem
 
 AI initiatives often begin across documents, tickets, spreadsheets and conversations.
