@@ -80,10 +80,10 @@ DEMO_PREFIX = "[DEMO] "
 POLICY_EVALUATOR = GovernancePolicyEngine()
 ADMIN = Principal(user_id="admin.governanca@demo.local", is_admin=True)
 
-
-def _owner(slug: str) -> Principal:
-    """Return a distinct owner principal for one demo initiative."""
-    return Principal(user_id=f"owner.{slug}@demo.local")
+# Matches apps/web/lib/api.ts's hardcoded DEMO_REQUESTER identity, so the portal's
+# local demo user (which cannot become an admin in dev mode -- is_admin only comes
+# from an OIDC claim) can own, and therefore browse, every seeded case without a 403.
+DEMO_REQUESTER = Principal(user_id="demo.requester")
 
 
 def _reviewer(area: ApprovalArea) -> Principal:
@@ -524,7 +524,7 @@ def _international_processing(
 
 async def seed_case_01() -> None:
     """Caso 1: rascunho nunca submetido, avaliação de impacto ainda em andamento."""
-    owner = _owner("triagem-ti")
+    owner = DEMO_REQUESTER
     initiative = await _create_initiative(
         InitiativeCreate(
             name=f"{DEMO_PREFIX}Assistente de triagem de tickets de TI",
@@ -554,7 +554,7 @@ async def seed_case_01() -> None:
 
 async def seed_case_02() -> None:
     """Caso 2: primeira rodada em revisão, gate de negócio ainda pendente."""
-    owner = _owner("resumos-reunioes")
+    owner = DEMO_REQUESTER
     initiative = await _create_initiative(
         InitiativeCreate(
             name=f"{DEMO_PREFIX}Gerador de resumos de reuniões",
@@ -591,7 +591,7 @@ async def seed_case_02() -> None:
 
 async def seed_case_03() -> None:
     """Caso 3: mudanças solicitadas por Privacidade, reabrindo os assessments."""
-    owner = _owner("treinamento")
+    owner = DEMO_REQUESTER
     initiative = await _create_initiative(
         InitiativeCreate(
             name=f"{DEMO_PREFIX}Recomendador de conteúdo de treinamento",
@@ -638,7 +638,7 @@ async def seed_case_03() -> None:
 
 async def seed_case_04() -> None:
     """Caso 4: segunda rodada em revisão, exercitando revise() e resubmit()."""
-    owner = _owner("notas-fiscais")
+    owner = DEMO_REQUESTER
     initiative = await _create_initiative(
         InitiativeCreate(
             name=f"{DEMO_PREFIX}Extrator de dados de notas fiscais",
@@ -702,7 +702,7 @@ async def seed_case_04() -> None:
 
 async def seed_case_05() -> None:
     """Caso 5: rejeitado por Compliance, encerrando os demais gates pendentes."""
-    owner = _owner("compliance-contratos")
+    owner = DEMO_REQUESTER
     initiative = await _create_initiative(
         InitiativeCreate(
             name=f"{DEMO_PREFIX}Verificador automático de compliance de contratos",
@@ -762,7 +762,7 @@ async def seed_case_05() -> None:
 
 async def seed_case_06() -> None:
     """Caso 6: aprovado por sete revisores independentes; sistema de IA criado."""
-    owner = _owner("precificacao")
+    owner = DEMO_REQUESTER
     initiative = await _create_initiative(
         InitiativeCreate(
             name=f"{DEMO_PREFIX}Painel de precificação dinâmica orientado por IA",
@@ -811,7 +811,7 @@ async def seed_case_06() -> None:
 
 async def seed_case_07() -> None:
     """Caso 7: crítico, aprovado, com sistema ativo, modelo e agente aprovados."""
-    owner = _owner("atendimento-financeiro")
+    owner = DEMO_REQUESTER
     countries = ("Brasil", "Estados Unidos")
     initiative = await _create_initiative(
         InitiativeCreate(
@@ -944,7 +944,7 @@ async def seed_case_07() -> None:
 
 async def seed_case_08() -> None:
     """Caso 8: aprovado, ativado e então aposentado."""
-    owner = _owner("legado-produtos")
+    owner = DEMO_REQUESTER
     initiative = await _create_initiative(
         InitiativeCreate(
             name=f"{DEMO_PREFIX}Sistema legado de recomendação de produtos (descontinuado)",
@@ -994,7 +994,7 @@ async def seed_case_08() -> None:
 
 async def seed_case_09() -> None:
     """Caso 9: mudanças solicitadas por Jurídico, reabrindo os três assessments."""
-    owner = _owner("juridico-internacional")
+    owner = DEMO_REQUESTER
     countries = ("Portugal",)
     initiative = await _create_initiative(
         InitiativeCreate(
@@ -1055,7 +1055,7 @@ async def seed_case_09() -> None:
 
 async def seed_case_10() -> None:
     """Caso 10: aprovado por um único administrador; modelo registrado sem revisão."""
-    owner = _owner("busca-semantica")
+    owner = DEMO_REQUESTER
     initiative = await _create_initiative(
         InitiativeCreate(
             name=f"{DEMO_PREFIX}Motor de busca semântica de currículos com modelo próprio (RAG)",
