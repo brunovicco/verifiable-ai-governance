@@ -61,11 +61,14 @@ sed -i "s|^AUDIT_HASH_SALT=.*|AUDIT_HASH_SALT=$AUDIT_SALT|" .env || echo "AUDIT_
 } >> .env
 
 # --- 6. Override de producao: restart policy + bind em loopback ---
+# ports usa a tag "!override" (nao lista simples): o Compose concatena listas de
+# 'ports:' entre arquivos -f, entao sem essa tag o bind duplicado (0.0.0.0 do
+# compose base + 127.0.0.1 daqui) falha com "address already in use".
 cat > docker-compose.override.yml <<'OVERRIDE_EOF'
 services:
   postgres:
     restart: unless-stopped
-    ports:
+    ports: !override
       - "127.0.0.1:5432:5432"
   object-storage:
     restart: unless-stopped
@@ -73,11 +76,11 @@ services:
     restart: unless-stopped
   api:
     restart: unless-stopped
-    ports:
+    ports: !override
       - "127.0.0.1:8000:8000"
   web:
     restart: unless-stopped
-    ports:
+    ports: !override
       - "127.0.0.1:3000:3000"
 OVERRIDE_EOF
 
