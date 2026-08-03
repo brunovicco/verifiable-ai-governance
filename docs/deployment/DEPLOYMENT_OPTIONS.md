@@ -37,6 +37,11 @@ Regardless of platform:
 - ClamAV;
 - optional local OIDC provider.
 
+Reference implementation for a publicly reachable demo (not local-only): a
+Terraform module provisioning this Compose stack on an OCI Always Free
+Ampere A1 instance, with Caddy for automatic TLS and temporary Basic Auth
+ahead of an Entra ID migration - see `ops/oci-demo/`.
+
 ### Limitations
 
 Compose is not the default production recommendation for high availability, managed
