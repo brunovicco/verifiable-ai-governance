@@ -1,26 +1,27 @@
-# Configuração do Microsoft Entra ID para o portal
+# Microsoft Entra ID setup for the portal
 
-## Escopo
+## Scope
 
-Este runbook configura o login interativo do portal e a emissão de access token para a
-API. Microsoft Graph, OBO, grupos transitivos e `department` são configurados
-separadamente em `MICROSOFT_GRAPH_OBO_SETUP.md`.
+This runbook configures interactive portal sign-in and access token issuance for the
+API. Microsoft Graph, OBO, transitive groups and `department` are configured
+separately in `MICROSOFT_GRAPH_OBO_SETUP.md`.
 
-Use duas app registrations. O portal é um public client SPA sem segredo. A API é um
-resource server separado e continua validando cada token.
+Use two app registrations. The portal is a public client SPA with no secret. The API
+is a separate resource server and keeps validating every token itself.
 
-## 1. App registration da API
+## 1. API app registration
 
-1. Criar uma registration single-tenant para a API de governança.
-2. Em **Expose an API**, definir um Application ID URI aprovado pela organização.
-3. Expor um scope delegado, por exemplo `access_as_user`.
-4. Registrar os owners de IAM e da plataforma.
-5. Confirmar que os access tokens são v2 e anotar client ID, tenant ID, issuer,
-   audience e endpoint JWKS a partir do metadata oficial do tenant.
-6. Em **Token configuration**, adicionar o claim opcional `acct` ao access token da
-   API. O valor `0` classifica membro e `1` classifica guest.
+1. Create a single-tenant registration for the governance API.
+2. Under **Expose an API**, define an Application ID URI approved by the
+   organization.
+3. Expose a delegated scope, e.g. `access_as_user`.
+4. Register the IAM and platform owners.
+5. Confirm access tokens are v2 and note down the client ID, tenant ID, issuer,
+   audience and JWKS endpoint from the tenant's official metadata.
+6. Under **Token configuration**, add the optional `acct` claim to the API's access
+   token. Value `0` classifies a member and `1` classifies a guest.
 
-Configuração de referência da API:
+Reference API configuration:
 
 ```dotenv
 APP_ENV=production
@@ -35,24 +36,26 @@ OIDC_ALLOWED_TENANT_IDS=<tenant-id>
 OIDC_GUEST_APPROVALS_ENABLED=false
 ```
 
-Não derive issuer, audience ou JWKS de claims recebidos. Confirme os valores no
-documento `openid-configuration` do tenant antes do deploy. O modo Entra aceita somente
-issuer v2 tenant-specific do Azure público e exige que o mesmo UUID esteja na allowlist.
+Do not derive issuer, audience or JWKS from received claims. Confirm the values
+against the tenant's `openid-configuration` document before deploying. Entra mode
+only accepts a tenant-specific v2 issuer from public Azure and requires the same UUID
+to be on the allowlist.
 
-## 2. App registration do portal
+## 2. Portal app registration
 
-1. Criar uma registration single-tenant separada.
-2. Em **Authentication**, adicionar plataforma **Single-page application**.
-3. Registrar redirect URIs exatas, por exemplo `http://localhost:3000` para
-   desenvolvimento e a origem HTTPS corporativa para produção.
-4. Não criar client secret para o portal.
-5. Em **API permissions**, adicionar o scope delegado da API.
-6. Aplicar consentimento administrativo quando a política organizacional exigir.
-7. Desabilitar fluxos implícitos de access token e ID token.
+1. Create a separate single-tenant registration.
+2. Under **Authentication**, add the **Single-page application** platform.
+3. Register exact redirect URIs, e.g. `http://localhost:3000` for development and the
+   corporate HTTPS origin for production.
+4. Do not create a client secret for the portal.
+5. Under **API permissions**, add the API's delegated scope.
+6. Apply admin consent when organizational policy requires it.
+7. Disable implicit access token and ID token flows.
 
-## 3. Build do portal
+## 3. Portal build
 
-As configurações são públicas e incorporadas ao bundle. Elas não devem conter segredo:
+These settings are public and embedded in the bundle. They must not contain
+secrets:
 
 ```dotenv
 NEXT_PUBLIC_AUTH_MODE=entra
@@ -62,17 +65,18 @@ NEXT_PUBLIC_ENTRA_API_SCOPE=api://<api-client-id>/access_as_user
 NEXT_PUBLIC_API_URL=https://api-governance.example.com
 ```
 
-IDs precisam ser UUIDs explícitos e o scope precisa começar com `api://` ou `https://`.
-Configuração ausente ou inválida interrompe o build. Alterações exigem rebuild; trocar
-somente variáveis no container já construído não altera os valores `NEXT_PUBLIC_*`.
+IDs must be explicit UUIDs and the scope must start with `api://` or `https://`.
+Missing or invalid configuration stops the build. Changes require a rebuild; only
+swapping environment variables in an already-built container does not change the
+`NEXT_PUBLIC_*` values.
 
-O CORS da API deve aceitar apenas a origem exata do portal. Como o portal usa bearer
-token e `credentials: omit`, cookies não são necessários nessa integração.
+The API's CORS must accept only the portal's exact origin. Since the portal uses a
+bearer token and `credentials: omit`, cookies are not needed in this integration.
 
-## 4. App Roles e catálogo de autorização
+## 4. App Roles and authorization catalog
 
-Em modo Entra, App Roles não viram áreas de aprovação diretamente. Configure o claim
-dedicado e publique um mapping tenant-specific no catálogo governado:
+In Entra mode, App Roles do not become approval areas directly. Configure the
+dedicated claim and publish a tenant-specific mapping in the governed catalog:
 
 ```dotenv
 OIDC_ENTRA_APP_ROLES_CLAIM=roles
@@ -80,59 +84,60 @@ OIDC_ENTRA_GROUPS_CLAIM=groups
 DIRECTORY_AUTHORIZATION_CATALOG_PATH=/run/governance/entra-authorization.yaml
 ```
 
-O catálogo liga o valor exato da App Role ou object ID do grupo a `ApprovalArea` e
-registra ID, versão e owner do mapping. Consulte
-`DIRECTORY_AUTHORIZATION_CATALOG.md`. `department`, e-mail, nome exibido ou texto de
-grupo nunca concedem autorização. Guest perde áreas de aprovação e administração por
-padrão. Se `acct` estiver ausente ou for inválido, a conta será classificada como
-`unknown` e também não receberá capacidades. Habilitar
-`OIDC_GUEST_APPROVALS_ENABLED=true` exige decisão formal de risco; essa opção não
-concede nada a contas `unknown` nem concede administração a guest.
+The catalog links the exact App Role value or group object ID to an `ApprovalArea`
+and records the mapping's ID, version and owner. See
+`DIRECTORY_AUTHORIZATION_CATALOG.md`. `department`, email, display name or group text
+never grant authorization. Guests lose approval and admin areas by default. If
+`acct` is missing or invalid, the account is classified as `unknown` and also
+receives no capabilities. Enabling `OIDC_GUEST_APPROVALS_ENABLED=true` requires a
+formal risk decision; this option grants nothing to `unknown` accounts and does not
+grant admin to a guest.
 
-O claim `groups` deve conter somente object IDs UUID. A API aceita no máximo 200 itens,
-o limite documentado para JWT. A presença de `hasgroups=true` ou de
-`_claim_names.groups` marca overage: qualquer lista parcial é descartada e, quando o
-Graph está habilitado, as associações transitivas resolvidas por OBO prevalecem. A API
-nunca lê nem segue endpoints presentes em `_claim_sources`.
+The `groups` claim must contain only UUID object IDs. The API accepts at most 200
+items, the documented JWT limit. The presence of `hasgroups=true` or
+`_claim_names.groups` marks overage: any partial list is discarded, and when Graph is
+enabled, the transitive memberships resolved via OBO take precedence. The API never
+reads or follows endpoints present in `_claim_sources`.
 
-## 5. Validação
+## 5. Validation
 
-Executar em ambiente não produtivo:
+Run in a non-production environment:
 
-1. acessar o portal e confirmar redirect tenant-specific;
-2. concluir MFA/Conditional Access quando exigido;
-3. verificar que `/api/v1/auth/me` responde com `tenant_id`, `object_id`,
-   `account_type` e a chave composta em `user_id`;
-4. confirmar ausência de `X-User-Id` e `X-User-Areas` nas requests do navegador;
-5. confirmar `Authorization: Bearer` destinado à audience da API;
-6. testar token expirado, logout, nova autenticação e fechamento da aba;
-7. testar usuário sem App Role e confirmar que não consegue aprovar;
-8. testar guest e token sem `acct`, confirmando ausência de capacidades de aprovação;
-9. testar `tid` fora da allowlist, issuer ou audience incorretos e confirmar rejeição;
-10. revisar logs e confirmar que token, code, claims integrais e PII não aparecem.
+1. access the portal and confirm the tenant-specific redirect;
+2. complete MFA/Conditional Access when required;
+3. verify `/api/v1/auth/me` responds with `tenant_id`, `object_id`, `account_type`
+   and the composite key in `user_id`;
+4. confirm the absence of `X-User-Id` and `X-User-Areas` in browser requests;
+5. confirm `Authorization: Bearer` targeted at the API's audience;
+6. test an expired token, logout, re-authentication and tab closing;
+7. test a user with no App Role and confirm they cannot approve;
+8. test a guest and a token without `acct`, confirming no approval capabilities;
+9. test `tid` outside the allowlist, wrong issuer or audience, and confirm
+   rejection;
+10. review logs and confirm token, code, full claims and PII do not appear.
 
-O cache padrão é `sessionStorage`. Fechar a aba encerra esse cache, embora a sessão do
-Entra no navegador possa permitir novo SSO conforme a política corporativa.
+The default cache is `sessionStorage`. Closing the tab ends that cache, although the
+Entra browser session may still allow new SSO per corporate policy.
 
-## 6. Rotação, revogação e incidente
+## 6. Rotation, revocation and incident
 
-- Rotacionar a credencial da API confidential client conforme
-  `MICROSOFT_GRAPH_OBO_SETUP.md`; o portal SPA não possui segredo.
-- Remover redirect URIs antigas imediatamente após migração.
-- Bloquear primeiro a identidade na plataforma conforme
-  `DIRECTORY_ACCESS_INCIDENT_RESPONSE.md`, depois coordenar conta, sessões e
-  consentimentos no Entra.
-- Publicar novo build se client ID, tenant ou scope mudar.
-- Tratar suspeita de XSS como potencial exposição dos tokens da sessão atual.
-- Registrar falhas e correlation IDs minimizados, nunca os próprios tokens.
+- Rotate the API confidential client's credential per
+  `MICROSOFT_GRAPH_OBO_SETUP.md`; the portal SPA has no secret.
+- Remove old redirect URIs immediately after migration.
+- Block the identity on the platform first, per
+  `DIRECTORY_ACCESS_INCIDENT_RESPONSE.md`, then coordinate account, sessions and
+  consents in Entra.
+- Publish a new build if client ID, tenant or scope changes.
+- Treat suspected XSS as potential exposure of the current session's tokens.
+- Log minimized failures and correlation IDs, never the tokens themselves.
 
-## Referências oficiais
+## Official references
 
-- [Authorization Code com PKCE](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow)
+- [Authorization Code with PKCE](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow)
 - [MSAL React](https://learn.microsoft.com/en-us/entra/msal/javascript/react/getting-started)
-- [Token para Web API em SPA](https://learn.microsoft.com/en-us/entra/identity-platform/scenario-spa-acquire-token)
-- [Aquisição e renovação de tokens](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/token-lifetimes)
-- [Configuração de cache do MSAL](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/configuration)
-- [Claims de access token](https://learn.microsoft.com/en-us/entra/identity-platform/access-token-claims-reference)
-- [Claims opcionais, incluindo acct](https://learn.microsoft.com/en-us/entra/identity-platform/optional-claims-reference)
-- [Revogar acesso de usuário em emergência](https://learn.microsoft.com/pt-br/entra/identity/users/users-revoke-access)
+- [Token for Web API in SPA](https://learn.microsoft.com/en-us/entra/identity-platform/scenario-spa-acquire-token)
+- [Token acquisition and renewal](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/token-lifetimes)
+- [MSAL cache configuration](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/configuration)
+- [Access token claims](https://learn.microsoft.com/en-us/entra/identity-platform/access-token-claims-reference)
+- [Optional claims, including acct](https://learn.microsoft.com/en-us/entra/identity-platform/optional-claims-reference)
+- [Revoke user access in an emergency](https://learn.microsoft.com/en-us/entra/identity/users/users-revoke-access)

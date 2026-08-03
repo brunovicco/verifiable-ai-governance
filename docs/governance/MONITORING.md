@@ -1,27 +1,27 @@
-# Monitoramento de modelos e agentes
+# Monitoring of models and agents
 
-## Três níveis
+## Three levels
 
-1. **Operação:** disponibilidade, latência, erro, timeout, throughput, tokens, custo,
-   retries, fallback e rate limit.
-2. **Modelo:** qualidade, groundedness, recusa, segurança, structured output,
-   regressão, drift, versão, região e uso fora do escopo.
-3. **Agente:** objetivo, plano, modelo, ferramentas, argumentos sanitizados, permissões,
-   loops, delegações, approvals, ações bloqueadas, custo, tempo e mudança de estado.
+1. **Operation:** availability, latency, error, timeout, throughput, tokens, cost,
+   retries, fallback and rate limit.
+2. **Model:** quality, groundedness, refusal, safety, structured output, regression,
+   drift, version, region and out-of-scope use.
+3. **Agent:** goal, plan, model, tools, sanitized arguments, permissions, loops,
+   delegations, approvals, blocked actions, cost, time and state change.
 
-## Eventos que devem bloquear ou interromper
+## Events that must block or interrupt
 
-- modelo, agente, ferramenta ou MCP não aprovado;
-- classe de dado incompatível com o destino;
-- ausência de aprovação humana obrigatória;
-- custo, tempo, passos ou permissões acima do limite;
-- mudança do plano após aprovação;
-- ação irreversível ou fora do tenant;
-- regressão abaixo do threshold de promoção;
-- telemetria ou evidência obrigatória indisponível.
+- unapproved model, agent, tool or MCP;
+- data class incompatible with the destination;
+- absence of mandatory human approval;
+- cost, time, steps or permissions above the limit;
+- plan change after approval;
+- irreversible action or action outside the tenant;
+- regression below the promotion threshold;
+- required telemetry or evidence unavailable.
 
-## Minimização
+## Minimization
 
-Telemetria operacional deve preferir IDs, digests, categorias, tempos e resultados.
-Prompts, documentos, credenciais e respostas não são coletados por padrão. Exceções
-precisam de finalidade, acesso, retenção e aprovação explícitos.
+Operational telemetry should prefer IDs, digests, categories, timestamps and
+outcomes. Prompts, documents, credentials and responses are not collected by
+default. Exceptions require explicit purpose, access, retention and approval.

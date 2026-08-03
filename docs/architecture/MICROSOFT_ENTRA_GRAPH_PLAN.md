@@ -1,68 +1,72 @@
-# Plano de integração - Microsoft Entra ID e Microsoft Graph
+# Integration plan - Microsoft Entra ID and Microsoft Graph
 
-## Objetivo
+## Objective
 
-Adicionar uma implementação corporativa de identidade sem tornar o núcleo dependente
-da Microsoft. O portal deverá identificar automaticamente o usuário autenticado, obter
-seu perfil organizacional e resolver as áreas de governança às quais ele pode responder.
+Add a corporate identity implementation without making the core dependent on
+Microsoft. The portal should automatically identify the authenticated user, obtain
+their organizational profile, and resolve the governance areas they can act on.
 
-O plano separa dois conceitos que não são equivalentes:
+The plan separates two concepts that are not equivalent:
 
-- **área organizacional:** atributo informativo, como `department`, obtido do diretório;
-- **área de aprovação:** capacidade de autorização, derivada somente de App Roles ou de
-  grupos Entra explicitamente mapeados para a taxonomia `ApprovalArea`.
+- **organizational area:** an informative attribute, such as `department`, obtained
+  from the directory;
+- **approval area:** an authorization capability, derived only from App Roles or
+  from Entra groups explicitly mapped to the `ApprovalArea` taxonomy.
 
-O texto livre de `department`, cargo, e-mail ou nome do grupo nunca concederá permissão.
+Free text from `department`, job title, email or group name will never grant
+permission.
 
-## Fluxo proposto
+## Proposed flow
 
 ```mermaid
 sequenceDiagram
-  participant U as Usuário
-  participant P as Portal Next.js
+  participant U as User
+  participant P as Next.js portal
   participant E as Microsoft Entra ID
-  participant A as API de governança
+  participant A as Governance API
   participant G as Microsoft Graph
-  participant M as Catálogo de mapeamentos
+  participant M as Mapping catalog
 
-  U->>P: Acessa o portal
+  U->>P: Accesses the portal
   P->>E: Authorization code + PKCE
-  E-->>P: Access token destinado à API
+  E-->>P: Access token scoped to the API
   P->>A: Bearer access token
-  A->>A: Valida assinatura, tenant, issuer e audience
-  A->>E: Troca OBO para token delegado do Graph
-  A->>G: GET /me com propriedades selecionadas
-  A->>G: GET /me/transitiveMemberOf (paginado)
-  A->>M: Mapeia object IDs permitidos para ApprovalArea
-  A-->>P: Identidade, departamento e capacidades efetivas
+  A->>A: Validates signature, tenant, issuer and audience
+  A->>E: OBO exchange for a delegated Graph token
+  A->>G: GET /me with selected properties
+  A->>G: GET /me/transitiveMemberOf (paginated)
+  A->>M: Maps allowed object IDs to ApprovalArea
+  A-->>P: Identity, department and effective capabilities
 ```
 
-O portal usará OpenID Connect com authorization code e PKCE. A API continuará sendo o
-resource server e validará access tokens destinados à própria audience. Para chamar o
-Microsoft Graph com a identidade delegada, a API usará OAuth 2.0 On-Behalf-Of (OBO),
-sem encaminhar ao Graph o token emitido para a API.
+The portal will use OpenID Connect with authorization code and PKCE. The API will
+remain the resource server and will validate access tokens scoped to its own
+audience. To call Microsoft Graph with the delegated identity, the API will use
+OAuth 2.0 On-Behalf-Of (OBO), without ever forwarding the token issued to the API
+to the Graph.
 
-## Identificação automática
+## Automatic identification
 
-A identidade corporativa deverá usar a chave composta `(tenant_id, object_id)`,
-derivada dos claims Entra `tid` e `oid`. `sub` continuará aceito no contrato OIDC geral,
-mas não será usado como identificador corporativo entre aplicações Entra.
+Corporate identity should use the composite key `(tenant_id, object_id)`, derived
+from the Entra claims `tid` and `oid`. `sub` will remain accepted in the general
+OIDC contract but will not be used as the cross-application corporate identifier
+within Entra.
 
-Após o primeiro acesso, a plataforma criará ou atualizará um snapshot JIT mínimo:
+After the first access, the platform will create or update a minimal JIT snapshot:
 
-- tenant ID e object ID;
-- nome de exibição;
-- e-mail ou user principal name;
-- `department`, empresa, cargo e localização somente quando necessários;
-- tipo de usuário, incluindo guest quando disponível;
-- origem, horário da sincronização e versão da política de mapeamento.
+- tenant ID and object ID;
+- display name;
+- email or user principal name;
+- `department`, company, job title and location only when needed;
+- user type, including guest when available;
+- source, sync timestamp and mapping policy version.
 
-O Graph será consultado com `$select` explícito. Tokens, refresh tokens e respostas
-completas do diretório não serão persistidos nem registrados em logs.
+Graph will be queried with an explicit `$select`. Tokens, refresh tokens and full
+directory responses will not be persisted or logged.
 
-## Resolução da área do usuário
+## Resolving the user's area
 
-O catálogo de mapeamento terá registros versionados semelhantes a:
+The mapping catalog will hold versioned records similar to:
 
 ```yaml
 tenant_id: 00000000-0000-0000-0000-000000000000
@@ -73,154 +77,155 @@ owner: identity-and-access-management
 mapping_version: 1
 ```
 
-Regras:
+Rules:
 
-1. comparar somente tenant e object ID, nunca `displayName`;
-2. aceitar apenas áreas presentes na enumeração corporativa;
-3. suportar associação transitiva de grupos;
-4. registrar versão do mapeamento e horário da resolução;
-5. remover a capacidade quando o grupo deixar de estar mapeado ou a associação expirar;
-6. aplicar segregação de funções mesmo que o diretório conceda a área;
-7. tratar usuários guest por política explícita e, por padrão, sem poder de aprovação;
-8. permitir App Roles como alternativa preferencial para autorizações estáveis do
-   aplicativo, mantendo grupos para alinhamento com a estrutura corporativa.
+1. compare only tenant and object ID, never `displayName`;
+2. accept only areas present in the corporate enumeration;
+3. support transitive group membership;
+4. record mapping version and resolution timestamp;
+5. remove the capability once the group is no longer mapped or membership expires;
+6. enforce separation of duties even when the directory grants the area;
+7. handle guest users via explicit policy and, by default, without approval power;
+8. allow App Roles as the preferred alternative for stable application
+   authorizations, keeping groups for alignment with the corporate structure.
 
-O atributo `department` será exibido como a área organizacional do perfil e poderá
-ajudar em filtros ou roteamento. Ele não substituirá o catálogo de autorização.
+The `department` attribute will be displayed as the profile's organizational area
+and may help with filtering or routing. It will not replace the authorization
+catalog.
 
-## Claims de grupos e overage
+## Group claims and overage
 
-O acesso rápido poderá usar object IDs presentes no claim `groups`, desde que o token
-esteja validado, o tenant esteja autorizado e não exista indicação de overage. Quando
-o Entra omitir grupos por excesso de associações, a API consultará o Microsoft Graph.
+Quick access can use object IDs present in the `groups` claim, provided the token
+is validated, the tenant is authorized and there is no overage indication. When
+Entra omits groups due to excess memberships, the API will query Microsoft Graph.
 
-A aplicação não seguirá URLs fornecidas por `_claim_sources`. Ela construirá chamadas
-somente para o endpoint Microsoft Graph configurado, evitando que um claim controle o
-destino de rede. Paginação também aceitará `@odata.nextLink` apenas no host Graph
-permitido.
+The application will not follow URLs supplied by `_claim_sources`. It will build
+calls only to the configured Microsoft Graph endpoint, preventing a claim from
+controlling the network destination. Pagination will also accept
+`@odata.nextLink` only on the allowed Graph host.
 
-## Permissões mínimas
+## Minimal permissions
 
-Baseline proposto:
+Proposed baseline:
 
-- portal: `openid`, `profile`, `email` e o scope delegado da API;
-- API: scope delegado próprio e credencial de confidential client protegida;
-- Graph via OBO: iniciar com `User.Read`, suficiente para perfil e associações
-  transitivas do próprio usuário segundo a documentação atual;
-- não solicitar `Directory.Read.All` no MVP;
-- qualquer permissão adicional exige threat model, justificativa, consentimento e
-  aprovação de IAM, Segurança e Privacidade.
+- portal: `openid`, `profile`, `email` and the API's delegated scope;
+- API: its own delegated scope and a protected confidential-client credential;
+- Graph via OBO: start with `User.Read`, sufficient for the user's own profile and
+  transitive memberships per current documentation;
+- do not request `Directory.Read.All` in the MVP;
+- any additional permission requires a threat model, justification, consent and
+  approval from IAM, Security and Privacy.
 
-A credencial da API deverá vir de secret manager; certificado é preferível a segredo
-estático. Nenhuma credencial Entra será armazenada no repositório.
+The API credential should come from a secret manager; a certificate is preferred
+over a static secret. No Entra credential will be stored in the repository.
 
-## Disponibilidade e comportamento fail-closed
+## Availability and fail-closed behavior
 
-- autenticação e validação do token não dependem de uma chamada ao Graph por request;
-- capacidades derivadas de perfil e associações usam cache compartilhado com TTL curto
-  e invalidação auditável;
-- throttling respeita `Retry-After`, com retry limitado e jitter;
-- aprovação de gate falha de forma fechada quando a capacidade não puder ser resolvida
-  com dados suficientemente recentes;
-- acesso não privilegiado pode usar snapshot ainda válido conforme política;
-- mudança de tenant, issuer, consentimento ou mapeamento exige configuração versionada;
-- remoção urgente de acesso deve ativar a restrição persistente da plataforma, invalidar
-  o cache e coordenar revogação de conta/sessão no Entra.
+- authentication and token validation do not depend on a Graph call per request;
+- capabilities derived from profile and memberships use a shared cache with a short
+  TTL and auditable invalidation;
+- throttling honors `Retry-After`, with bounded retry and jitter;
+- gate approval fails closed when the capability cannot be resolved with
+  sufficiently fresh data;
+- non-privileged access may use a still-valid snapshot per policy;
+- changing tenant, issuer, consent or mapping requires versioned configuration;
+- urgent access removal must trigger the platform's persistent restriction,
+  invalidate the cache and coordinate account/session revocation in Entra.
 
-## Dados, privacidade e auditoria
+## Data, privacy and auditing
 
-O Graph adiciona um novo tratamento de dados pessoais e deve entrar no inventário,
-RIPD quando aplicável e análise de processamento internacional. A coleta deve respeitar
-necessidade, minimização, retenção e finalidade.
+Graph adds a new personal-data processing activity and must enter the inventory,
+the RIPD where applicable, and the international processing analysis. Collection
+must respect necessity, minimization, retention and purpose.
 
-Evidências auditáveis mínimas:
+Minimal auditable evidence:
 
-- tenant e object ID que originaram a identidade;
-- fonte usada: token, App Role, Graph ou cache válido;
-- IDs dos mapeamentos aplicados, não a listagem completa de grupos;
-- versão do catálogo, horário e decisão de autorização;
-- falha, stale data ou overage sem registrar bearer tokens.
+- tenant and object ID that originated the identity;
+- source used: token, App Role, Graph or valid cache;
+- IDs of the mappings applied, not the full group listing;
+- catalog version, timestamp and authorization decision;
+- failure, stale data or overage without recording bearer tokens.
 
-## Entregas planejadas
+## Planned deliverables
 
-Status em 2026-08-01: o adapter MSAL do portal, PKCE, `sessionStorage`, login/logout,
-token silencioso da API, identidade `(tid, oid)`, tenant allowlist, política fail-closed
-para guest/conta sem `acct` confiável e enriquecimento Graph via OBO estão
-implementados. O adapter Graph possui `$select` mínimo, grupos transitivos, paginação
-com destino validado, timeout, retry limitado para leituras idempotentes, jitter e
-eventos operacionais sem conteúdo. O catálogo versionado App Role/object ID também está
-implementado com provenance auditável. Claims completos de grupos e os indicadores de
-group overage são tratados sem seguir `_claim_sources`. O cache PostgreSQL de
-capacidades derivadas possui TTL explícito, binding ao digest do catálogo e invalidação
-administrativa distribuída. O bloqueio/restauração emergencial da plataforma também é
-persistente, auditado, fail-closed e aplicado antes de todas as rotas protegidas.
-Validação contra tenant real, revogação de sessão no provedor e assurance permanecem
-pendentes.
+Status as of 2026-08-01: the portal's MSAL adapter, PKCE, `sessionStorage`,
+login/logout, silent API token acquisition, `(tid, oid)` identity, tenant
+allowlist, fail-closed policy for guest/no-trusted-`acct` accounts and Graph
+enrichment via OBO are implemented. The Graph adapter has a minimal `$select`,
+transitive groups, pagination with a validated destination, timeout, bounded retry
+for idempotent reads, jitter and content-free operational events. The versioned
+App Role/object ID catalog is also implemented with auditable provenance. Full
+group claims and group-overage indicators are handled without following
+`_claim_sources`. The PostgreSQL cache of derived capabilities has an explicit
+TTL, binding to the catalog digest and distributed administrative invalidation.
+The platform's emergency block/restore is also persistent, audited, fail-closed
+and applied before every protected route. Validation against a real tenant,
+provider-side session revocation and assurance remain pending.
 
-### Fase 1 - Fundação Entra
+### Phase 1 - Entra foundation
 
-- app registrations separadas para portal e API;
-- tenant allowlist e issuer tenant-specific;
-- scopes, App Roles, redirect URIs e consentimentos documentados;
-- configuração por ambiente e runbook de rotação de credencial.
+- separate app registrations for portal and API;
+- tenant allowlist and tenant-specific issuer;
+- documented scopes, App Roles, redirect URIs and consents;
+- per-environment configuration and a credential-rotation runbook.
 
-### Fase 2 - Login do portal
+### Phase 2 - Portal login
 
-- MSAL com authorization code e PKCE;
-- identidade automática sem headers de desenvolvimento;
-- logout, expiração, reautenticação e tratamento de Conditional Access;
-- testes de token para tenant, issuer, audience e usuário guest.
+- MSAL with authorization code and PKCE;
+- automatic identity with no development headers;
+- logout, expiry, re-authentication and Conditional Access handling;
+- token tests for tenant, issuer, audience and guest users.
 
-### Fase 3 - Enriquecimento Graph
+### Phase 3 - Graph enrichment
 
-- [x] porta de aplicação `CorporateDirectoryPort`;
-- [x] adapter Microsoft Graph com OBO, timeout e paginação validada;
-- [x] perfil `/me` com `$select` mínimo;
-- [x] associações transitivas de grupos;
-- [x] retry limitado com jitter e monitoramento básico de throttling;
-- [x] cache curto com freshness explícita e invalidação distribuída.
+- [x] `CorporateDirectoryPort` application port;
+- [x] Microsoft Graph adapter with OBO, timeout and validated pagination;
+- [x] `/me` profile with minimal `$select`;
+- [x] transitive group memberships;
+- [x] bounded retry with jitter and basic throttling monitoring;
+- [x] short cache with explicit freshness and distributed invalidation.
 
-### Fase 4 - Mapeamento governado
+### Phase 4 - Governed mapping
 
-- [x] catálogo versionado grupo/App Role → `ApprovalArea`;
-- [x] workflow de alteração como código com IAM, Segurança e Governança de IA;
-- [x] endpoint de identidade com área organizacional, capacidades e provenance;
-- [x] provenance do catálogo no evento auditável de decisão;
-- [x] auditoria minimizada de invalidação do cache.
-- [x] restrição emergencial local com auditoria e invalidação atômica do cache;
-- [ ] auditoria de sincronização e revogação no provedor.
+- [x] versioned group/App Role → `ApprovalArea` catalog;
+- [x] change-as-code workflow with IAM, Security and AI Governance;
+- [x] identity endpoint with organizational area, capabilities and provenance;
+- [x] catalog provenance in the auditable decision event;
+- [x] minimized cache-invalidation auditing.
+- [x] local emergency restriction with auditing and atomic cache invalidation;
+- [ ] provider-side sync and revocation auditing.
 
-### Fase 5 - Assurance
+### Phase 5 - Assurance
 
-- [x] testes de group overage e grupos aninhados;
-- [ ] testes de guest e usuário desabilitado contra tenant real;
-- [x] testes determinísticos de Graph `429/5xx` e esgotamento do retry;
-- [x] testes determinísticos de cache expirado e invalidação concorrente;
-- [x] testes determinísticos de bloqueio/restauração em toda rota protegida;
-- [ ] testes de remoção de grupo e rotação de chave contra tenant real;
-- revisão de consentimentos e least privilege;
-- monitoramento de falhas, latência, stale identity e mappings sem owner.
+- [x] tests for group overage and nested groups;
+- [ ] guest and disabled-user tests against a real tenant;
+- [x] deterministic tests for Graph `429/5xx` and retry exhaustion;
+- [x] deterministic tests for expired cache and concurrent invalidation;
+- [x] deterministic tests for block/restore across every protected route;
+- [ ] group-removal and key-rotation tests against a real tenant;
+- consent and least-privilege review;
+- monitoring of failures, latency, stale identity and unowned mappings.
 
-## Critérios de aceite
+## Acceptance criteria
 
-- login identifica o usuário sem entrada manual de ID, e-mail ou área;
-- API rejeita token de outro tenant ou audience;
-- `department` é exibido, mas nunca concede aprovação;
-- somente object IDs/App Roles mapeados geram `ApprovalArea`;
-- grupos transitivos e overage são tratados;
-- guest não aprova sem política explícita;
-- remoção de associação revoga a capacidade dentro do SLA definido;
-- bloqueio emergencial interrompe a próxima request protegida em todas as réplicas;
-- indisponibilidade do Graph não promove usuário nem reutiliza snapshot expirado;
-- decisões registram provenance sem tokens ou inventário integral de grupos;
-- testes e runbooks demonstram consentimento mínimo, rotação e revogação.
+- login identifies the user without manual entry of ID, email or area;
+- the API rejects tokens from another tenant or audience;
+- `department` is displayed but never grants approval;
+- only mapped object IDs/App Roles produce an `ApprovalArea`;
+- transitive groups and overage are handled;
+- guests do not approve without explicit policy;
+- membership removal revokes the capability within the defined SLA;
+- an emergency block stops the next protected request across all replicas;
+- Graph unavailability never promotes a user nor reuses an expired snapshot;
+- decisions record provenance without tokens or a full group inventory;
+- tests and runbooks demonstrate minimal consent, rotation and revocation.
 
-## Referências oficiais
+## Official references
 
-- [Authorization code com PKCE](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow)
-- [Fluxo On-Behalf-Of](https://learn.microsoft.com/en-us/entra/msal/msal-authentication-flows#on-behalf-of-obo)
-- [Obter o usuário autenticado no Graph](https://learn.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0)
-- [Associações transitivas do usuário](https://learn.microsoft.com/en-us/graph/api/user-list-transitivememberof?view=graph-rest-1.0)
-- [Claims e group overage](https://learn.microsoft.com/en-us/entra/identity-platform/access-token-claims-reference#groups-overage-claim)
-- [Revogar acesso de usuário em emergência](https://learn.microsoft.com/pt-br/entra/identity/users/users-revoke-access)
-- [`revokeSignInSessions` no Microsoft Graph](https://learn.microsoft.com/en-us/graph/api/user-revokesigninsessions?view=graph-rest-1.0)
+- [Authorization code with PKCE](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow)
+- [On-Behalf-Of flow](https://learn.microsoft.com/en-us/entra/msal/msal-authentication-flows#on-behalf-of-obo)
+- [Get the authenticated user in Graph](https://learn.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0)
+- [User transitive memberships](https://learn.microsoft.com/en-us/graph/api/user-list-transitivememberof?view=graph-rest-1.0)
+- [Claims and group overage](https://learn.microsoft.com/en-us/entra/identity-platform/access-token-claims-reference#groups-overage-claim)
+- [Revoke user access in an emergency](https://learn.microsoft.com/pt-br/entra/identity/users/users-revoke-access)
+- [`revokeSignInSessions` in Microsoft Graph](https://learn.microsoft.com/en-us/graph/api/user-revokesigninsessions?view=graph-rest-1.0)

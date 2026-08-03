@@ -1,8 +1,8 @@
-# ADR 0017 - Cache compartilhado de autorização de diretório
+# ADR 0017 - Shared directory authorization cache
 
 ## Status
 
-Aceito.
+Accepted.
 
 ## Date
 
@@ -10,107 +10,110 @@ Aceito.
 
 ## Context
 
-As rotas sensíveis resolviam o Microsoft Graph em cada request quando a integração OBO
-estava habilitada. Isso ampliava latência e exposição a throttling. Um cache apenas em
-memória reduziria chamadas, mas permitiria decisões diferentes entre réplicas e não
-ofereceria uma invalidação administrativa única.
+Sensitive routes resolved Microsoft Graph on every request whenever the OBO integration
+was enabled. This inflated latency and exposure to throttling. An in-memory-only cache
+would reduce calls, but would allow diverging decisions across replicas and would not
+offer a single administrative invalidation point.
 
-Autorização não pode reutilizar indefinidamente uma associação removida. Também não
-deve transformar o cache em um diretório paralelo contendo token, perfil ou inventário
-de grupos do usuário.
+Authorization cannot indefinitely reuse an association that has been removed. It also
+must not turn the cache into a parallel directory holding a user's token, profile, or
+group inventory.
 
 ## Decision
 
-O PostgreSQL será o store compartilhado de snapshots de autorização derivados. A chave
-é a identidade estável `(tenant_id, object_id)` e o ID persistido é um UUID determinístico.
-Cada snapshot contém somente:
+PostgreSQL will be the shared store for derived authorization snapshots. The key is the
+stable identity `(tenant_id, object_id)`, and the persisted ID is a deterministic UUID.
+Each snapshot contains only:
 
-- áreas de aprovação efetivas;
-- ID, versão e digest do catálogo;
-- IDs de mappings aplicados e tipos abstratos de fonte;
-- fonte original da resolução;
-- `resolved_at`, `expires_at`, `invalidated_at` e versão.
+- effective approval areas;
+- catalog ID, version, and digest;
+- IDs of applied mappings and abstract source types;
+- original resolution source;
+- `resolved_at`, `expires_at`, `invalidated_at`, and version.
 
-Bearer token, access token OBO, nome, e-mail/UPN, departamento, resposta Graph e object
-IDs de grupos não são persistidos.
+Bearer token, OBO access token, name, email/UPN, department, raw Graph response, and
+group object IDs are not persisted.
 
-O TTL vem de `DIRECTORY_AUTHORIZATION_CACHE_TTL_SECONDS`, com default de 60 segundos e
-limite de 5 a 300 segundos. O núcleo reutiliza um snapshot somente quando:
+The TTL comes from `DIRECTORY_AUTHORIZATION_CACHE_TTL_SECONDS`, defaulting to 60 seconds
+with a bound of 5 to 300 seconds. The core reuses a snapshot only when:
 
-1. a identidade autenticada coincide exatamente com a chave;
+1. the authenticated identity matches the key exactly;
 2. `now < expires_at`;
-3. o digest coincide com o catálogo carregado;
-4. não existe invalidação igual ou posterior à resolução.
+3. the digest matches the loaded catalog;
+4. no invalidation exists at or after the resolution time.
 
-Miss, expiração, mudança do catálogo ou invalidação exigem resolução ao vivo. Se o
-Graph necessário estiver indisponível, a operação falha fechada. Overage não resolvido
-nunca é armazenado.
+Miss, expiration, catalog change, or invalidation all require a live resolution. If the
+required Graph call is unavailable, the operation fails closed. An unresolved overage is
+never stored.
 
-Writes usam upsert nativo. O horário da resolução é capturado antes da chamada remota:
-um refresh iniciado antes de uma invalidação não a substitui, mesmo que o Graph responda
-depois. Uma resolução realmente posterior pode publicar novo snapshot; resolução
-anterior ou simultânea é rejeitada.
+Writes use a native upsert. The resolution timestamp is captured before the remote call:
+a refresh started before an invalidation does not overwrite it, even if Graph responds
+later. A resolution that is genuinely later can publish a new snapshot; an earlier or
+concurrent resolution is rejected.
 
-O endpoint administrativo
-`POST /api/v1/auth/directory-authorization-cache/invalidate` aceita a identidade-alvo,
-um motivo enumerado e referência opcional de ticket. Ele remove o conteúdo derivado,
-mantém um marcador de invalidação compartilhado e inclui evento hash-chained na mesma
-transação. O payload de auditoria usa digest do alvo, motivo e referência, não os UUIDs
-brutos. O tenant-alvo precisa pertencer à allowlist confiável do deployment.
+The administrative endpoint
+`POST /api/v1/auth/directory-authorization-cache/invalidate` accepts the target
+identity, an enumerated reason, and an optional ticket reference. It removes the derived
+content, keeps a shared invalidation marker, and includes a hash-chained event in the
+same transaction. The audit payload uses a digest of the target, the reason, and the
+reference, never the raw UUIDs. The target tenant must belong to the deployment's
+trusted allowlist.
 
 ## Alternatives considered
 
-- Cache local em memória: rejeitado por divergência entre réplicas e invalidação não
-  distribuída.
-- Redis no MVP: adiado para evitar nova dependência operacional; PostgreSQL já fornece
-  consistência e transação conjunta com auditoria no volume atual.
-- Persistir perfil e grupos: rejeitado por minimização, retenção e risco de criar um
-  diretório secundário.
-- Usar snapshot expirado durante falha do Graph: rejeitado porque disponibilidade não
-  pode ampliar o período de acesso.
-- Tratar invalidação como revogação definitiva: rejeitado. Cache controla freshness;
-  IAM e Entra continuam sendo a autoridade sobre conta, sessão, grupos e App Roles.
+- Local in-memory cache: rejected due to divergence across replicas and non-distributed
+  invalidation.
+- Redis for the MVP: deferred to avoid a new operational dependency; PostgreSQL already
+  provides consistency and a joint transaction with auditing at the current volume.
+- Persisting profile and groups: rejected on minimization and retention grounds, and the
+  risk of creating a secondary directory.
+- Using an expired snapshot during a Graph outage: rejected because availability must
+  not extend the access window.
+- Treating invalidation as definitive revocation: rejected. The cache controls
+  freshness; IAM and Entra remain the authority over account, session, groups, and App
+  Roles.
 
 ## Consequences
 
-Chamadas de autorização dentro do TTL podem evitar OBO e Graph, enquanto `/auth/me`
-ainda pode buscar o perfil mínimo para exibição. Todas as réplicas observam o mesmo
-snapshot e marcador de invalidação.
+Authorization calls within the TTL can avoid OBO and Graph, while `/auth/me` can still
+fetch the minimal profile for display. All replicas observe the same snapshot and
+invalidation marker.
 
-A migração `0005` cria uma tabela descartável. Downgrade remove somente cache e
-marcadores; a cadeia de auditoria permanece. Deployments precisam executar a migração
-antes de subir a API.
+Migration `0005` creates a disposable table. Downgrade removes only the cache and
+markers; the audit chain remains. Deployments must run the migration before bringing the
+API up.
 
-PostgreSQL passa a integrar o caminho de autorização corporativa. Falha de leitura ou
-commit retorna erro seguro em vez de continuar sem o controle compartilhado.
-Leituras usam uma sessão curta e liberam a conexão antes de qualquer chamada ao Graph;
-o adapter não mantém transação de banco aberta enquanto espera uma dependência remota.
+PostgreSQL now sits on the corporate authorization path. A read or commit failure
+returns a safe error instead of continuing without the shared control. Reads use a short
+session and release the connection before any call to Graph; the adapter does not hold a
+database transaction open while waiting on a remote dependency.
 
 ## Security and privacy impact
 
-O cache possui autorização derivada e deve receber os mesmos controles de acesso,
-backup e criptografia do banco. Mesmo sem grupos brutos, áreas e mappings são dados de
-controle de acesso. A retenção operacional pode remover linhas expiradas no futuro,
-sem apagar eventos de auditoria.
+The cache holds derived authorization and must receive the same access, backup, and
+encryption controls as the database. Even without raw groups, areas and mappings are
+access-control data. Operational retention may remove expired rows in the future,
+without erasing audit events.
 
-A invalidação exige `is_admin`, que no modo Entra depende do claim booleano confiável e
-é removido de guest ou conta ambígua. Referências são identificadores curtos de ticket,
-não texto livre.
+Invalidation requires `is_admin`, which under Entra mode depends on the trusted boolean
+claim and is removed for guest or ambiguous accounts. References are short ticket
+identifiers, not free text.
 
 ## Verification
 
-- testes de domínio cobrem identidade, digest, expiração e invalidação;
-- testes de aplicação cobrem overage não armazenado e corrida com invalidação;
-- testes do adapter cobrem round-trip, marcador compartilhado e refresh posterior;
-- teste HTTP cobre negação para não administrador e auditoria sem UUIDs do alvo;
-- a migração deve passar por upgrade, downgrade para `0004` e novo upgrade em
-  PostgreSQL real.
+- domain tests cover identity, digest, expiration, and invalidation;
+- application tests cover unstored overage and races with invalidation;
+- adapter tests cover round-trip, shared marker, and later refresh;
+- HTTP test covers denial for non-administrators and audit without target UUIDs;
+- the migration must pass upgrade, downgrade to `0004`, and re-upgrade on real
+  PostgreSQL.
 
 ## Follow-up
 
-- integrar a restrição local definida no ADR 0018 à futura revogação de sessão no Entra;
-- validar remoção real de grupo, guest, Conditional Access e SLA em tenant não
-  produtivo;
-- exportar métricas agregadas de hit, miss, expiração, invalidação e falha, sem
-  identificadores de usuários;
-- definir limpeza periódica de entradas expiradas e política de retenção.
+- integrate the local restriction defined in ADR 0018 with future Entra session
+  revocation;
+- validate actual group removal, guest, Conditional Access, and SLA in a non-production
+  tenant;
+- export aggregated hit, miss, expiration, invalidation, and failure metrics, without
+  user identifiers;
+- define periodic cleanup of expired entries and a retention policy.

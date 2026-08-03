@@ -1,74 +1,79 @@
-# Visão do produto
+# Product vision
 
-## Problema
+## Problem
 
-Iniciativas de IA costumam nascer em documentos, planilhas e conversas desconectadas.
-Isso dificulta saber quem responde pela solução, quais dados e fornecedores estão
-envolvidos, onde o processamento ocorre, quais áreas precisam aprovar e se o sistema
-continua operando dentro das condições aprovadas.
+AI initiatives usually start out as disconnected documents, spreadsheets and
+conversations. That makes it hard to know who is accountable for the solution,
+which data and vendors are involved, where processing happens, which areas need to
+approve it, and whether the system keeps operating within the approved
+conditions.
 
-## Visão
+## Vision
 
-Oferecer um workspace de governança compreensível para áreas de negócio e verificável
-por equipes técnicas e de assurance. Cada iniciativa deve manter um encadeamento
-explícito:
+Offer a governance workspace that is understandable for business areas and
+verifiable by technical and assurance teams. Every initiative must maintain an
+explicit chain:
 
 ```text
-Contexto → Risco → Controles → Aprovações → Evidências → Operação → Revisão
+Context → Risk → Controls → Approvals → Evidence → Operation → Review
 ```
 
-## Públicos
+## Audiences
 
-- solicitantes e Product Owners que descrevem a finalidade e respondem pela iniciativa;
-- Governança de IA, que mantém taxonomias, controles, exceções e o portfólio;
-- Segurança, Arquitetura, Infra, DevOps e Dados, que validam riscos técnicos;
-- Privacidade, Jurídico e Compliance, que validam obrigações e impactos;
-- Operações e Model Owners, que acompanham modelos e agentes em produção;
-- auditoria e comitês, que verificam decisões e evidências sem alterar registros.
+- requesters and Product Owners who describe the purpose and are accountable for
+  the initiative;
+- AI Governance, which maintains taxonomies, controls, exceptions and the
+  portfolio;
+- Security, Architecture, Infra, DevOps and Data, who validate technical risks;
+- Privacy, Legal and Compliance, who validate obligations and impacts;
+- Operations and Model Owners, who track models and agents in production;
+- audit and committees, who verify decisions and evidence without altering
+  records.
 
-## Proposta de valor
+## Value proposition
 
-1. Formulário guiado em linguagem não técnica.
-2. Classificação explicável, nunca uma “caixa-preta” de risco.
-3. Aprovações condicionais, evitando burocracia uniforme e lacunas de controle.
-4. Evidência vinculada à decisão e histórico imutável por eventos.
-5. Preparação para monitorar uso, mudanças, violações e incidentes em runtime.
+1. A guided form in non-technical language.
+2. Explainable classification, never a risk "black box."
+3. Conditional approvals, avoiding uniform bureaucracy and control gaps.
+4. Evidence linked to the decision and an immutable event history.
+5. Groundwork for monitoring runtime usage, changes, violations and incidents.
 
-## Escopo da versão 0.1
+## Scope of version 0.1
 
-- cadastro e inventário de iniciativas;
-- avaliação preliminar determinística;
-- workflow de aprovação multidisciplinar;
-- documentos requeridos por contexto;
-- segregação de funções e trilha de auditoria;
-- modelos de dados para o inventário técnico completo;
-- portal de demonstração e execução local.
+- initiative registration and inventory;
+- deterministic preliminary assessment;
+- multidisciplinary approval workflow;
+- documents required by context;
+- separation of duties and audit trail;
+- data models for the full technical inventory;
+- demonstration portal and local execution.
 
-## Fora do escopo da versão 0.1
+## Out of scope for version 0.1
 
-- parecer jurídico automatizado;
-- certificação ISO ou declaração automática de conformidade;
-- orquestração de processo regulatório oficial;
-- execução de modelos ou agentes;
-- coleta de telemetria de produção;
-- assinatura digital ou armazenamento externo de documentos.
+- automated legal opinions;
+- ISO certification or automatic conformance declaration;
+- orchestration of an official regulatory process;
+- executing models or agents;
+- production telemetry collection;
+- digital signature or external document storage.
 
-## Medidas de sucesso do MVP
+## MVP success measures
 
-- uma proposta completa é cadastrada em menos de dez minutos;
-- 100% das propostas submetidas possuem owner, risco, policy version e gates registrados;
-- nenhum owner consegue aprovar a própria iniciativa;
-- nenhuma iniciativa é aprovada com gate obrigatório pendente ou rejeitado;
-- cada decisão possui justificativa, evidência referenciada e evento de auditoria;
-- uma alteração concorrente com versão desatualizada é rejeitada.
+- a complete proposal is registered in under ten minutes;
+- 100% of submitted proposals have owner, risk, policy version and gates
+  recorded;
+- no owner can approve their own initiative;
+- no initiative is approved with a required gate pending or rejected;
+- every decision has a justification, referenced evidence and an audit event;
+- a concurrent change with a stale version is rejected.
 
-## Direção de identidade corporativa
+## Corporate identity direction
 
-O primeiro adapter corporativo planejado usará Microsoft Entra ID para login e
-Microsoft Graph para identificar automaticamente perfil, departamento e associações de
-grupo do usuário. A capacidade de aprovar continuará governada por um catálogo
-versionado de App Roles/object IDs para áreas, preservando menor privilégio e
-independência do domínio em relação ao fornecedor.
+The first planned corporate adapter will use Microsoft Entra ID for login and
+Microsoft Graph to automatically identify the user's profile, department and
+group memberships. Approval capability will continue to be governed by a
+versioned catalog of App Roles/object IDs for areas, preserving least privilege
+and the domain's independence from the vendor.
 
-O desenho, fases e critérios de aceite estão em
+The design, phases and acceptance criteria are in
 `docs/architecture/MICROSOFT_ENTRA_GRAPH_PLAN.md`.

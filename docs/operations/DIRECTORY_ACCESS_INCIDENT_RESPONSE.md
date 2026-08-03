@@ -1,26 +1,27 @@
-# Resposta a incidente de acesso de diretório
+# Directory access incident response
 
-## Objetivo
+## Purpose
 
-Interromper imediatamente o acesso de uma identidade Entra à plataforma, coordenar as
-ações do provedor e restaurar somente depois da remediação. O bloqueio local complementa
-as ações de IAM; não substitui desabilitar a conta, remover associação ou revogar
-sessões no Microsoft Entra ID.
+Immediately stop an Entra identity's access to the platform, coordinate the
+provider's actions, and restore access only after remediation. The local block
+complements IAM actions; it does not replace disabling the account, removing group
+membership or revoking sessions in Microsoft Entra ID.
 
-## Pré-requisitos
+## Prerequisites
 
-- duas identidades administrativas de emergência controladas e monitoradas;
-- `tenant_id` e `object_id` confirmados em uma fonte IAM confiável;
-- tenant presente em `OIDC_ALLOWED_TENANT_IDS`;
-- incidente ou mudança com referência rastreável;
-- acesso operacional ao Entra para as ações externas aplicáveis.
+- two controlled and monitored emergency administrative identities;
+- `tenant_id` and `object_id` confirmed against a trusted IAM source;
+- tenant present in `OIDC_ALLOWED_TENANT_IDS`;
+- an incident or change with a traceable reference;
+- operational access to Entra for the applicable external actions.
 
-Nunca obtenha o alvo apenas de nome, e-mail ou texto enviado pelo solicitante. Não copie
-tokens, segredos, respostas Graph ou inventários de grupos para tickets e logs.
+Never obtain the target solely from a name, email or text submitted by the
+requester. Do not copy tokens, secrets, Graph responses or group inventories into
+tickets and logs.
 
-## 1. Bloquear na plataforma
+## 1. Block on the platform
 
-Use uma identidade administrativa diferente do alvo:
+Use an administrative identity different from the target:
 
 ```bash
 curl --fail-with-body \
@@ -35,7 +36,7 @@ curl --fail-with-body \
   }'
 ```
 
-Motivos de bloqueio aceitos:
+Accepted block reasons:
 
 - `account_compromised`;
 - `personnel_offboarding`;
@@ -43,39 +44,41 @@ Motivos de bloqueio aceitos:
 - `policy_violation`;
 - `manual_emergency`.
 
-Resposta esperada: `blocked=true`, ID opaco, horário e versão. A operação altera o
-estado, invalida a autorização derivada e grava auditoria na mesma transação.
+Expected response: `blocked=true`, an opaque ID, timestamp and version. The
+operation changes state, invalidates derived authorization and writes an audit
+entry in the same transaction.
 
-## 2. Confirmar contenção
+## 2. Confirm containment
 
-1. execute uma request protegida com uma sessão de teste do alvo;
-2. confirme `403` com `Directory identity access is suspended`;
-3. confirme o evento `directory_access.blocked` e sua
-   `authorization_cache_version` na trilha;
-4. verifique que os payloads contêm digest do alvo, motivo e referência, não os UUIDs.
+1. run a protected request with a test session belonging to the target;
+2. confirm `403` with `Directory identity access is suspended`;
+3. confirm the `directory_access.blocked` event and its
+   `authorization_cache_version` in the trail;
+4. verify the payloads contain the target's digest, reason and reference, not the
+   UUIDs themselves.
 
-Falha de banco ou binding inconsistente deve produzir `503`. Não contorne esse resultado
-nem mude o serviço para fail-open durante o incidente.
+A database failure or inconsistent binding should produce `503`. Do not work around
+this result or switch the service to fail-open during the incident.
 
-## 3. Coordenar ações no Microsoft Entra ID
+## 3. Coordinate actions in Microsoft Entra ID
 
-IAM determina e executa as ações apropriadas, que podem incluir:
+IAM determines and executes the appropriate actions, which may include:
 
-- desabilitar a conta para impedir novos tokens;
-- revogar sessões/refresh tokens;
-- remover App Roles e associações a grupos;
-- desabilitar ou marcar dispositivos comprometidos;
-- revogar consentimentos ou credenciais afetadas;
-- aplicar ou revisar Conditional Access e Continuous Access Evaluation.
+- disabling the account to prevent new tokens;
+- revoking sessions/refresh tokens;
+- removing App Roles and group memberships;
+- disabling or flagging compromised devices;
+- revoking affected consents or credentials;
+- applying or reviewing Conditional Access and Continuous Access Evaluation.
 
-`revokeSignInSessions` exige permissão específica, pode levar alguns minutos e não
-revoga sessões de usuários externos no tenant de recurso. A sessão da plataforma é
-controlada pelo bloqueio local deste runbook. Registre a evidência da ação Entra sem
-armazenar tokens ou segredos.
+`revokeSignInSessions` requires a specific permission, can take a few minutes, and
+does not revoke external users' sessions in the resource tenant. The platform's
+session is controlled by this runbook's local block. Record evidence of the Entra
+action without storing tokens or secrets.
 
-## 4. Restaurar com autorização atual
+## 4. Restore with current authorization
 
-Restaure somente quando IAM, Segurança e o owner do incidente confirmarem remediação.
+Only restore once IAM, Security and the incident owner confirm remediation.
 
 ```bash
 curl --fail-with-body \
@@ -90,28 +93,31 @@ curl --fail-with-body \
   }'
 ```
 
-Motivos de restauração aceitos: `remediation_completed`, `false_positive` e
-`access_reinstated`. A restauração mantém o cache de autorização invalidado. A próxima
-operação sensível deve obter uma decisão atual; associação removida não reaparece por
-herança do snapshot anterior.
+Accepted restore reasons: `remediation_completed`, `false_positive` and
+`access_reinstated`. Restoring keeps the authorization cache invalidated. The next
+sensitive operation must obtain a current decision; a removed membership does not
+reappear through inheritance from the previous snapshot.
 
-## 5. Encerrar e preservar evidências
+## 5. Close out and preserve evidence
 
-- confirme `directory_access.restored` e a nova versão da restrição;
-- valide login, área organizacional e capacidades efetivas com uma conta de teste;
-- vincule as evidências da plataforma e do Entra à referência do incidente;
-- revise causa, SLA de contenção e eventual atraso entre bloqueio local e ações Entra;
-- preserve a cadeia de auditoria conforme a política de retenção.
+- confirm `directory_access.restored` and the new restriction version;
+- validate sign-in, organizational area and effective capabilities with a test
+  account;
+- link platform and Entra evidence to the incident reference;
+- review root cause, containment SLA and any delay between the local block and Entra
+  actions;
+- preserve the audit trail per retention policy.
 
-## Recuperação operacional
+## Operational recovery
 
-Se o administrador executor for o próprio alvo, ele ficará bloqueado depois do commit.
-Use outra conta de emergency access para restaurar. Se todas as contas administrativas
-estiverem indisponíveis, siga o procedimento corporativo de recuperação de acesso; não
-edite a tabela manualmente, pois isso quebraria a evidência e a invalidação coordenada.
+If the executing administrator is the target themselves, they will be blocked after
+the commit. Use another emergency access account to restore. If all administrative
+accounts are unavailable, follow the corporate access recovery procedure; do not edit
+the table manually, as that would break the evidence and the coordinated
+invalidation.
 
-## Referências oficiais
+## Official references
 
-- [Revogar acesso de usuário em emergência](https://learn.microsoft.com/pt-br/entra/identity/users/users-revoke-access)
-- [`revokeSignInSessions` no Microsoft Graph](https://learn.microsoft.com/en-us/graph/api/user-revokesigninsessions?view=graph-rest-1.0)
+- [Revoke user access in an emergency](https://learn.microsoft.com/en-us/entra/identity/users/users-revoke-access)
+- [`revokeSignInSessions` in Microsoft Graph](https://learn.microsoft.com/en-us/graph/api/user-revokesigninsessions?view=graph-rest-1.0)
 - [Continuous Access Evaluation](https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-continuous-access-evaluation)

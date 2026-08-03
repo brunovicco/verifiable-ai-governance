@@ -1,8 +1,8 @@
-# ADR 0022 - Incidentes, kill switch e exceções temporárias
+# ADR 0022 - Incidents, kill switch, and temporary exceptions
 
 ## Status
 
-Aceito.
+Accepted.
 
 ## Date
 
@@ -10,125 +10,127 @@ Aceito.
 
 ## Context
 
-O backlog P1 previa "Incidentes, kill switch, exceções temporárias e plano de
-remediação" como funcionalidade nativa da plataforma, não um wrapper de projeto
-externo. Uma tabela `Incident` já existia no schema (criada pelo `create_all()` inicial
-da migração 0001), com `title`, `severity`, `status`, `description`, `detected_at`,
-`owner_id` e `containment`, mas sem domínio, aplicação, adapter, router ou schema -
-estava preparada, não construída. `Agent.kill_switch_enabled` já tinha um significado
-real, porém estreito: `review_agent_scope()` exige o campo `true` para aprovar o
-escopo de um agente, mas nada no código executa essa parada em runtime.
+The P1 backlog called for "Incidents, kill switch, temporary exceptions, and remediation
+plan" as a native platform feature, not a wrapper around an external project. An
+`Incident` table already existed in the schema (created by the initial `create_all()` in
+migration 0001), with `title`, `severity`, `status`, `description`, `detected_at`,
+`owner_id`, and `containment`, but no domain, application, adapter, router, or schema -
+it was prepared, not built. `Agent.kill_switch_enabled` already carried a real but
+narrow meaning: `review_agent_scope()` requires the field to be `true` to approve an
+agent's scope, but nothing in the code executed that stop at runtime.
 
-O ADR 0002 já havia comprometido esta plataforma com um desenho específico para uma
-futura "exceção": entidade própria, prazo, compensating controls e aprovação do
-comitê, sem bypass direto do status. O RACI já definia "Gerir incidente" com Negócio
-como accountable e Segurança/DevOps como executores, além da regra de segregação
-"exceção não é aprovada pelo mesmo papel que solicita ou implementa a exceção". O
-princípio de governança "contestabilidade e remediação quando houver impacto
-material" também já estava declarado, sem modelo de dados correspondente.
+ADR 0002 had already committed this platform to a specific design for a future
+"exception": its own entity, deadline, compensating controls, and committee approval,
+with no direct bypass of status. The RACI already defined "Manage incident" with
+Business as accountable and Security/DevOps as executors, plus the segregation rule
+"an exception is not approved by the same role that requests or implements the
+exception." The governance principle "contestability and remediation when there is
+material impact" was also already declared, with no corresponding data model.
 
 ## Decision
 
-O domínio `domain/incidents.py` modela um ciclo de vida linear e explícito:
-`open → contained → remediating → closed`, validado por um mapa de transições
-permitidas. Encerrar um incidente exige um plano de remediação completo (responsável,
-prazo e descrição) já registrado - a mesma disciplina de "não aceitar estado
-incompleto" já usada em `review_model_scope`/`review_agent_scope`.
+The `domain/incidents.py` module models a linear, explicit lifecycle:
+`open → contained → remediating → closed`, validated by a map of allowed transitions.
+Closing an incident requires a complete remediation plan (owner, deadline, and
+description) already on record - the same "do not accept an incomplete state"
+discipline already used in `review_model_scope`/`review_agent_scope`.
 
-O kill switch em runtime é uma ação nova e distinta da declaração revisada: o agente
-ganha `kill_switch_engaged`, `kill_switch_engaged_at` e `kill_switch_engaged_by`,
-separados de `kill_switch_enabled`. Acionar o kill switch exige que o agente já tenha
-declarado a capacidade na revisão de Segurança e que o incidente não esteja encerrado;
-restaurar exige um acionamento vigente. Isso preserva o significado já existente de
-`kill_switch_enabled` em vez de sobrepor um novo comportamento a ele.
+The runtime kill switch is a new action, distinct from the reviewed declaration: the
+agent gains `kill_switch_engaged`, `kill_switch_engaged_at`, and
+`kill_switch_engaged_by`, separate from `kill_switch_enabled`. Engaging the kill switch
+requires that the agent has already declared the capability during Security review and
+that the incident is not closed; restoring requires a currently engaged switch. This
+preserves the existing meaning of `kill_switch_enabled` instead of overlaying new
+behavior onto it.
 
-Exceções temporárias (`PolicyException`) são sempre vinculadas a um incidente, com
-`purpose`, `scope_description`, `compensating_controls` e `expires_at` obrigatórios -
-os quatro elementos exigidos pelo ADR 0002 e pela linguagem de "finalidade, acesso,
-retenção e aprovação explícitos" já usada para exceções de telemetria. O status
-persistido (`pending`/`approved`/`rejected`/`revoked`) nunca é reescrito pela
-passagem do tempo; a vigência (`pending`/`active`/`expired`/`rejected`/`revoked`) é
-calculada em tempo de leitura comparando `expires_at` a `now`, no mesmo padrão de
-`asset_review_state`. Decidir uma exceção exige `decided_by != requested_by` -
-segregação de funções aplicada no domínio, não apenas documentada.
+Temporary exceptions (`PolicyException`) are always tied to an incident, with
+`purpose`, `scope_description`, `compensating_controls`, and `expires_at` all required -
+the four elements required by ADR 0002 and by the "explicit purpose, access, retention,
+and approval" language already used for telemetry exceptions. The persisted status
+(`pending`/`approved`/`rejected`/`revoked`) is never rewritten by the passage of time;
+validity (`pending`/`active`/`expired`/`rejected`/`revoked`) is computed at read time by
+comparing `expires_at` to `now`, following the same pattern as `asset_review_state`.
+Deciding an exception requires `decided_by != requested_by` - segregation of duties
+enforced in the domain, not just documented.
 
-Toda mutação de incidente, kill switch ou exceção adquire o lock `SELECT ... FOR
-UPDATE OF ai_systems` do sistema envolvido antes de validar versão ou estado, reusando
-exatamente o mutex transacional por agregado já decidido no ADR 0020 - não um segundo
-mecanismo de concorrência.
+Every mutation of an incident, kill switch, or exception acquires the
+`SELECT ... FOR UPDATE OF ai_systems` lock on the involved system before validating
+version or state, reusing exactly the per-aggregate transactional mutex already decided
+in ADR 0020 - not a second concurrency mechanism.
 
 ## Alternatives considered
 
-- **Exceções de propósito geral, aplicáveis a qualquer iniciativa ou sistema sem
-  incidente:** rejeitado nesta etapa porque o backlog agrupa exceções com
-  incidentes/kill-switch/remediação, e todo precedente existente (ADR 0002, RACI) fala
-  de compensar um risco durante um incidente, não de uma isenção permanente de
-  política. Um motor de exceções geral que toque o policy engine e todos os gates é um
-  trabalho maior e separado.
-- **Novo papel de "comitê" para aprovar exceções:** rejeitado porque o único primitivo
-  de papel além de owner/admin nesta base é `ApprovalArea`, ligado ao mapeamento de
-  grupos OIDC do fluxo de gates da iniciativa. Criar um papel paralelo só para esta
-  fatia seria desproporcional; a aprovação por administrador com segregação de funções
-  obrigatória é a aproximação honesta mais próxima, registrada aqui como simplificação
-  conhecida frente à linguagem "aprovação do comitê" do ADR 0002.
-- **Autoridade de kill switch restrita a Segurança/DevOps:** rejeitado pelo mesmo
-  motivo - reaproveita o limite "owner do sistema ou administrador" já usado em toda
-  mutação de inventário, em vez de inventar um novo recorte de papel.
-- **Persistir apenas o resultado final de cada tentativa, sem o registro `pending`
-  inicial:** não se aplica a este desenho da mesma forma que ao roteamento de modelos,
-  pois aqui não há chamada de rede externa entre a intenção e o resultado; a escrita é
-  local e síncrona sob o mesmo lock.
+- **General-purpose exceptions, applicable to any initiative or system without an
+  incident:** rejected at this stage because the backlog groups exceptions with
+  incidents/kill-switch/remediation, and all existing precedent (ADR 0002, RACI) talks
+  about compensating for a risk during an incident, not a permanent policy exemption. A
+  general exceptions engine touching the policy engine and every gate is a larger,
+  separate piece of work.
+- **A new "committee" role to approve exceptions:** rejected because the only role
+  primitive beyond owner/admin in this codebase is `ApprovalArea`, tied to the OIDC
+  group mapping of the initiative's gate flow. Creating a parallel role just for this
+  slice would be disproportionate; administrator approval with mandatory segregation of
+  duties is the closest honest approximation, recorded here as a known simplification
+  against ADR 0002's "committee approval" language.
+- **Kill switch authority restricted to Security/DevOps:** rejected for the same reason
+  - it reuses the "system owner or administrator" boundary already used across every
+  inventory mutation, instead of inventing a new role carve-out.
+- **Persisting only the final result of each attempt, without the initial `pending`
+  record:** does not apply to this design the same way it does to model routing, since
+  there is no external network call here between intent and result; the write is local
+  and synchronous under the same lock.
 
 ## Consequences
 
-- `Incident` ganha campos de remediação (`remediation_owner_id`,
-  `remediation_description`, `remediation_due_at`, `resolved_at`) e passa a usar
-  `Enum(RiskTier/IncidentStatus, native_enum=False)` em vez de `String` livre;
-- `Agent` ganha três colunas novas de kill switch em runtime, sem alterar o
-  significado de `kill_switch_enabled`;
-- `PolicyException` é uma tabela nova, sempre vinculada a um incidente;
-- decisões de exceção ficam restritas a administradores - uma simplificação a
-  revisar se um modelo de autorização mais rico for adotado;
-- nenhuma revisão de modelo ou agente existente é invalidada por esta migração (ao
-  contrário da 0008): os campos novos são aditivos e opcionais.
+- `Incident` gains remediation fields (`remediation_owner_id`,
+  `remediation_description`, `remediation_due_at`, `resolved_at`) and switches to
+  `Enum(RiskTier/IncidentStatus, native_enum=False)` instead of a free `String`;
+- `Agent` gains three new runtime kill-switch columns, without changing the meaning of
+  `kill_switch_enabled`;
+- `PolicyException` is a new table, always tied to an incident;
+- exception decisions are restricted to administrators - a simplification to revisit if
+  a richer authorization model is adopted;
+- no existing model or agent review is invalidated by this migration (unlike 0008): the
+  new fields are additive and optional.
 
 ## Security and privacy impact
 
-Nenhum conteúdo de prompt, documento ou execução é registrado; incidentes e exceções
-carregam apenas metadados estruturados (título, severidade, descrição textual
-fornecida por humanos, prazos). A trilha de auditoria hash-encadeada registra cada
-transição (`incident.reported`, `incident.contained`,
-`incident.remediation_plan_set`, `incident.closed`, `incident.kill_switch_engaged`,
-`incident.kill_switch_restored`, `incident.exception_requested`,
-`incident.exception_decided`, `incident.exception_revoked`) com ator, entidade e
-versão, sem duplicar o corpo da solicitação. A segregação de funções da exceção é
-recusada no domínio, não apenas na borda HTTP, então nenhum adapter futuro pode
-contornar a regra sem também contornar o teste de arquitetura.
+No prompt, document, or execution content is recorded; incidents and exceptions carry
+only structured metadata (title, severity, human-supplied free-text description,
+deadlines). The hash-chained audit trail records every transition
+(`incident.reported`, `incident.contained`, `incident.remediation_plan_set`,
+`incident.closed`, `incident.kill_switch_engaged`, `incident.kill_switch_restored`,
+`incident.exception_requested`, `incident.exception_decided`,
+`incident.exception_revoked`) with actor, entity, and version, without duplicating the
+request body. The exception's segregation of duties is enforced in the domain, not just
+at the HTTP boundary, so no future adapter can bypass the rule without also bypassing the
+architecture test.
 
 ## Operational impact
 
-A migração 0009 é somente aditiva: novas colunas nulas em `incidents` e `agents`,
-mais a tabela `policy_exceptions`. Não há reprocessamento de dados existentes nem
-invalidação de aprovações. A funcionalidade é sempre ativa - diferente das integrações
-opt-in como `policy-model-router`, incidentes fazem parte do núcleo do produto e não
-têm flag de habilitação.
+Migration 0009 is purely additive: new nullable columns on `incidents` and `agents`,
+plus the `policy_exceptions` table. There is no reprocessing of existing data and no
+invalidation of approvals. The feature is always on - unlike opt-in integrations such as
+`policy-model-router`, incidents are part of the product core and have no enablement
+flag.
 
-O portal expõe reportar, conter, planejar remediação, encerrar, acionar/restaurar
-kill switch e solicitar exceção. Decidir e revogar exceção são endpoints
-administrador-somente e não têm tela no portal nesta entrega, seguindo o mesmo padrão
-já usado para outras ações administrador-somente da plataforma (bloqueio/restauração
-de acesso emergencial, invalidação de cache de autorização), que também não têm UI.
+The portal exposes reporting, containing, planning remediation, closing, engaging/
+restoring the kill switch, and requesting an exception. Deciding and revoking an
+exception are administrator-only endpoints with no portal screen in this delivery,
+following the same pattern already used for other administrator-only actions on this
+platform (emergency access block/restore, authorization cache invalidation), which also
+have no UI.
 
 ## Follow-up
 
-- adicionar tela administrador para decidir e revogar exceções quando o portal tiver
-  um conceito de identidade administrativa local;
-- avaliar um papel de aprovação mais rico que substitua a simplificação
-  administrador-como-comitê;
-- alertar antecipadamente prazos de remediação próximos do vencimento, no mesmo
-  espírito do follow-up já registrado nos ADR 0019/0020 para revisões de escopo;
-- considerar referenciar esta funcionalidade a partir do controle `GOV-AGT-001` do
-  catálogo, hoje limitado a exigir kill switch documentado;
-- cobrir com teste os caminhos 403/404 de `get_incident`/`list_incidents` para
-  sistemas inexistentes de forma mais exaustiva, hoje exercitados apenas pelo caminho
-  feliz e pelo caso de autorização.
+- add an administrator screen to decide and revoke exceptions once the portal has a
+  concept of local administrative identity;
+- evaluate a richer approval role to replace the administrator-as-committee
+  simplification;
+- alert ahead of remediation deadlines approaching expiration, in the same spirit as the
+  follow-up already recorded in ADR 0019/0020 for scope reviews;
+- consider referencing this feature from the `GOV-AGT-001` catalog control, today
+  limited to requiring a documented kill switch;
+- add more exhaustive test coverage for the 403/404 paths of
+  `get_incident`/`list_incidents` for nonexistent systems, today exercised only by the
+  happy path and the authorization case.

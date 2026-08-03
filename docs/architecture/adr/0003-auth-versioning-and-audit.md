@@ -1,20 +1,22 @@
-# ADR 0003 - OIDC, versionamento e auditoria
+# ADR 0003 - OIDC, versioning, and audit
 
-- Status: aceito
-- Data: 2026-07-31
+- Status: accepted
+- Date: 2026-07-31
 
-## Decisão
+## Decision
 
-- usar OIDC com validação de issuer, audience, assinatura e claim de áreas;
-- permitir identidade por headers apenas em ambiente local explicitamente habilitado;
-- usar optimistic locking por `expected_version` nos comandos de workflow;
-- manter audit events append-only com hash do evento anterior e salt por ambiente;
-- não armazenar prompts, respostas ou documentos no payload de auditoria.
+- use OIDC with validation of issuer, audience, signature, and the areas claim;
+- allow header-based identity only in an explicitly enabled local environment;
+- use optimistic locking via `expected_version` on workflow commands;
+- keep audit events append-only with a hash of the previous event and a
+  per-environment salt;
+- do not store prompts, responses, or documents in the audit payload.
 
-## Limitações conhecidas
+## Known limitations
 
-O encadeamento por hash torna adulteração detectável, mas não substitui WORM storage,
-assinatura externa, SIEM ou timestamping confiável. Esses controles entram após o MVP.
+Hash chaining makes tampering detectable, but it does not replace WORM storage,
+external signing, a SIEM, or trusted timestamping. Those controls will come after the
+MVP.
 
-A configuração de confiança, as fronteiras de Clean Architecture e a validação com
-provedor real foram detalhadas posteriormente no ADR 0008.
+Trust configuration, Clean Architecture boundaries, and validation against a real
+provider were detailed later in ADR 0008.

@@ -1,77 +1,82 @@
-# ADR 0008 - Configuração explícita de confiança OIDC
+# ADR 0008 - Explicit OIDC trust configuration
 
-- Status: aceito
-- Data: 2026-08-01
+- Status: accepted
+- Date: 2026-08-01
 
-## Contexto
+## Context
 
-A API precisa validar access tokens de provedores OIDC diferentes sem assumir uma URL
-de JWKS específica de fornecedor. A implementação anterior derivava uma rota não
-padronizada a partir do issuer, executava a obtenção de chaves de forma síncrona no
-event loop e convertia qualquer valor truthy do claim administrativo em privilégio.
-Também faltava uma validação integrada contra um provedor real e reproduzível.
+The API needs to validate access tokens from different OIDC providers without
+assuming a vendor-specific JWKS URL. The previous implementation derived a
+non-standard route from the issuer, fetched keys synchronously on the event loop, and
+converted any truthy value of the admin claim into a privilege. It also lacked
+integrated validation against a real, reproducible provider.
 
-## Decisão
+## Decision
 
-- separar identidade, caso de uso de autenticação, verificador OIDC e transporte HTTP;
-- exigir issuer, audience, JWKS URL e allowlist de algoritmos assimétricos explícitos;
-- validar assinatura, `iss`, `aud`, `exp`, `iat` e `sub`, com clock skew limitado;
-- limitar o tamanho do bearer token antes de qualquer acesso ao provedor;
-- obter conjuntos JWKS com timeout e cache limitado fora do event loop da API, sem
-  cache indefinido de chaves individuais;
-- diferenciar token inválido (`401`) de indisponibilidade do provedor (`503`);
-- aceitar caminhos aninhados de claims para grupos e ignorar papéis desconhecidos;
-- conceder administração somente quando o claim configurado for o booleano JSON `true`;
-- exigir HTTPS para issuer e JWKS fora de ambientes local e de teste;
-- disponibilizar `/api/v1/auth/me` para verificar o mapeamento da identidade corrente;
-- validar o contrato ponta a ponta com uma versão fixa de Keycloak e realm local
-  importado declarativamente.
+- separate identity, the authentication use case, the OIDC verifier, and the HTTP
+  transport;
+- require explicit issuer, audience, JWKS URL, and an allowlist of asymmetric
+  algorithms;
+- validate signature, `iss`, `aud`, `exp`, `iat`, and `sub`, with bounded clock skew;
+- limit the bearer token size before any access to the provider;
+- fetch JWKS sets with timeout and bounded cache outside the API's event loop, with no
+  indefinite caching of individual keys;
+- distinguish an invalid token (`401`) from provider unavailability (`503`);
+- accept nested claim paths for groups and ignore unknown roles;
+- grant admin only when the configured claim is the JSON boolean `true`;
+- require HTTPS for issuer and JWKS outside local and test environments;
+- expose `/api/v1/auth/me` to verify the current identity mapping;
+- validate the contract end-to-end with a pinned Keycloak version and a locally
+  imported, declaratively defined realm.
 
-O Keycloak é apenas o provedor de teste de referência. O runtime permanece independente
-de fornecedor porque confia somente no contrato JWT/JWKS configurado.
+Keycloak is only the reference test provider. The runtime remains vendor-independent
+because it trusts only the configured JWT/JWKS contract.
 
-## Alternativas consideradas
+## Alternatives considered
 
-- Derivar JWKS de `issuer/.well-known/jwks.json`: rejeitado porque essa rota não é o
-  endpoint JWKS definido pelo discovery e não é portátil entre provedores.
-- Fazer discovery OIDC em runtime: adiado; reduz configuração, mas adiciona outra
-  dependência remota à inicialização e exige política própria de cache e mudança de
-  metadados. A URL explícita torna a raiz de confiança auditável por ambiente.
-- Usar introspecção para todo request: rejeitado para o MVP por aumentar latência,
-  disponibilidade acoplada e exposição do token em chamadas adicionais.
-- Aceitar algoritmos simétricos: rejeitado porque compartilharia segredo de assinatura
-  com o resource server e ampliaria o impacto de comprometimento.
+- Derive JWKS from `issuer/.well-known/jwks.json`: rejected because that route is not
+  the discovery-defined JWKS endpoint and is not portable across providers.
+- Perform OIDC discovery at runtime: deferred; it reduces configuration but adds
+  another remote dependency at startup and requires its own cache and
+  metadata-change policy. The explicit URL makes the trust root auditable per
+  environment.
+- Use introspection for every request: rejected for the MVP because it increases
+  latency, couples availability, and exposes the token in additional calls.
+- Accept symmetric algorithms: rejected because it would share the signing secret
+  with the resource server and widen the blast radius of compromise.
 
-## Consequências
+## Consequences
 
-- deploys OIDC precisam fornecer mais configuração, mas não dependem de convenções de
-  URL do provedor;
-- rotação de chaves é absorvida pelo JWKS cache e seleção por `kid`;
-- grupos fora da taxonomia de governança não concedem capacidade;
-- o endpoint de identidade expõe apenas subject, e-mail e capacidades já pertencentes
-  ao chamador, nunca o token ou claims arbitrários;
-- o login interativo do portal continua fora deste incremento.
+- OIDC deployments need to provide more configuration, but do not depend on provider
+  URL conventions;
+- key rotation is absorbed by the JWKS cache and `kid` selection;
+- groups outside the governance taxonomy grant no capability;
+- the identity endpoint exposes only subject, email, and capabilities already
+  belonging to the caller, never the token or arbitrary claims;
+- interactive portal login remains out of scope for this increment.
 
-## Impacto de segurança e privacidade
+## Security and privacy impact
 
-O desenho reduz riscos de algorithm confusion, audience confusion, escalada por coerção
-de tipos e negação de serviço por tokens sem limite. Tokens, chaves e payloads de claims
-não são registrados. O e-mail retornado em `/auth/me` é dado pessoal e deve seguir os
-mesmos controles de acesso e retenção dos logs HTTP. HTTP é permitido apenas no ambiente
-local reproduzível; ambientes compartilhados falham na inicialização sem TLS.
+The design reduces risks of algorithm confusion, audience confusion, type-coercion
+privilege escalation, and denial of service from unbounded tokens. Tokens, keys, and
+claim payloads are not logged. The email returned in `/auth/me` is personal data and
+must follow the same access and retention controls as HTTP logs. HTTP is allowed only
+in the reproducible local environment; shared environments fail at startup without
+TLS.
 
-## Impacto operacional
+## Operational impact
 
-JWKS é uma dependência externa com timeout de dois segundos e cache de cinco minutos
-por padrão. Indisponibilidade sem chave utilizável resulta em `503`, permitindo distinguir
-falha operacional de credencial inválida sem revelar detalhes ao cliente. Alterações de
-issuer, audience, claims ou endpoint exigem nova configuração do processo, coerente com
-Twelve-Factor. O compose OIDC é opcional e não muda o caminho local padrão.
+JWKS is an external dependency with a two-second timeout and a five-minute cache by
+default. Unavailability with no usable key results in `503`, distinguishing
+operational failure from an invalid credential without revealing details to the
+client. Changes to issuer, audience, claims, or endpoint require reconfiguring the
+process, consistent with Twelve-Factor. The OIDC compose file is optional and does
+not change the default local path.
 
 ## Follow-up
 
-- implementar authorization code com PKCE e sessão segura no portal;
-- testar rotação real de chaves e comportamento durante indisponibilidade prolongada;
-- integrar secrets manager e política organizacional de certificados/egress;
-- avaliar discovery configurável caso múltiplos provedores justifiquem o custo;
-- automatizar a validação Keycloak em CI com isolamento de portas.
+- implement authorization code with PKCE and a secure portal session;
+- test real key rotation and behavior during prolonged unavailability;
+- integrate a secrets manager and organizational certificate/egress policy;
+- evaluate configurable discovery if multiple providers justify the cost;
+- automate Keycloak validation in CI with port isolation.

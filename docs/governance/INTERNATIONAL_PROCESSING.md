@@ -1,19 +1,20 @@
-# Processamento internacional e localização de dados
+# International processing and data localization
 
-“Local de inferência” é apenas uma etapa. O assessment deve mapear coleta, prompt,
-arquivos, embeddings, vector store, resposta, cache, histórico, memória, filtros de
-segurança, logs, traces, backups, avaliações, suporte, treinamento e subprocessadores.
+"Place of inference" is only one step. The assessment must map collection, prompt,
+files, embeddings, vector store, response, cache, history, memory, security filters,
+logs, traces, backups, evaluations, support and training, and subprocessors.
 
-## Evidências mínimas
+## Minimum evidence
 
-- diagrama de fluxo e países por etapa;
-- categorias de dados, finalidade e necessidade;
-- provedor, subprocessadores e acessos de suporte;
-- regiões disponíveis e configuração efetivamente contratada;
-- retenção, exclusão, treinamento e uso para melhoria;
-- base legal e mecanismo de transferência validados por Privacidade/Jurídico;
-- salvaguardas técnicas e contratuais;
-- risco residual, aprovador e versão normativa considerada.
+- flow diagram and countries per step;
+- data categories, purpose and necessity;
+- provider, subprocessors and support access;
+- available regions and the configuration actually contracted;
+- retention, deletion, training and use for improvement;
+- legal basis and transfer mechanism validated by Privacy/Legal;
+- technical and contractual safeguards;
+- residual risk, approver and normative version considered.
 
-O sistema nunca concluirá “conforme” apenas pela escolha de uma região. Na ausência de
-país, mecanismo, fornecedor ou aprovação aplicável, o gate permanece bloqueado.
+The system will never conclude "compliant" just from the choice of a region. In the
+absence of an applicable country, mechanism, provider or approval, the gate remains
+blocked.
