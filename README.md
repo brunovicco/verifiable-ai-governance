@@ -1,67 +1,178 @@
 # Verifiable AI Governance
 
-Plataforma de referência, independente de fornecedor, para cadastrar, avaliar, aprovar,
-documentar e monitorar iniciativas e sistemas de IA. O MVP transforma requisitos de
-governança em controles verificáveis, aprovações condicionais e evidências auditáveis.
+[Português](README.pt-BR.md)
 
-## O que já está disponível
+[![CI](https://github.com/brunovicco/verifiable-ai-governance/actions/workflows/ci.yml/badge.svg)](https://github.com/brunovicco/verifiable-ai-governance/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)
+![Next.js](https://img.shields.io/badge/Portal-Next.js-000000?logo=nextdotjs&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/Data-PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 
-- portal Next.js voltado a solicitantes e aprovadores não técnicos;
-- login do portal preparado para Microsoft Entra ID com MSAL, PKCE, cache de sessão e
-  bearer token da API, mantendo modo local explicitamente separado;
-- API FastAPI com autenticação OIDC validada contra provedor real;
-- inventário navegável de iniciativas, sistemas, modelos e agentes, com ownership,
-  versão, região, escopo de uso, autonomia, ferramentas e limites operacionais;
-- revisão independente do escopo de modelos por Arquitetura e de agentes por Segurança,
-  com segregação de funções, digest canônico, validade por risco, estado de vigência,
-  consistência transacional e invalidação em cascata;
-- estruturas persistentes preparadas para avaliações, evidências, incidentes e
-  processamento internacional;
-- classificação preliminar de risco e workflow condicional para Negócio, Arquitetura,
-  Segurança, Infra, DevOps, Privacidade, Jurídico, Compliance e Dados;
-- assessments estruturados e versionados para impacto de IA, RIPD e processamento
-  internacional, com formulários guiados, risco residual e submissão para revisão;
-- catálogo baseline com 25 controles em YAML, regras declarativas e visualização
-  explicável de aplicabilidade por iniciativa;
-- upload de evidências com allowlist, limite, validação de assinatura, SHA-256, scan
-  ClamAV obrigatório, object storage privado e rollback compensatório;
-- rodadas imutáveis de revisão, solicitação de ajustes, reabertura de assessments e
-  ressubmissão com política e gates recalculados;
-- segregação de funções, versionamento otimista e trilha de auditoria encadeada por hash;
-- PostgreSQL local, migração inicial, testes e CI.
+A vendor-neutral reference platform that turns AI governance requirements into
+**deterministic controls, independent approvals, verified evidence, runtime enforcement
+and tamper-evident audit trails**.
 
-## Início rápido com Docker
+The project is designed for organizations that need to govern AI initiatives, systems,
+models and agents without reducing governance to disconnected spreadsheets, policy
+files and manual checklists.
 
-Pré-requisito: Docker Desktop.
+> **Maturity:** functional, production-oriented reference implementation. Selected
+> enterprise integrations still require validation in a real organizational environment.
+
+## The problem
+
+AI initiatives often begin across documents, tickets, spreadsheets and conversations.
+As they move toward production, organizations struggle to answer basic assurance
+questions:
+
+- Who is accountable for the system?
+- Which data, models, providers, regions and tools are involved?
+- Which independent reviewers approved the current scope?
+- Which evidence supported each decision?
+- Does the runtime remain inside the approved conditions?
+- What changed after approval, and can the history be verified?
+
+Verifiable AI Governance creates an explicit chain from business context to runtime:
+
+```text
+Context → Risk → Controls → Assessments → Approvals → Evidence
+        → AI assets → Runtime decisions → Monitoring → Incidents → Review
+```
+
+## Why verifiable?
+
+| Mechanism | Assurance property |
+|---|---|
+| Deterministic, versioned policy engine | The same normalized facts and policy version produce the same classification and gates |
+| Declarative control catalog | Applicability is explainable and can be evaluated without hidden model reasoning |
+| Immutable review rounds | Corrections create a new round instead of rewriting prior decisions |
+| Canonical scope digests | Model and agent approvals remain bound to the exact reviewed scope |
+| Verified evidence pipeline | Uploaded files are limited, signature-checked, hashed, malware-scanned and stored privately |
+| Hash-chained audit events | Later alteration of the recorded event sequence becomes detectable |
+| Runtime routing enforcement | An external router cannot select a model group that governance did not approve |
+| Fail-closed behavior | Missing or invalid critical dependencies do not become implicit authorization |
+
+## Key capabilities
+
+| Capability | Current implementation |
+|---|---|
+| AI inventory | Initiatives, systems, models and agents with ownership, lifecycle, version, region and scope |
+| Risk and impact | Deterministic preliminary risk, structured AI impact, privacy and international-processing assessments |
+| Assurance workflow | Conditional multidisciplinary gates, segregation of duties and immutable resubmissions |
+| Control management | Versioned YAML baseline with 25 declarative controls and explainable applicability |
+| Evidence | SHA-256, file signature validation, mandatory ClamAV scan, private S3-compatible storage and provenance |
+| Corporate identity | OIDC, Microsoft Entra ID adapter, PKCE, Graph OBO and explicit role/group-object mappings |
+| Asset assurance | Independent Architecture review for models and Security review for agents |
+| Runtime governance | Approved-scope validation and policy-based model-group routing before external model use |
+| Operational response | Incidents, kill switch, temporary exceptions, remediation and portfolio dashboard |
+| Auditability | Optimistic concurrency, immutable snapshots and hash-chained audit records |
+| Resilience | Explicit migrations, fail-closed startup and verified backup/restore workflow |
+
+## Architecture
+
+```mermaid
+flowchart LR
+  U[Business users and reviewers] --> W[Next.js portal]
+  W --> A[FastAPI application]
+  A --> P[Deterministic policy engine]
+  A --> D[(PostgreSQL)]
+  A --> S[(Private object storage)]
+  A --> C[ClamAV]
+  A --> I[OIDC / Microsoft Entra ID]
+  A --> G[Microsoft Graph OBO]
+  A --> R[Policy model router]
+  R --> M[Approved model group]
+  A --> Q[Audit and operational dashboard]
+```
+
+The API is authoritative for state transitions, authorization, segregation of duties,
+versioning and audit. Frontend validation is never treated as a security boundary.
+Application use cases depend on internal ports; FastAPI, SQLAlchemy, identity providers,
+object storage and external routers remain adapters at the edge.
+
+See [Architecture](docs/architecture/ARCHITECTURE.md),
+[Trust boundaries](docs/architecture/TRUST_BOUNDARIES.md) and
+[Security model](docs/security/SECURITY_MODEL.md).
+
+## Five-minute local demo
+
+Prerequisite: Docker Desktop.
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-Antes de iniciar a API, o Compose executa `alembic upgrade head` em um serviço one-shot.
-A API só recebe tráfego se a migração terminar com sucesso. O volume PostgreSQL é
-preservado; não use `docker compose down -v` como procedimento de atualização.
+Open:
 
-Se a porta local do PostgreSQL já estiver ocupada, use por exemplo
-`POSTGRES_PORT=55432 docker compose up --build`; a comunicação interna entre os
-containers continua automática.
+- Portal: `http://localhost:3000`
+- API documentation: `http://localhost:8000/docs`
 
-O Compose também inicia MinIO e ClamAV. Na primeira execução, o scanner pode levar
-alguns minutos para preparar as assinaturas; até ficar disponível, uploads falham de
-forma fechada com `503`. A imagem Debian oficial do ClamAV é fixada por digest
-multi-arquitetura e funciona em hosts AMD64 e ARM64.
+Populate representative governance scenarios:
 
-Abra o portal em <http://localhost:3000> e a documentação da API em
-<http://localhost:8000/docs>.
+```bash
+make seed-demo
+```
 
-O ambiente local exige identidade explícita, mesmo com OIDC desligado. O portal envia
-um usuário de demonstração; chamadas manuais à API devem incluir `X-User-Id` e, para
-aprovações, `X-User-Areas`.
+The seed covers multiple lifecycle states, risk tiers, assessment types and evidence
+patterns using the application's real use cases. Follow the complete
+[demo guide](docs/demo/DEMO_GUIDE.md).
 
-## Desenvolvimento sem Docker para as aplicações
+> ClamAV may need additional time to prepare signatures on the first start. Evidence
+> uploads fail closed until the scanner is ready.
 
-Pré-requisitos: Python 3.12+, `uv`, Node.js 20.9+ e PostgreSQL.
+## Engineering and security evidence
+
+- Python 3.12+, FastAPI, Pydantic and asynchronous SQLAlchemy;
+- Next.js portal for non-technical requesters and reviewers;
+- strict `mypy`, Ruff, Python tests, web tests, lint and production build in CI;
+- explicit Alembic migrations before API startup;
+- optimistic concurrency for mutable aggregates;
+- transaction-scoped state transitions and audit events;
+- pure deterministic policy and domain rules without infrastructure I/O;
+- OIDC validation with asymmetric algorithms, issuer, audience and required claims;
+- explicit Microsoft Entra authorization mappings instead of department or group-name trust;
+- minimal identity cache that excludes tokens, profiles and group object IDs;
+- private evidence storage, malware scanning and compensating rollback;
+- backup package verification and isolated restore testing;
+- runtime scope revalidation before accepting a routing outcome.
+
+## Current maturity
+
+| Area | State |
+|---|---|
+| Core governance workflow | Implemented |
+| Structured assessments and evidence | Implemented |
+| Model and agent assurance | Implemented |
+| Runtime model-routing enforcement | Implemented |
+| Incidents, kill switch and exceptions | Implemented |
+| Executive portfolio metrics | Implemented, with unavailable indicators shown explicitly |
+| Generic OIDC validation | Implemented and locally verifiable |
+| Microsoft Entra and Graph integration | Implemented; real-tenant and Conditional Access validation pending |
+| Runtime telemetry ingestion | Planned |
+| Real drift and control-effectiveness calculation | Planned |
+| CMDB, data catalog, CI/CD and GRC integrations | Planned |
+
+See the [capability matrix](docs/product/CAPABILITY_MATRIX.md) and
+[roadmap](docs/product/ROADMAP.md) for the explicit boundaries.
+
+## Documentation
+
+Start with the [documentation index](docs/README.md).
+
+Recommended paths:
+
+- Executives and hiring managers: [Executive overview](docs/executive/EXECUTIVE_OVERVIEW.md)
+- Product and governance teams: [Capability matrix](docs/product/CAPABILITY_MATRIX.md)
+- Architects: [Architecture](docs/architecture/ARCHITECTURE.md)
+- Security teams: [Threat model](docs/security/THREAT_MODEL.md)
+- Assurance teams: [Evidence model](docs/governance/EVIDENCE_MODEL.md)
+- Operators: [Production readiness](docs/operations/PRODUCTION_READINESS.md)
+- Developers: [API guide](docs/integrations/API_GUIDE.md)
+
+## Development
+
+Without Docker for the applications:
 
 ```bash
 make setup
@@ -70,166 +181,43 @@ make migrate
 make dev-api
 ```
 
-Em outro terminal:
+In another terminal:
 
 ```bash
 make dev-web
 ```
 
-Para popular o banco local com dez iniciativas de demonstração cobrindo as principais
-etapas e riscos do fluxo (rascunho, revisão, mudanças solicitadas, aprovação, rejeição,
-ativo e aposentado), rode `make seed-demo` uma única vez contra um banco recém-migrado.
-
-## Qualidade
+Run the quality gate:
 
 ```bash
-make test
-make lint
-make build
 make quality
 ```
 
-`make quality` executa o gate completo e reprodutível: lockfile, Ruff, mypy estrito,
-testes Python, testes/lint do portal e build de produção. Configuração de deploy é
-fornecida por variáveis de ambiente; `.env` é apenas uma conveniência local.
-
-O catálogo padrão é empacotado com o `policy-engine`. Para fornecer uma política
-organizacional diferente, configure `CONTROL_CATALOG_PATH` com o caminho de um YAML
-válido. Arquivo ausente, schema inválido, IDs duplicados ou quantidade inesperada fazem
-a aplicação falhar de forma fechada.
-
-## Backup e restauração
-
-O ambiente local possui um pacote portátil que combina dump lógico do PostgreSQL,
-objetos privados de evidência e manifesto versionado com SHA-256. O fluxo nunca
-sobrescreve um diretório, banco ou bucket existente. Para garantir consistência entre
-os dois backing services, interrompa escritas da API durante a captura:
-
-```bash
-docker compose stop web api
-make backup BACKUP_DIR=backups/2026-08-01
-make backup-verify BACKUP_DIR=backups/2026-08-01
-make backup-restore-test BACKUP_DIR=backups/2026-08-01
-docker compose start api web
-```
-
-O restore test cria banco e bucket isolados, compara revisão Alembic, quantidade de
-tabelas e checksums completos dos objetos, e então remove os destinos de teste. O
-pacote contém dados potencialmente pessoais e confidenciais, recebe permissões locais
-restritivas e deve ser criptografado, ter retenção definida e armazenamento externo
-controlado. Consulte o [runbook de backup e restauração](docs/operations/BACKUP_RESTORE.md).
-
-Uploads aceitam inicialmente PDF, PNG, JPEG, TXT, CSV e JSON até 10 MiB. O portal não
-expõe bucket ou chave interna. Em ambientes não locais, desabilite
-`OBJECT_STORAGE_AUTO_CREATE_BUCKET` e configure
-`OBJECT_STORAGE_SERVER_SIDE_ENCRYPTION`; credenciais podem vir da cadeia padrão do
-provedor em vez de variáveis estáticas.
-
-## Fluxo do MVP
-
-1. O solicitante cadastra uma proposta em linguagem de negócio.
-2. O motor calcula risco preliminar e explica quais áreas precisam aprovar.
-3. O owner preenche os assessments aplicáveis em rascunhos versionados e os envia para
-   revisão independente; respostas completas não são copiadas para o audit log.
-4. A submissão da iniciativa cria um gate para cada área; gates não aplicáveis ficam
-   registrados.
-5. Um aprovador autorizado, diferente do owner, registra decisão e justificativa.
-6. Um revisor pode solicitar ajustes. A rodada e seus snapshots são preservados, os
-   assessments voltam a rascunho e gates pendentes são encerrados.
-7. O owner salva os fatos corrigidos para recalcular requisitos, conclui os assessments
-   aplicáveis e então cria uma nova rodada sem reaproveitar aprovações anteriores.
-8. Uma rejeição bloqueia a iniciativa. A aprovação só ocorre quando todos os gates
-   obrigatórios da rodada atual forem aprovados.
-9. O owner vincula sistemas de IA à iniciativa aprovada e registra seus modelos e
-   agentes; ativos novos permanecem em rascunho até assurance posterior.
-10. Alterações usam concorrência otimista, e aposentadorias preservam o histórico.
-11. Toda mudança material gera evento de auditoria com versão e cadeia de hashes.
-12. Evidências anexadas são validadas, vinculadas ao hash, escaneadas e armazenadas sem
-    copiar conteúdo para logs ou PostgreSQL.
-
-## Autenticação OIDC
-
-Em ambientes compartilhados, defina `APP_ENV` diferente de `local`, habilite
-`OIDC_ENABLED=true` e informe `OIDC_ISSUER`, `OIDC_JWKS_URL` e `OIDC_AUDIENCE`. A
-aplicação se recusa a iniciar fora do ambiente local se OIDC estiver desabilitado ou
-se issuer/JWKS não usarem HTTPS. O claim configurado em `OIDC_GROUPS_CLAIM` pode ser um
-caminho aninhado, como `realm_access.roles`, e deve conter as áreas que o usuário pode
-aprovar. Somente o booleano JSON `true` no `OIDC_ADMIN_CLAIM` concede administração.
-
-Essa conversão direta vale apenas para o modo OIDC genérico. No modo Entra, App Roles
-do claim `OIDC_ENTRA_APP_ROLES_CLAIM` e object IDs transitivos do Graph somente geram
-áreas quando constam no catálogo tenant-specific configurado por
-`DIRECTORY_AUTHORIZATION_CATALOG_PATH`. O catálogo empacotado é vazio por padrão.
-Object IDs completos do claim `OIDC_ENTRA_GROUPS_CLAIM` também podem alimentar o
-catálogo. Quando o token sinaliza group overage, esses valores são ignorados e a
-resolução usa apenas o endpoint Graph construído pela aplicação.
-Decisões corporativas derivadas usam cache compartilhado no PostgreSQL por no máximo
-`DIRECTORY_AUTHORIZATION_CACHE_TTL_SECONDS` (60 segundos por padrão). O snapshot é
-reutilizado somente quando não expirou, não foi invalidado e continua vinculado ao
-digest do catálogo carregado. Tokens, perfil e object IDs de grupos não são persistidos
-nesse cache.
-
-Assinatura, issuer, audience, expiração, emissão e subject são obrigatoriamente
-validados. Algoritmos simétricos não são aceitos. A obtenção de JWKS possui timeout e
-cache configuráveis, e tokens excessivamente grandes são rejeitados antes do acesso ao
-provedor.
-
-### Validação local com Keycloak
-
-O overlay opcional usa Keycloak exclusivamente como provedor de teste reproduzível. Ele
-importa um realm local, emite um token RS256 com audience da API e mapeia o papel
-`security` para `governance_areas`.
-
-```bash
-make oidc-up
-make oidc-verify
-make oidc-down
-```
-
-O validador confirma token real, mapeamento do grupo e rejeição de token ausente e de
-assinatura adulterada. As senhas presentes no realm e em `.env.example` são somente
-locais. O fluxo de senha direta existe apenas neste cliente de teste; autenticação
-interativa do portal com authorization code e PKCE permanece no backlog.
-
-A implementação corporativa usa Microsoft Entra ID para o login; o adapter do portal e
-o enriquecimento Microsoft Graph via OBO estão implementados e aguardam validação em
-tenant real.
-No modo Entra, a API usa a identidade estável `(tid, oid)`, exige tenant allowlisted e
-remove capacidades de aprovação de guests ou contas sem classificação `acct` confiável.
-Quando habilitado, Microsoft Graph via OBO identifica automaticamente perfil e
-departamento no endpoint `/api/v1/auth/me` e resolve grupos transitivos apenas
-internamente. Quantidade e object IDs não são expostos; somente mappings explícitos
-podem convertê-los em capacidades.
-Áreas de aprovação vêm somente de App Roles ou object IDs explicitamente mapeados; o
-catálogo versionado produz provenance no endpoint e na auditoria de decisões.
-Departamento e nomes de grupos não concedem autorização. Consulte também o
-[runbook Graph OBO](docs/operations/MICROSOFT_GRAPH_OBO_SETUP.md).
-Administradores podem descartar o snapshot de uma identidade em todas as réplicas pelo
-endpoint auditado `POST /api/v1/auth/directory-authorization-cache/invalidate`; essa
-operação força nova resolução, mas não substitui a revogação da conta, sessão, App Role
-ou grupo no Microsoft Entra ID.
-Para incidentes, `POST /api/v1/auth/directory-access/block` interrompe imediatamente
-todas as rotas protegidas da identidade; `directory-access/restore` restaura o acesso
-sem reutilizar a autorização anterior. Consulte o
-[runbook de resposta a incidente](docs/operations/DIRECTORY_ACCESS_INCIDENT_RESPONSE.md).
-Consulte o [plano Entra/Graph](docs/architecture/MICROSOFT_ENTRA_GRAPH_PLAN.md).
-
-## Organização
+## Repository structure
 
 ```text
-apps/web                     Portal Next.js
-apps/api                     API FastAPI e persistência
-packages/governance-schemas Contratos e taxonomias compartilhadas
-packages/policy-engine       Classificação, controles e aplicabilidade
-packages/document-templates Templates versionados de documentos
-docs                         Produto, governança, arquitetura, ADRs e backlog
+apps/web                     Next.js portal
+apps/api                     FastAPI application and persistence adapters
+packages/governance-schemas Shared contracts and taxonomies
+packages/policy-engine       Risk classification, controls and applicability
+docs                         Product, governance, architecture and operations
 ```
 
-As integrações com `policy-model-router`, `a2a-otel-kit`,
-`engineering-loop-schemas`, `alicerce` e `ragforge` estão definidas como portas futuras,
-sem acoplar o núcleo do MVP a esses projetos.
+## Scope and disclaimer
 
-## Aviso
+This project provides a reference implementation for operational AI governance. Its
+controls, templates, workflows and mappings do not constitute legal advice,
+certification, regulatory approval or an automatic declaration of compliance.
+Organizations remain responsible for validating policies, evidence, risk decisions and
+regulatory obligations in their own context.
 
-Os templates e workflows apoiam governança, privacidade e compliance, mas não
-constituem parecer jurídico nem alegação de conformidade ou certificação.
+## Contributing and security
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes. Report security issues
+through the process described in [SECURITY.md](SECURITY.md); do not disclose suspected
+vulnerabilities in a public issue.
+
+## License
+
+Licensed under the Apache License, Version 2.0.
+See [LICENSE](LICENSE) for details.

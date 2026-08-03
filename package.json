@@ -1,6 +1,8 @@
 {
   "name": "verifiable-ai-governance",
   "version": "0.1.0",
+  "license": "Apache-2.0",
+  "author": "Bruno Vicco",
   "private": true,
   "workspaces": [
     "apps/web"
