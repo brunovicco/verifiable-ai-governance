@@ -88,7 +88,16 @@ chown -R ubuntu:ubuntu "$APP_DIR"
 docker compose build
 docker compose up -d
 
-# --- 8. Caddy (reverse proxy + TLS automatico) ---
+# --- 8. Semear dados de exemplo (melhor esforco - roda so no primeiro boot,
+# ja que o cloud-init nao roda de novo; nao bloqueia o resto do provisionamento
+# se falhar). Ve scripts/seed_demo_data.py: aborta sozinho se dados [DEMO] ja
+# existirem, entao seguro mesmo que este passo seja executado mais de uma vez.
+docker compose exec -T -u root api mkdir -p /workspace/scripts || true
+docker compose cp scripts/seed_demo_data.py api:/workspace/scripts/seed_demo_data.py || true
+docker compose exec -T api python scripts/seed_demo_data.py \
+  || echo "aviso: semeadura de dados de exemplo falhou ou ja existia; continuando o provisionamento"
+
+# --- 9. Caddy (reverse proxy + TLS automatico) ---
 apt-get install -y debian-keyring debian-archive-keyring apt-transport-https
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' > /etc/apt/sources.list.d/caddy-stable.list
