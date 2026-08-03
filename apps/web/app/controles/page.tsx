@@ -83,7 +83,7 @@ export default function ControlCataloguePage() {
 
       <div className="notice">
         {crosswalk.disclaimer}
-        {" "}Frameworks cobertos: {crosswalk.frameworks_covered.map((framework) => FRAMEWORK_LABELS[framework]).join(", ")}.
+        {"\n\n"}Frameworks cobertos: {crosswalk.frameworks_covered.map((framework) => FRAMEWORK_LABELS[framework]).join(", ")}.
         {" "}Pendente: {crosswalk.frameworks_pending.map((framework) => FRAMEWORK_LABELS[framework]).join(", ")}.
       </div>
 
