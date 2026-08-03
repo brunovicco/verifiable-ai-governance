@@ -14,6 +14,7 @@ from ai_governance_api.config import get_settings
 from ai_governance_api.database import engine
 from ai_governance_api.dependencies import (
     get_control_catalog,
+    get_control_crosswalk,
     get_directory_authorization_catalog,
 )
 from ai_governance_api.errors import ApplicationError, ErrorKind
@@ -130,6 +131,7 @@ def create_app() -> FastAPI:
     """Build and configure the API application."""
     settings = get_settings()
     get_control_catalog()
+    get_control_crosswalk()
     get_directory_authorization_catalog()
     configure_logging(settings.log_level)
     app = FastAPI(

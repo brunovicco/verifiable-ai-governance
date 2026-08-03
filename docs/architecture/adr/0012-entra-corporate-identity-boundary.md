@@ -1,4 +1,4 @@
-# ADR 0012 — Identidade corporativa Entra por tenant e object ID
+# ADR 0012 - Identidade corporativa Entra por tenant e object ID
 
 ## Status
 

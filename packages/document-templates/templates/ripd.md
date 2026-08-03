@@ -6,7 +6,7 @@ owner: Privacy
 legal_review_required: true
 ---
 
-# Relatório de Impacto à Proteção de Dados Pessoais — RIPD
+# Relatório de Impacto à Proteção de Dados Pessoais - RIPD
 
 > Template de apoio. Privacidade/Jurídico devem confirmar necessidade, conteúdo,
 > referência normativa e aprovação para o contexto e a data da avaliação.

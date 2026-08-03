@@ -17,7 +17,9 @@ from ai_governance_api.application.authentication import (
 )
 from ai_governance_api.application.controls import (
     ControlCatalogPort,
+    ControlCrosswalkPort,
     EvaluateInitiativeControls,
+    GetControlCrosswalk,
     InitiativeControlContextStore,
     ListControlCatalog,
 )
@@ -95,6 +97,7 @@ __all__ = [
     "BinaryContent",
     "BinaryStaging",
     "ControlCatalogPort",
+    "ControlCrosswalkPort",
     "CorporateDirectoryError",
     "CorporateDirectoryIdentityMismatch",
     "CorporateDirectoryNotApplicable",
@@ -124,6 +127,7 @@ __all__ = [
     "EvidenceSource",
     "EvidenceStore",
     "EvidenceTransactionPort",
+    "GetControlCrosswalk",
     "InitiativeControlContextStore",
     "IdentityProviderUnavailable",
     "IncidentAuditPort",

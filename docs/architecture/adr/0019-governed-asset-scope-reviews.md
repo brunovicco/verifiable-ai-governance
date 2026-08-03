@@ -1,4 +1,4 @@
-# ADR 0019 — Revisões de escopo para modelos e agentes
+# ADR 0019 - Revisões de escopo para modelos e agentes
 
 ## Status
 

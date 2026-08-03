@@ -1,4 +1,4 @@
-# ADR 0011 — Autenticação SPA com Microsoft Entra ID e MSAL
+# ADR 0011 - Autenticação SPA com Microsoft Entra ID e MSAL
 
 ## Status
 

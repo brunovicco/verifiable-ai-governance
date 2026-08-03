@@ -1,4 +1,4 @@
-# ADR 0021 — Enforcement em runtime de decisões do policy-model-router
+# ADR 0021 - Enforcement em runtime de decisões do policy-model-router
 
 ## Status
 
@@ -58,7 +58,7 @@ com `router_rejected` como fallback estável quando o roteador não informar um 
 O grupo selecionado pelo roteador só é aceito se corresponder ao `routing_group` de um
 modelo atualmente elegível: aprovado, com revisão vigente e com a classe de dado da
 iniciativa entre suas classes permitidas. Isso fecha o follow-up do ADR 0019 e do
-ADR 0020 — o roteador nunca pode aprovar um grupo que a governança não revisou
+ADR 0020 - o roteador nunca pode aprovar um grupo que a governança não revisou
 explicitamente, e a vigência calculada (`review_state`) é o critério usado, não o status
 histórico.
 
@@ -94,7 +94,7 @@ histórico.
 ## Security and privacy impact
 
 O payload enviado ao roteador contém somente workload, risco, classe de dado e limites
-operacionais estimados — nunca prompt, documento ou identificador de usuário final. A
+operacionais estimados - nunca prompt, documento ou identificador de usuário final. A
 credencial por agente (`POLICY_MODEL_ROUTER_API_KEYS_JSON`) nunca aparece em `repr()` de
 configuração nem em log. Indisponibilidade, resposta inválida ou credencial ausente
 falham fechado como `dependency_unavailable`, nunca como aprovação implícita. A

@@ -1,4 +1,4 @@
-# ADR 0018 — Restrição emergencial de acesso de identidades Entra
+# ADR 0018 - Restrição emergencial de acesso de identidades Entra
 
 ## Status
 

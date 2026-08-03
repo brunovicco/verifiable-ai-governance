@@ -1,4 +1,4 @@
-# ADR 0010 — Backup portátil e restauração isolada
+# ADR 0010 - Backup portátil e restauração isolada
 
 ## Status
 
@@ -92,4 +92,3 @@ configuração e cutover após smoke test e aprovação, preservando a origem pa
 - Adicionar assinatura ou attestation do manifesto em ambiente corporativo.
 - Testar adapters de backup gerenciado e object storage com versionamento.
 - Registrar resultados periódicos como evidência de controle operacional.
-

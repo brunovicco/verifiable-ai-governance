@@ -5,6 +5,7 @@ from typing import Protocol
 from governance_schemas import (
     ControlCatalog,
     ControlContext,
+    ControlCrosswalk,
     ControlDefinition,
     ControlEvaluation,
     InitiativeControlReport,
@@ -38,6 +39,15 @@ class ControlCatalogPort(Protocol):
         ...
 
 
+class ControlCrosswalkPort(Protocol):
+    """Versioned, non-authoritative external-framework crosswalk."""
+
+    @property
+    def crosswalk(self) -> ControlCrosswalk:
+        """Return crosswalk metadata and immutable framework references."""
+        ...
+
+
 class ListControlCatalog:
     """Return the active, versioned control catalog."""
 
@@ -48,6 +58,18 @@ class ListControlCatalog:
     def execute(self) -> ControlCatalog:
         """Return the complete active catalog without infrastructure details."""
         return self._catalog.catalog
+
+
+class GetControlCrosswalk:
+    """Return the active, versioned external-framework crosswalk."""
+
+    def __init__(self, crosswalk: ControlCrosswalkPort) -> None:
+        """Initialize the query with its crosswalk port."""
+        self._crosswalk = crosswalk
+
+    def execute(self) -> ControlCrosswalk:
+        """Return the complete active crosswalk without infrastructure details."""
+        return self._crosswalk.crosswalk
 
 
 class EvaluateInitiativeControls:

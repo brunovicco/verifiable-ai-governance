@@ -1,4 +1,4 @@
-# ADR 0002 — Gates condicionais e fail-closed
+# ADR 0002 - Gates condicionais e fail-closed
 
 - Status: aceito
 - Data: 2026-07-31

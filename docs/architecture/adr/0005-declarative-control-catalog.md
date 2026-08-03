@@ -1,4 +1,4 @@
-# ADR 0005 — Catálogo declarativo de controles
+# ADR 0005 - Catálogo declarativo de controles
 
 - Status: aceito
 - Data: 2026-07-31

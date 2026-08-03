@@ -270,7 +270,7 @@ excepcionado, controles compensatórios e prazo de expiração explícitos. O st
 persistido nunca é reescrito pela passagem do tempo; a vigência
 (`pending`/`active`/`expired`/`rejected`/`revoked`) é calculada em tempo de leitura, no
 mesmo padrão usado para a vigência de revisões de ativos. Decidir uma exceção exige um
-administrador diferente de quem a solicitou — segregação de funções aplicada no
+administrador diferente de quem a solicitou - segregação de funções aplicada no
 domínio. Toda mutação de incidente, kill switch ou exceção reusa o mesmo mutex
 transacional por sistema já decidido para o inventário operacional. Consulte o
 ADR 0022.
@@ -284,7 +284,7 @@ revisão de modelos e agentes por nível de risco, incidentes por status e remed
 vencidas, e exceções temporárias por vigência. Vigência de revisão e de exceção são
 recomputadas a partir das mesmas funções puras de domínio já usadas em todo o resto do
 produto (`asset_review_state()`, `evaluate_exception_state()`), nunca duplicadas em
-SQL. "Custo" é mostrado como bloqueios por limite de custo, nunca como gasto real —
+SQL. "Custo" é mostrado como bloqueios por limite de custo, nunca como gasto real -
 nenhuma tabela de gasto observado existe. "Drift" é exibido como métrica
 explicitamente indisponível, pendente da integração ainda não construída com
 `ragforge`, em vez de omitida ou fabricada. Consulte o ADR 0023.
@@ -293,7 +293,7 @@ O mesmo endpoint também agrega risco residual (`Assessment.risk_tier`, o valor
 informado na resposta estruturada e persistido na submissão), cobertura de avaliações
 estruturadas (interseção entre `required_documents` da iniciativa e os três valores
 conhecidos de `AssessmentKind`) e tempo médio de ciclo observado (rodadas de revisão e
-remediação de incidentes) — nunca como "% dentro do SLA", já que nenhum prazo-alvo é
+remediação de incidentes) - nunca como "% dentro do SLA", já que nenhum prazo-alvo é
 declarado nesta plataforma. Efetividade de controles recebe o mesmo tratamento de
 indisponibilidade explícita que "drift", porque o catálogo hoje só registra
 aplicabilidade estática, nunca verificação de evidência. Consulte o ADR 0024.

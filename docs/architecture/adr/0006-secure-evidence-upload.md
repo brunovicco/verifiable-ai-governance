@@ -1,4 +1,4 @@
-# ADR 0006 — Upload seguro de evidências
+# ADR 0006 - Upload seguro de evidências
 
 - Status: aceito
 - Data: 2026-07-31

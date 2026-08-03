@@ -171,7 +171,7 @@ export default function OperationalMonitoringPage() {
             </tbody>
           </table>
           <p><small>
-            Tempo médio observado, não percentual de cumprimento de meta — nenhum prazo-alvo
+            Tempo médio observado, não percentual de cumprimento de meta - nenhum prazo-alvo
             está declarado nesta plataforma.
           </small></p>
         </article>

@@ -1,4 +1,4 @@
-# ADR 0014 — Catálogo versionado de autorização Entra
+# ADR 0014 - Catálogo versionado de autorização Entra
 
 ## Status
 

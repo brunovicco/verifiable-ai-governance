@@ -11,6 +11,12 @@ from governance_schemas.controls import (
     ControlType,
     InitiativeControlReport,
 )
+from governance_schemas.crosswalk import (
+    ControlCrosswalk,
+    ControlCrosswalkEntry,
+    CrosswalkFramework,
+    CrosswalkReference,
+)
 from governance_schemas.enums import (
     ApprovalArea,
     ApprovalStatus,
@@ -36,11 +42,15 @@ __all__ = [
     "ControlApplicability",
     "ControlCatalog",
     "ControlContext",
+    "ControlCrosswalk",
+    "ControlCrosswalkEntry",
     "ControlDefinition",
     "ControlDomain",
     "ControlEvaluation",
     "ControlFlag",
     "ControlType",
+    "CrosswalkFramework",
+    "CrosswalkReference",
     "DataClassification",
     "DecisionImpact",
     "EntityStatus",

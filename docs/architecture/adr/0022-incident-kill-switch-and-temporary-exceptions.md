@@ -1,4 +1,4 @@
-# ADR 0022 — Incidentes, kill switch e exceções temporárias
+# ADR 0022 - Incidentes, kill switch e exceções temporárias
 
 ## Status
 
@@ -14,7 +14,7 @@ O backlog P1 previa "Incidentes, kill switch, exceções temporárias e plano de
 remediação" como funcionalidade nativa da plataforma, não um wrapper de projeto
 externo. Uma tabela `Incident` já existia no schema (criada pelo `create_all()` inicial
 da migração 0001), com `title`, `severity`, `status`, `description`, `detected_at`,
-`owner_id` e `containment`, mas sem domínio, aplicação, adapter, router ou schema —
+`owner_id` e `containment`, mas sem domínio, aplicação, adapter, router ou schema -
 estava preparada, não construída. `Agent.kill_switch_enabled` já tinha um significado
 real, porém estreito: `review_agent_scope()` exige o campo `true` para aprovar o
 escopo de um agente, mas nada no código executa essa parada em runtime.
@@ -32,7 +32,7 @@ material" também já estava declarado, sem modelo de dados correspondente.
 O domínio `domain/incidents.py` modela um ciclo de vida linear e explícito:
 `open → contained → remediating → closed`, validado por um mapa de transições
 permitidas. Encerrar um incidente exige um plano de remediação completo (responsável,
-prazo e descrição) já registrado — a mesma disciplina de "não aceitar estado
+prazo e descrição) já registrado - a mesma disciplina de "não aceitar estado
 incompleto" já usada em `review_model_scope`/`review_agent_scope`.
 
 O kill switch em runtime é uma ação nova e distinta da declaração revisada: o agente
@@ -43,18 +43,18 @@ restaurar exige um acionamento vigente. Isso preserva o significado já existent
 `kill_switch_enabled` em vez de sobrepor um novo comportamento a ele.
 
 Exceções temporárias (`PolicyException`) são sempre vinculadas a um incidente, com
-`purpose`, `scope_description`, `compensating_controls` e `expires_at` obrigatórios —
+`purpose`, `scope_description`, `compensating_controls` e `expires_at` obrigatórios -
 os quatro elementos exigidos pelo ADR 0002 e pela linguagem de "finalidade, acesso,
 retenção e aprovação explícitos" já usada para exceções de telemetria. O status
 persistido (`pending`/`approved`/`rejected`/`revoked`) nunca é reescrito pela
 passagem do tempo; a vigência (`pending`/`active`/`expired`/`rejected`/`revoked`) é
 calculada em tempo de leitura comparando `expires_at` a `now`, no mesmo padrão de
-`asset_review_state`. Decidir uma exceção exige `decided_by != requested_by` —
+`asset_review_state`. Decidir uma exceção exige `decided_by != requested_by` -
 segregação de funções aplicada no domínio, não apenas documentada.
 
 Toda mutação de incidente, kill switch ou exceção adquire o lock `SELECT ... FOR
 UPDATE OF ai_systems` do sistema envolvido antes de validar versão ou estado, reusando
-exatamente o mutex transacional por agregado já decidido no ADR 0020 — não um segundo
+exatamente o mutex transacional por agregado já decidido no ADR 0020 - não um segundo
 mecanismo de concorrência.
 
 ## Alternatives considered
@@ -72,7 +72,7 @@ mecanismo de concorrência.
   obrigatória é a aproximação honesta mais próxima, registrada aqui como simplificação
   conhecida frente à linguagem "aprovação do comitê" do ADR 0002.
 - **Autoridade de kill switch restrita a Segurança/DevOps:** rejeitado pelo mesmo
-  motivo — reaproveita o limite "owner do sistema ou administrador" já usado em toda
+  motivo - reaproveita o limite "owner do sistema ou administrador" já usado em toda
   mutação de inventário, em vez de inventar um novo recorte de papel.
 - **Persistir apenas o resultado final de cada tentativa, sem o registro `pending`
   inicial:** não se aplica a este desenho da mesma forma que ao roteamento de modelos,
@@ -87,7 +87,7 @@ mecanismo de concorrência.
 - `Agent` ganha três colunas novas de kill switch em runtime, sem alterar o
   significado de `kill_switch_enabled`;
 - `PolicyException` é uma tabela nova, sempre vinculada a um incidente;
-- decisões de exceção ficam restritas a administradores — uma simplificação a
+- decisões de exceção ficam restritas a administradores - uma simplificação a
   revisar se um modelo de autorização mais rico for adotado;
 - nenhuma revisão de modelo ou agente existente é invalidada por esta migração (ao
   contrário da 0008): os campos novos são aditivos e opcionais.
@@ -109,7 +109,7 @@ contornar a regra sem também contornar o teste de arquitetura.
 
 A migração 0009 é somente aditiva: novas colunas nulas em `incidents` e `agents`,
 mais a tabela `policy_exceptions`. Não há reprocessamento de dados existentes nem
-invalidação de aprovações. A funcionalidade é sempre ativa — diferente das integrações
+invalidação de aprovações. A funcionalidade é sempre ativa - diferente das integrações
 opt-in como `policy-model-router`, incidentes fazem parte do núcleo do produto e não
 têm flag de habilitação.
 

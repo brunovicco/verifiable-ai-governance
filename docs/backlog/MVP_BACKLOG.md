@@ -1,6 +1,6 @@
 # Backlog do MVP
 
-## P0 — Tornar o núcleo utilizável
+## P0 - Tornar o núcleo utilizável
 
 - [x] Monorepo, setup local, PostgreSQL, API, portal, testes e CI.
 - [x] Cadastro, triagem, gates condicionais, SoD, auditoria e versionamento.
@@ -14,7 +14,7 @@
 - [x] Política de backup/restauração testada para PostgreSQL e evidências.
 - [x] Tornar a imagem ClamAV do ambiente local compatível com hosts ARM64.
 
-## P1 — Operação e assurance
+## P1 - Operação e assurance
 
 - [x] Adapter do portal via Microsoft Entra ID, authorization code com PKCE e cache de sessão.
 - [ ] Validação do login contra tenant Entra real e Conditional Access.
@@ -36,10 +36,10 @@
 - [x] Dashboard de violações, blocked actions, drift (indisponível), custo (limites) e revisões vencidas.
 - [x] Incidentes, kill switch, exceções temporárias e plano de remediação.
 
-## P2 — Escala e portfólio
+## P2 - Escala e portfólio
 
 - [ ] Overlays para serviços financeiros, RH, saúde e conhecimento corporativo.
-- [ ] Crosswalk de apoio com NIST AI RMF, ISO/IEC 42001, NIST AI 600-1 e OWASP.
+- [x] Crosswalk de apoio com NIST AI RMF, NIST AI 600-1, OWASP LLM Top 10, OWASP Agentic Top 10 e MITRE ATLAS, com citações lidas diretamente dos textos-fonte oficiais (ISO/IEC 42001 pendente - norma licenciada, sem texto-fonte).
 - [ ] Exportação de pacote de evidências para auditoria.
 - [ ] APIs/webhooks para CMDB, catálogo de dados, CI/CD e GRC.
 - [x] Métricas executivas de cobertura, tempo de ciclo (sem meta declarada), risco residual e efetividade de controles (indisponível).

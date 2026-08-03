@@ -1,4 +1,4 @@
-# ADR 0009 — Migrações bloqueantes no startup do Compose
+# ADR 0009 - Migrações bloqueantes no startup do Compose
 
 ## Status
 

@@ -1,4 +1,4 @@
-# ADR 0007 — Rodadas imutáveis de revisão e resubmissão
+# ADR 0007 - Rodadas imutáveis de revisão e resubmissão
 
 - Status: aceito
 - Data: 2026-08-01
