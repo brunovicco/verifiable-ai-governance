@@ -40,7 +40,9 @@ Regardless of platform:
 Reference implementation for a publicly reachable demo (not local-only): a
 Terraform module provisioning this Compose stack on an OCI Always Free
 Ampere A1 instance, with Caddy for automatic TLS and temporary Basic Auth
-ahead of an Entra ID migration - see `ops/oci-demo/`.
+ahead of an Entra ID migration - see `ops/oci-demo/`. A GCP Compute Engine
+equivalent (no permanent free tier, sized for a new-account trial credit)
+is at `ops/gcp-demo/` for when OCI Always Free capacity is unavailable.
 
 ### Limitations
 
