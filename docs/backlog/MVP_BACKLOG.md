@@ -1,51 +1,64 @@
-# Backlog do MVP
+# MVP backlog
 
-## P0 - Tornar o núcleo utilizável
+## P0 - Make the core usable
 
-- [x] Monorepo, setup local, PostgreSQL, API, portal, testes e CI.
-- [x] Cadastro, triagem, gates condicionais, SoD, auditoria e versionamento.
-- [x] CRUD e telas de AI systems, modelos e agentes ligados à iniciativa aprovada.
-- [x] Assessment estruturado para AIA, RIPD e processamento internacional.
-- [x] Catálogo inicial de 25 controles em YAML e visualização de aplicabilidade.
-- [x] Upload seguro de evidências com object storage, checksum do arquivo e malware scan.
-- [x] Workflow de revisão, solicitação de ajuste e resubmissão sem apagar histórico.
-- [x] Integração OIDC validada com ao menos um provedor e mapeamento de grupos.
-- [x] Migrações explícitas e bloqueantes no startup do Compose.
-- [x] Política de backup/restauração testada para PostgreSQL e evidências.
-- [x] Tornar a imagem ClamAV do ambiente local compatível com hosts ARM64.
+- [x] Monorepo, local setup, PostgreSQL, API, portal, tests and CI.
+- [x] Registration, triage, conditional gates, SoD, auditing and versioning.
+- [x] CRUD and screens for AI systems, models and agents linked to the approved
+  initiative.
+- [x] Structured assessment for AIA, RIPD and international processing.
+- [x] Initial catalog of 25 controls in YAML and applicability view.
+- [x] Secure evidence upload with object storage, file checksum and malware scan.
+- [x] Review workflow, change request and resubmission without erasing history.
+- [x] OIDC integration validated with at least one provider and group mapping.
+- [x] Explicit, blocking migrations at Compose startup.
+- [x] Backup/restore policy tested for PostgreSQL and evidence.
+- [x] Make the local environment's ClamAV image compatible with ARM64 hosts.
 
-## P1 - Operação e assurance
+## P1 - Operation and assurance
 
-- [x] Adapter do portal via Microsoft Entra ID, authorization code com PKCE e cache de sessão.
-- [ ] Validação do login contra tenant Entra real e Conditional Access.
-- [x] Identidade corporativa por `(tid, oid)`, tenant allowlist e política para guests.
-- [x] Microsoft Graph via OBO para perfil, `department` e grupos transitivos do usuário.
-- [x] Catálogo versionado de App Roles/object IDs Entra para áreas de aprovação.
-- [ ] Group overage, paginação, throttling, cache, revogação e stale identity fail-closed.
-  - [x] Paginação confiável, retry limitado, jitter e eventos de throttling sem conteúdo.
-  - [x] Group overage explícito sem seguir URLs controladas pelo token.
-  - [x] Cache PostgreSQL com TTL, freshness, binding ao catálogo e invalidação distribuída.
-  - [x] Bloqueio/restauração emergencial persistente na plataforma, fail-closed e auditado.
-  - [ ] Revogação de sessão no provedor e validação contra tenant Entra real.
-- [x] Model/agent registry com approved scope, região, versão e datas de revisão.
-- [x] Adapter de decisão do `policy-model-router`.
-- [ ] Ingestão sanitizada de telemetria do `a2a-otel-kit`.
-- [ ] Contratos de evidência inspirados em `engineering-loop-schemas`.
-- [ ] Registro de execução isolada do `alicerce`.
-- [ ] Importação de avaliações e regressões do `ragforge`.
-- [x] Dashboard de violações, blocked actions, drift (indisponível), custo (limites) e revisões vencidas.
-- [x] Incidentes, kill switch, exceções temporárias e plano de remediação.
+- [x] Portal adapter via Microsoft Entra ID, authorization code with PKCE and
+  session cache.
+- [ ] Login validation against a real Entra tenant and Conditional Access.
+- [x] Corporate identity via `(tid, oid)`, tenant allowlist and guest policy.
+- [x] Microsoft Graph via OBO for profile, `department` and the user's transitive
+  groups.
+- [x] Versioned catalog of Entra App Roles/object IDs for approval areas.
+- [ ] Group overage, pagination, throttling, cache, revocation and stale identity
+  fail-closed.
+  - [x] Reliable pagination, bounded retry, jitter and content-free throttling
+    events.
+  - [x] Explicit group overage without following token-controlled URLs.
+  - [x] PostgreSQL cache with TTL, freshness, catalog binding and distributed
+    invalidation.
+  - [x] Persistent platform emergency block/restore, fail-closed and audited.
+  - [ ] Provider-side session revocation and validation against a real Entra
+    tenant.
+- [x] Model/agent registry with approved scope, region, version and review dates.
+- [x] `policy-model-router` decision adapter.
+- [ ] Sanitized telemetry ingestion from `a2a-otel-kit`.
+- [ ] Evidence contracts inspired by `engineering-loop-schemas`.
+- [ ] Isolated execution record from `alicerce`.
+- [ ] Import of evaluations and regressions from `ragforge`.
+- [x] Dashboard of violations, blocked actions, drift (unavailable), cost
+  (limits) and overdue reviews.
+- [x] Incidents, kill switch, temporary exceptions and remediation plan.
 
-## P2 - Escala e portfólio
+## P2 - Scale and portfolio
 
-- [ ] Overlays para serviços financeiros, RH, saúde e conhecimento corporativo.
-- [x] Crosswalk de apoio com NIST AI RMF, NIST AI 600-1, OWASP LLM Top 10, OWASP Agentic Top 10 e MITRE ATLAS, com citações lidas diretamente dos textos-fonte oficiais (ISO/IEC 42001 pendente - norma licenciada, sem texto-fonte).
-- [ ] Exportação de pacote de evidências para auditoria.
-- [ ] APIs/webhooks para CMDB, catálogo de dados, CI/CD e GRC.
-- [x] Métricas executivas de cobertura, tempo de ciclo (sem meta declarada), risco residual e efetividade de controles (indisponível).
+- [ ] Overlays for financial services, HR, healthcare and corporate knowledge.
+- [x] Supporting crosswalk with NIST AI RMF, NIST AI 600-1, OWASP LLM Top 10,
+  OWASP Agentic Top 10 and MITRE ATLAS, with citations read directly from the
+  official source texts (ISO/IEC 42001 pending - a licensed standard, no source
+  text).
+- [ ] Evidence package export for audit.
+- [ ] APIs/webhooks for CMDB, data catalog, CI/CD and GRC.
+- [x] Executive metrics for coverage, cycle time (no declared target), residual
+  risk and control effectiveness (unavailable).
 
 ## Definition of done
 
-Uma história não termina apenas com tela ou endpoint. Exige contrato, autorização,
-persistência/versionamento quando aplicável, audit event, testes, documentação,
-mensagens compreensíveis e comportamento seguro quando dependências falham.
+A story is not done just because it has a screen or endpoint. It requires a
+contract, authorization, persistence/versioning where applicable, an audit event,
+tests, documentation, understandable messages and safe behavior when dependencies
+fail.

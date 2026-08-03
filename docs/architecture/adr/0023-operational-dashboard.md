@@ -1,8 +1,8 @@
-# ADR 0023 - Dashboard operacional
+# ADR 0023 - Operational dashboard
 
 ## Status
 
-Aceito.
+Accepted.
 
 ## Date
 
@@ -10,104 +10,101 @@ Aceito.
 
 ## Context
 
-O backlog P1 pedia um "Dashboard de violações, blocked actions, drift, custo e
-revisões vencidas." Antes de desenhar a agregação, verificamos exatamente quais desses
-cinco nomes já têm dado real persistido nesta plataforma:
+The P1 backlog asked for a "Dashboard of violations, blocked actions, drift, cost, and
+overdue reviews." Before designing the aggregation, we checked exactly which of those
+five names already have real persisted data on this platform:
 
-- **Blocked actions**: real - `ModelRoutingDecisionEntry.outcome`/`.reason_code`
-  (feature de roteamento de modelos, ADR 0021) já persiste cada tentativa.
-- **Revisões vencidas**: real - `ReviewableAssetMixin.review_state` já computa
-  `not_reviewed`/`current`/`expired` em tempo de leitura via `asset_review_state()`
+- **Blocked actions**: real - `ModelRoutingDecisionEntry.outcome`/`.reason_code` (the
+  model routing feature, ADR 0021) already persists every attempt.
+- **Overdue reviews**: real - `ReviewableAssetMixin.review_state` already computes
+  `not_reviewed`/`current`/`expired` at read time via `asset_review_state()`
   (ADR 0019/0020).
-- **Incidentes com remediação vencida** e **exceções ativas**: reais - adicionados
-  pela feature de incidentes (ADR 0022).
-- **Custo**: só existem *limites* declarados (`Agent.max_cost`,
-  `ModelRoutingDecisionEntry.max_cost_usd`), nunca gasto real observado. Nenhuma
-  tabela de gasto existe.
-- **Drift**: nenhum dado persistido em lugar nenhum do código. Aparece apenas como
-  cabeçalho de coluna em `packages/document-templates/templates/monitoring-plan.md`
-  e como prosa em `docs/governance/MONITORING.md`/`STAGE_GATES.md`. Depende da
-  integração ainda não construída com `ragforge` (avaliações e regressões).
+- **Incidents with overdue remediation** and **active exceptions**: real - added by the
+  incidents feature (ADR 0022).
+- **Cost**: only declared *limits* exist (`Agent.max_cost`,
+  `ModelRoutingDecisionEntry.max_cost_usd`), never observed actual spend. No spend table
+  exists.
+- **Drift**: no persisted data anywhere in the code. It appears only as a column header
+  in `packages/document-templates/templates/monitoring-plan.md` and as prose in
+  `docs/governance/MONITORING.md`/`STAGE_GATES.md`. It depends on the still-unbuilt
+  integration with `ragforge` (evaluations and regressions).
 
-Um produto de governança e assurance não pode fabricar evidência. A decisão de
-desenho segue diretamente dessa restrição.
+A governance and assurance product cannot fabricate evidence. The design decision
+follows directly from that constraint.
 
-`GET /api/v1/systems` (`routers/inventory.py`) já lista todos os sistemas de IA da
-plataforma exigindo apenas `CurrentPrincipal` - nenhuma checagem de ownership. Isso já
-estabelece que leituras de portfólio, não restritas a um dono, são um padrão de
-autorização existente nesta base, não algo novo a inventar.
+`GET /api/v1/systems` (`routers/inventory.py`) already lists every AI system on the
+platform, requiring only `CurrentPrincipal` - no ownership check. This already
+establishes that portfolio-wide reads, not restricted to an owner, are an existing
+authorization pattern in this codebase, not something new to invent.
 
 ## Decision
 
-Um único endpoint, `GET /api/v1/dashboard`, agrega quatro fontes reais e expõe a
-quinta (drift) como indisponível de forma explícita - nunca omitida silenciosamente
-nem fabricada. A autorização reusa exatamente o padrão de `GET /api/v1/systems`:
-qualquer principal autenticado, sem checagem de ownership, porque supervisão de
-portfólio é o propósito do recurso.
+A single endpoint, `GET /api/v1/dashboard`, aggregates four real sources and exposes the
+fifth (drift) as explicitly unavailable - never silently omitted nor fabricated.
+Authorization reuses exactly the pattern of `GET /api/v1/systems`: any authenticated
+principal, with no ownership check, because portfolio oversight is the resource's
+purpose.
 
-"Custo" é mostrado como bloqueios por limite de custo
-(`reason_code=cost_limit_exceeded` nas decisões de roteamento), nunca como gasto -
-a única leitura honesta possível hoje.
+"Cost" is shown as blocks due to cost limits (`reason_code=cost_limit_exceeded` in
+routing decisions), never as spend - the only honest reading available today.
 
-Vigência de revisão e de exceção são recomputadas em Python a partir das mesmas
-funções puras já usadas em todo o resto do produto (`asset_review_state()`,
-`evaluate_exception_state()`), não reimplementadas em SQL bruto. O adapter
-(`adapters/dashboard_persistence.py`) devolve apenas fatos crus
-(`approved_scope_digest`, `next_review_at`, `risk_tier` / `status`, `expires_at`); o
-caso de uso (`application/dashboard.py::BuildDashboardSnapshot`) aplica a mesma regra
-de negócio já testada em vez de mantê-la em dois lugares que poderiam divergir (por
-exemplo, se `MAX_REVIEW_INTERVAL` mudar no futuro). Contagens de status de incidente e
-de outcome de roteamento, por serem campos diretamente persistidos sem regra
-computada, são agregadas com `GROUP BY` normal.
+Review and exception validity are recomputed in Python from the same pure functions
+already used across the rest of the product (`asset_review_state()`,
+`evaluate_exception_state()`), not reimplemented in raw SQL. The adapter
+(`adapters/dashboard_persistence.py`) returns only raw facts
+(`approved_scope_digest`, `next_review_at`, `risk_tier` / `status`, `expires_at`); the
+use case (`application/dashboard.py::BuildDashboardSnapshot`) applies the same already-
+tested business rule instead of keeping it in two places that could diverge (for
+example, if `MAX_REVIEW_INTERVAL` changes in the future). Incident status counts and
+routing outcome counts, being directly persisted fields with no computed rule, are
+aggregated with a plain `GROUP BY`.
 
-Nenhuma migração de banco é necessária: o dashboard é uma leitura agregada sobre
-tabelas que já existem por causa das features de roteamento (ADR 0021) e incidentes
-(ADR 0022).
+No database migration is needed: the dashboard is an aggregated read over tables that
+already exist because of the routing (ADR 0021) and incidents (ADR 0022) features.
 
 ## Alternatives considered
 
-- **Computar vigência de revisão/exceção em SQL bruto para performance:** rejeitado
-  - duplicaria uma regra de negócio já existente em domínio puro, com risco real de
-  divergência silenciosa entre a versão SQL e a versão Python se a regra mudar.
-- **Fabricar um número de "drift" a partir de um proxy (por exemplo, contagem de
-  invalidações de revisão):** rejeitado - invalidação de revisão mede outra coisa
-  (mudança de escopo), e apresentá-la como "drift" enganaria quem lê o painel. Um
-  produto de assurance não pode inventar evidência.
-- **Restringir o dashboard ao escopo do owner, como a maioria dos outros
-  endpoints:** rejeitado - o propósito de um dashboard operacional é justamente a
-  visão de portfólio; restringi-lo por ownership o esvaziaria. O precedente de
-  `GET /api/v1/systems` já mostra que essa exceção é aceita nesta base.
-- **Métricas com janela de tempo (por exemplo, "últimos 30 dias"):** adiado para uma
-  entrega futura; a v1 é um retrato all-time, mais simples de implementar e validar
-  corretamente primeiro.
+- **Compute review/exception validity in raw SQL for performance:** rejected - it would
+  duplicate a business rule that already exists in pure domain code, with a real risk of
+  silent divergence between the SQL version and the Python version if the rule changes.
+- **Fabricate a "drift" number from a proxy (e.g., count of review invalidations):**
+  rejected - a review invalidation measures something else (scope change), and
+  presenting it as "drift" would mislead the panel's reader. An assurance product cannot
+  invent evidence.
+- **Restrict the dashboard to the owner's scope, like most other endpoints:** rejected -
+  the purpose of an operational dashboard is precisely portfolio-wide visibility;
+  restricting it by ownership would defeat that. The precedent of `GET /api/v1/systems`
+  already shows this exception is accepted in this codebase.
+- **Metrics with a time window (e.g., "last 30 days"):** deferred to a future delivery;
+  v1 is an all-time snapshot, simpler to implement and validate correctly first.
 
 ## Consequences
 
-- nenhuma nova migração, nenhuma nova dependência de frontend (sem biblioteca de
-  gráficos - o painel usa os mesmos `panel`/tabelas já usados em todo o portal);
-- vigência de revisão e de exceção são recomputadas a cada requisição sobre todas as
-  linhas da plataforma; aceitável na escala atual, deve ser revisitado (paginação ou
-  cache) se o número de modelos/agentes/exceções crescer significativamente;
-- "drift" permanece um placeholder explícito até a integração com `ragforge`;
-- o painel não tem cache: cada carregamento reflete o estado corrente, coerente com o
-  princípio de nunca apresentar um estado obsoleto como atual.
+- no new migration, no new frontend dependency (no charting library - the panel uses
+  the same `panel`/tables already used throughout the portal);
+- review and exception validity are recomputed on every request over every row on the
+  platform; acceptable at the current scale, should be revisited (pagination or cache)
+  if the number of models/agents/exceptions grows significantly;
+- "drift" remains an explicit placeholder until the `ragforge` integration exists;
+- the panel has no cache: every load reflects the current state, consistent with the
+  principle of never presenting a stale state as current.
 
 ## Security and privacy impact
 
-A resposta contém apenas contagens agregadas - nenhum identificador de usuário
-final, conteúdo de prompt ou documento, nem detalhe por sistema além do necessário
-para o agrupamento por risco. A autorização "qualquer autenticado" é a mesma já usada
-para listar sistemas; nenhum novo limite de exposição é introduzido.
+The response contains only aggregated counts - no end-user identifier, prompt or
+document content, and no per-system detail beyond what is needed for grouping by risk.
+The "any authenticated" authorization is the same already used to list systems; no new
+exposure boundary is introduced.
 
 ## Operational impact
 
-Sem migração. A funcionalidade é sempre ativa, sem flag de habilitação, assim como as
-features de incidentes e roteamento que a alimentam.
+No migration. The feature is always on, with no enablement flag, just like the
+incidents and routing features that feed it.
 
 ## Follow-up
 
-- adicionar drift quando a integração com `ragforge` existir;
-- considerar métricas com janela de tempo além do retrato all-time atual;
-- considerar paginação ou cache se o número de linhas agregadas crescer;
-- ligar os números do painel a visões filtradas (por exemplo, clicar em "remediações
-  vencidas" deveria levar à lista desses incidentes).
+- add drift once the `ragforge` integration exists;
+- consider metrics with a time window beyond the current all-time snapshot;
+- consider pagination or caching if the number of aggregated rows grows;
+- link the panel's numbers to filtered views (e.g., clicking "overdue remediations"
+  should lead to the list of those incidents).

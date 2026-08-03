@@ -1,59 +1,59 @@
-# ADR 0006 - Upload seguro de evidências
+# ADR 0006 - Secure evidence upload
 
-- Status: aceito
-- Data: 2026-07-31
+- Status: accepted
+- Date: 2026-07-31
 
-## Contexto
+## Context
 
-Uma referência digitada em uma aprovação não prova que um artefato foi recebido,
-preservado ou verificado. O portal precisa aceitar arquivos de áreas não técnicas sem
-transformar a API, o banco ou os logs em repositórios de conteúdo potencialmente
-malicioso e sensível.
+A reference typed into an approval does not prove that an artifact was received,
+preserved, or verified. The portal needs to accept files from non-technical areas
+without turning the API, the database, or the logs into repositories of potentially
+malicious and sensitive content.
 
-## Decisão
+## Decision
 
-- manter referências de aprovação existentes como `trusted_source=false` e distinguir
-  os uploads verificados;
-- restringir upload ao owner da iniciativa ou administrador de governança;
-- aceitar inicialmente PDF, PNG, JPEG, TXT, CSV e JSON, com extensão, media type,
-  assinatura e estrutura textual validados no servidor;
-- limitar o stream durante a leitura e calcular SHA-256 sobre os mesmos bytes enviados
-  ao scanner e ao storage;
-- limitar o corpo ASGI antes do parser multipart e do spooling temporário, inclusive
-  quando `Content-Length` estiver ausente;
-- exigir veredito limpo do ClamAV via `INSTREAM`; indisponibilidade, timeout, erro ou
-  resposta ambígua bloqueiam a operação;
-- usar chave aleatória `evidence/{initiative_id}/{evidence_id}`, nunca o nome informado
-  pelo cliente;
-- gravar o arquivo em bucket S3 privado, com criação automática permitida apenas em
-  ambiente local e criptografia server-side obrigatória fora de local/teste;
-- persistir metadados e audit event na mesma transação; se ela falhar depois do upload,
-  executar rollback e remoção compensatória do objeto;
-- não retornar bucket, chave ou URI interna na API e não registrar nome nem conteúdo no
-  audit log;
-- restringir upload e consulta dos metadados ao owner ou administrador;
-- configurar tamanho, allowlist, endpoints, timeouts, bucket, região e credenciais por
-  variáveis de ambiente.
+- keep existing approval references as `trusted_source=false` and distinguish them
+  from verified uploads;
+- restrict upload to the initiative owner or a governance administrator;
+- initially accept PDF, PNG, JPEG, TXT, CSV, and JSON, with extension, media type,
+  signature, and textual structure validated on the server;
+- bound the stream during reading and compute SHA-256 over the same bytes sent to the
+  scanner and to storage;
+- limit the ASGI body before the multipart parser and temporary spooling, including
+  when `Content-Length` is absent;
+- require a clean ClamAV verdict via `INSTREAM`; unavailability, timeout, error, or an
+  ambiguous response blocks the operation;
+- use a random key `evidence/{initiative_id}/{evidence_id}`, never the name provided
+  by the client;
+- write the file to a private S3 bucket, with auto-create allowed only in the local
+  environment and server-side encryption mandatory outside local/test;
+- persist metadata and the audit event in the same transaction; if it fails after the
+  upload, roll back and compensate by deleting the object;
+- do not return the bucket, key, or internal URI in the API and do not log the name or
+  content in the audit log;
+- restrict upload and metadata query to the owner or administrator;
+- configure size, allowlist, endpoints, timeouts, bucket, region, and credentials via
+  environment variables.
 
-O caso de uso define portas para stream, scanner, object storage, persistência,
-auditoria e transação. FastAPI, SQLAlchemy, ClamAV e S3 permanecem adapters externos,
-preservando Dependency Inversion e testabilidade.
+The use case defines ports for stream, scanner, object storage, persistence, audit,
+and transaction. FastAPI, SQLAlchemy, ClamAV, and S3 remain external adapters,
+preserving Dependency Inversion and testability.
 
-## Consequências
+## Consequences
 
-- o fluxo falha fechado se scanner ou object storage estiverem indisponíveis;
-- a validação estrutural lê no máximo o limite configurado em memória depois do
-  spooling; o padrão é 10 MiB e o teto de configuração é 50 MiB;
-- ClamAV detecta malware conhecido, mas não substitui content disarm and reconstruction
-  nem análise humana; PDFs não são renderizados pelo portal;
-- atualizações das assinaturas, retenção, versionamento/immutability do bucket e
-  lifecycle continuam sendo responsabilidades operacionais;
-- o bucket deve ser privado, usar credencial de menor privilégio e política de retenção;
-  ClamAV deve permanecer em rede privada e o diretório temporário do runtime deve usar
-  storage efêmero protegido;
-- uma falha de remoção compensatória pode deixar objeto órfão; lifecycle e reconciliação
-  do bucket devem removê-lo sem depender de listagem pública;
-- download e autorização granular para revisores não fazem parte desta fatia e devem
-  usar URLs assinadas curtas, nunca tornar o bucket público.
-- as imagens de desenvolvimento usam tags de versão verificadas; deploys endurecidos
-  devem fixar também seus digests e verificar SBOM/assinatura no pipeline de supply chain.
+- the flow fails closed if the scanner or object storage is unavailable;
+- structural validation reads at most the configured limit in memory after spooling;
+  the default is 10 MiB and the configuration ceiling is 50 MiB;
+- ClamAV detects known malware, but does not replace content disarm and
+  reconstruction nor human review; PDFs are not rendered by the portal;
+- signature updates, retention, bucket versioning/immutability, and lifecycle remain
+  operational responsibilities;
+- the bucket must be private, use a least-privilege credential, and a retention
+  policy; ClamAV must remain on a private network and the runtime's temporary
+  directory must use protected ephemeral storage;
+- a failed compensating delete can leave an orphaned object; bucket lifecycle and
+  reconciliation must remove it without relying on public listing;
+- download and granular authorization for reviewers are not part of this slice and
+  must use short-lived signed URLs, never making the bucket public.
+- development images use verified version tags; hardened deployments must also pin
+  their digests and verify SBOM/signature in the supply-chain pipeline.

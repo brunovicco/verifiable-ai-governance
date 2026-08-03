@@ -1,0 +1,76 @@
+name: Security scan
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  python-dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: uv sync --all-packages --locked
+      - run: >-
+          uv export --frozen --no-hashes --all-packages --no-emit-workspace
+          -o requirements-audit.txt
+      - name: pip-audit
+        run: >-
+          uvx pip-audit -r requirements-audit.txt --no-deps --disable-pip
+          --ignore-vuln PYSEC-2026-1845
+        # PYSEC-2026-1845: pytest <9.0.3 insecure /tmp/pytest-of-{user} handling
+        # on shared UNIX hosts (local-attacker only). Test-only dependency, never
+        # shipped in a runtime image; pyproject.toml pins pytest<9, and a 9.x
+        # bump needs its own PR to validate the suite against the new major
+        # version. Revisit this ignore when that bump lands.
+
+  web-dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+
+  container-scan:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            dockerfile: apps/api/Dockerfile
+            target: ""
+          - name: web
+            dockerfile: apps/web/Dockerfile
+            target: runner
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
+          push: false
+          load: true
+          tags: governance-${{ matrix.name }}:scan
+      - uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: governance-${{ matrix.name }}:scan
+          severity: "HIGH,CRITICAL"
+          exit-code: "1"
+          ignore-unfixed: true

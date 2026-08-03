@@ -1,86 +1,89 @@
-# Modelo de governança
+# Governance model
 
-## Posicionamento
+## Positioning
 
-Este projeto traduz princípios e requisitos de governança em um modelo operacional de
-riscos, controles, stage gates, decisões e evidências. Ele complementa referenciais e
-obrigações aplicáveis; não os substitui nem declara conformidade automaticamente.
+This project translates governance principles and requirements into an operational
+model of risks, controls, stage gates, decisions and evidence. It complements
+applicable frameworks and obligations; it does not replace them or automatically
+declare compliance.
 
-## Cinco camadas
+## Five layers
 
-1. **Governança organizacional:** princípios, accountability, comitês, exceções e RACI.
-2. **Risco e impacto:** inventário, taxonomia, pessoas afetadas, dados, autonomia,
-   escala, reversibilidade e dependência.
-3. **Ciclo de vida:** intake, assessment, approval, build, validation, production,
-   monitoring, change e retirement.
-4. **Controles técnicos:** modelos, dados, RAG, agentes, ferramentas, MCP, segurança,
-   observabilidade e avaliações.
-5. **Evidência e assurance:** testes, approvals, provenance, auditoria, revisões,
-   incidentes e controles compensatórios.
+1. **Organizational governance:** principles, accountability, committees, exceptions
+   and RACI.
+2. **Risk and impact:** inventory, taxonomy, affected people, data, autonomy, scale,
+   reversibility and dependency.
+3. **Lifecycle:** intake, assessment, approval, build, validation, production,
+   monitoring, change and retirement.
+4. **Technical controls:** models, data, RAG, agents, tools, MCP, security,
+   observability and evaluations.
+5. **Evidence and assurance:** tests, approvals, provenance, audit, reviews, incidents
+   and compensating controls.
 
-## Princípios
+## Principles
 
-- accountability humana identificável;
-- finalidade legítima, necessidade e proporcionalidade;
-- segurança e privacidade desde o desenho;
-- transparência adequada às pessoas afetadas;
-- supervisão humana efetiva, com autoridade e tempo para intervir;
-- contestabilidade e remediação quando houver impacto material;
-- menor privilégio para modelos, agentes, ferramentas e integrações;
-- identidade corporativa automática com autorização derivada de mapeamentos explícitos,
-  versionados e auditáveis do diretório;
-- decisões versionadas, explicáveis e apoiadas por evidência;
-- promoção fail-closed e reversão segura;
-- monitoramento proporcional ao risco durante todo o ciclo de vida.
+- identifiable human accountability;
+- legitimate purpose, necessity and proportionality;
+- security and privacy by design;
+- transparency appropriate to the affected people;
+- effective human oversight, with authority and time to intervene;
+- contestability and remediation when there is material impact;
+- least privilege for models, agents, tools and integrations;
+- automatic corporate identity with authorization derived from explicit, versioned
+  and auditable directory mappings;
+- versioned, explainable decisions backed by evidence;
+- fail-closed promotion and safe rollback;
+- monitoring proportional to risk throughout the lifecycle.
 
-## Classificação preliminar
+## Preliminary classification
 
-O score de 0 a 100 considera impacto (30), dados (25), autonomia (25), exposição (10)
-e contexto regulatório (10). Regras de elevação garantem que direitos/segurança e alta
-autonomia não sejam diluídos por uma soma baixa em outras dimensões.
+The 0-100 score considers impact (30), data (25), autonomy (25), exposure (10) and
+regulatory context (10). Escalation rules ensure that rights/safety and high autonomy
+are not diluted by a low sum in other dimensions.
 
-| Tier | Tratamento mínimo |
+| Tier | Minimum treatment |
 |---|---|
-| Baixo | owner, system card, revisão periódica simples |
-| Médio | gates técnicos aplicáveis, testes e monitoramento definido |
-| Alto | assurance independente, threat model, monitoramento e revisões frequentes |
-| Crítico | decisão de comitê, supervisão reforçada, limites de autonomia e stop criteria |
+| Low | owner, system card, simple periodic review |
+| Medium | applicable technical gates, tests and defined monitoring |
+| High | independent assurance, threat model, monitoring and frequent reviews |
+| Critical | committee decision, reinforced oversight, autonomy limits and stop criteria |
 
-O score é triagem, não decisão final. Revisores podem elevar o risco com justificativa;
-redução futura exigirá evidência e aprovação de Governança de IA.
+The score is triage, not a final decision. Reviewers can raise the risk with
+justification; a future reduction will require evidence and AI Governance approval.
 
-## Inventário operacional
+## Operational inventory
 
-Somente uma iniciativa aprovada pode originar um sistema de IA. O owner da iniciativa
-atribui um responsável identificável ao sistema; esse responsável controla o registro
-de modelos e agentes. Modelos e agentes novos começam em `draft`, pois a aprovação da
-iniciativa não substitui avaliação, escopo aprovado ou baseline técnico do ativo.
+Only an approved initiative can give rise to an AI system. The initiative owner
+assigns an identifiable responsible party to the system; that responsible party
+controls the registration of models and agents. New models and agents start in
+`draft`, since the initiative's approval does not replace the asset's own assessment,
+approved scope or technical baseline.
 
-Arquitetura aprova o escopo de modelos e Segurança aprova o escopo de agentes, sempre
-com segregação entre owner e revisor. A decisão vincula versão, região, casos de uso,
-classes de dados, baseline ou limites de autonomia a um digest canônico e a uma data de
-revisão proporcional ao risco. Alterações materiais removem a aprovação; mudanças em
-modelos também invalidam agentes dependentes. Agentes só podem ser aprovados quando
-todos os modelos permitidos possuem revisão vigente. O lifecycle histórico e a vigência
-são dimensões distintas: um ativo pode manter `status=approved`, mas consumidores devem
-exigir `review_state=current`. Marcadores transitórios de migração não constituem versão
-ou região válidas para aprovação.
+Architecture approves model scope and Security approves agent scope, always with
+segregation between owner and reviewer. The decision binds version, region, use cases,
+data classes, baseline or autonomy limits to a canonical digest and a risk-proportional
+review date. Material changes remove the approval; changes to models also invalidate
+dependent agents. Agents can only be approved when all permitted models have a current
+review. Historical lifecycle and validity are distinct dimensions: an asset can remain
+`status=approved` while consumers must still require `review_state=current`.
+Transitional migration markers do not constitute a valid version or region for
+approval.
 
-A exclusão física não faz parte do fluxo normal. Aposentar um sistema muda seu estado,
-desativa a indicação de produção, aposenta os ativos vinculados e registra evidência
-auditável. Alterações posteriores ficam bloqueadas.
+Physical deletion is not part of the normal flow. Retiring a system changes its
+state, disables the production flag, retires linked assets and records auditable
+evidence. Subsequent changes are blocked.
 
-## Cadeia de controle
+## Control chain
 
-Cada controle deverá declarar identificador, objetivo, tipo, aplicabilidade, owner,
-requisitos, evidências, frequência de revisão, implementação e limitações. O catálogo
-completo é item P0 do backlog seguinte ao scaffold.
+Each control must declare an identifier, objective, type, applicability, owner,
+requirements, evidence, review frequency, implementation and limitations. The
+complete catalog is a P0 backlog item following the scaffold.
 
 ```text
-Risco identificado
-  → controle aplicável
-    → gate e owner
-      → evidência versionada
-        → decisão
-          → monitoramento e revisão
+Identified risk
+  → applicable control
+    → gate and owner
+      → versioned evidence
+        → decision
+          → monitoring and review
 ```

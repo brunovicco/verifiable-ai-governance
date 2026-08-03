@@ -1,0 +1,8 @@
+# Never commit filled-in variables (holds the Basic Auth password) or local state.
+terraform.tfvars
+*.tfvars.json
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log

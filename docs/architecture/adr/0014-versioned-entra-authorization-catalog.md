@@ -1,8 +1,8 @@
-# ADR 0014 - Catálogo versionado de autorização Entra
+# ADR 0014 - Versioned Entra authorization catalog
 
 ## Status
 
-Aceito.
+Accepted.
 
 ## Date
 
@@ -10,106 +10,117 @@ Aceito.
 
 ## Context
 
-A identidade corporativa já valida `(tid, oid)` e o adapter Microsoft Graph resolve
-perfil e grupos transitivos. Até esta decisão, valores semelhantes a `ApprovalArea`
-poderiam vir diretamente do claim configurado. Isso não oferece uma política explícita
-tenant-specific, uma versão da decisão nem um identificador auditável do mapeamento.
+Corporate identity already validates `(tid, oid)`, and the Microsoft Graph adapter
+resolves profile and transitive groups. Until this decision, values resembling
+`ApprovalArea` could come directly from the configured claim. That offers no
+explicit tenant-specific policy, no decision version, and no auditable mapping
+identifier.
 
-`department`, e-mail e nomes de grupos são mutáveis e inadequados para autorização.
-Mesmo App Roles e object IDs confiáveis precisam de ownership, revisão e associação
-explícita à taxonomia interna.
+`department`, email, and group names are mutable and unsuitable for authorization.
+Even trusted App Roles and object IDs need ownership, review, and explicit
+association with the internal taxonomy.
 
 ## Decision
 
-A autorização corporativa passa a usar um catálogo YAML imutável, validado no startup e
-versionado como código. O catálogo possui ID e versão globais; cada mapping possui ID,
-tenant UUID, tipo de fonte, valor, `ApprovalArea`, estado, owner e versão própria.
+Corporate authorization now uses an immutable YAML catalog, validated at startup
+and versioned as code. The catalog has a global ID and version; each mapping has
+its own ID, tenant UUID, source type, value, `ApprovalArea`, state, owner, and
+version.
 
-As fontes aceitas são:
+The accepted sources are:
 
-- `app_role`, comparada de forma exata e case-sensitive com o claim Entra configurado
-  por `OIDC_ENTRA_APP_ROLES_CLAIM`;
-- `group`, comparada somente com object IDs UUID obtidos das associações transitivas do
-  Microsoft Graph.
+- `app_role`, matched exactly and case-sensitively against the Entra claim
+  configured by `OIDC_ENTRA_APP_ROLES_CLAIM`;
+- `group`, matched only against UUID object IDs obtained from Microsoft Graph's
+  transitive memberships.
 
-Em modo Entra, claims deixam de conceder `ApprovalArea` diretamente. Eles fornecem
-somente App Role values para o resolver. O catálogo empacotado é vazio e, portanto, não
-concede capacidade por padrão. Um deployment pode usar um arquivo externo por
-`DIRECTORY_AUTHORIZATION_CATALOG_PATH`; falha no override não possui fallback.
+In Entra mode, claims no longer grant `ApprovalArea` directly. They only supply
+App Role values to the resolver. The packaged catalog is empty and therefore
+grants no capability by default. A deployment can use an external file via
+`DIRECTORY_AUTHORIZATION_CATALOG_PATH`; a failed override has no fallback.
 
-Somente `/api/v1/auth/me`, decisões de aprovação e consulta ao histórico de revisão
-usam o principal completamente autorizado. Rotas que precisam apenas de autenticação
-não chamam o Graph. Mapeamentos de App Role podem funcionar sem Graph; mapeamentos de
-grupo falham fechados quando o perfil transitivo não está disponível.
+Only `/api/v1/auth/me`, approval decisions, and review-history queries use the
+fully authorized principal. Routes that only need authentication do not call
+Graph. App Role mappings can work without Graph; group mappings fail closed when
+the transitive profile is unavailable.
 
-Member pode receber mappings. Guest somente quando a política explícita existente
-habilitar aprovações; conta de tipo desconhecido nunca recebe. Administração continua
-como capacidade separada, restrita a member e ao claim booleano já validado.
+A member can receive mappings. A guest only when the existing explicit policy
+enables approvals; an account of unknown type never receives any. Admin remains
+a separate capability, restricted to members and to the already-validated
+boolean claim.
 
-A provenance exposta ao próprio usuário contém somente catálogo, versão, digest
-semântico SHA-256, mapping IDs e tipos de fonte. O evento de decisão de aprovação
-registra a mesma evidência na cadeia de auditoria, sem App Roles brutas ou inventário
-de grupos.
+The provenance exposed to the user themself contains only the catalog, version,
+semantic SHA-256 digest, mapping IDs, and source types. The approval decision
+event records the same evidence in the audit chain, without raw App Roles or
+group inventories.
 
 ## Alternatives considered
 
-- Mapear valores do claim diretamente para `ApprovalArea`: rejeitado por não possuir
-  tenant, owner, versão ou decisão explícita.
-- Usar `department` ou display names: rejeitado por mutabilidade e colisão.
-- Persistir o catálogo em tabelas e criar CRUD administrativo: adiado. A política como
-  código oferece revisão, histórico e rollback suficientes para esta etapa com menor
-  superfície de ataque.
-- Conceder áreas do catálogo padrão: rejeitado porque nenhum tenant ou object ID real
-  deve existir como default do produto.
-- Consultar Graph em toda request: rejeitado para limitar latência, dados e impacto de
-  indisponibilidade às rotas que realmente dependem de capacidade de revisão.
-- Registrar todos os grupos e roles na auditoria: rejeitado por minimização e risco de
-  criar um inventário paralelo de acesso.
+- Map claim values directly to `ApprovalArea`: rejected for lacking tenant,
+  owner, version, or an explicit decision.
+- Use `department` or display names: rejected due to mutability and collision.
+- Persist the catalog in tables and build an administrative CRUD: deferred.
+  Policy as code offers enough review, history, and rollback for this stage
+  with a smaller attack surface.
+- Grant areas from a default catalog: rejected because no real tenant or
+  object ID should exist as a product default.
+- Query Graph on every request: rejected to limit latency, data exposure, and
+  the impact of unavailability to routes that actually depend on review
+  capability.
+- Record all groups and roles in the audit trail: rejected for minimization
+  and the risk of creating a parallel access inventory.
 
 ## Consequences
 
-Deployments Entra precisam publicar um catálogo tenant-specific antes de seus usuários
-receberem áreas de aprovação. OIDC genérico e autenticação local preservam o mapeamento
-existente para testes e integrações não Entra.
+Entra deployments need to publish a tenant-specific catalog before their users
+receive approval areas. Generic OIDC and local authentication preserve the
+existing mapping for testing and non-Entra integrations.
 
-Mudanças são revisáveis em Git, deterministicamente testáveis e vinculadas à decisão
-por versão e mapping IDs. Não existe migração de banco nesta entrega. Uma mudança de
-arquivo exige reinício do processo para carregar a nova política.
+Changes are reviewable in Git, deterministically testable, and tied to the
+decision by version and mapping IDs. There is no database migration in this
+delivery. A file change requires a process restart to load the new policy.
 
-O catálogo atual representa somente o estado ativo; histórico e aprovação formal vêm
-do repositório e de suas regras de branch protection.
+The current catalog represents only the active state; history and formal
+approval come from the repository and its branch-protection rules.
 
 ## Security and privacy impact
 
-O padrão vazio, o matching tenant-specific, a validação estrita, UUIDs canônicos,
-limites de tamanho/quantidade, IDs opacos e o bloqueio de duplicidades reduzem
-concessões acidentais. Campo desconhecido, booleano ou inteiro textual, source type
-inválido e `ApprovalArea` desconhecida impedem o startup. O digest diferencia conteúdo
-alterado mesmo quando alguém esquece de incrementar a versão declarada.
+The empty default, tenant-specific matching, strict validation, canonical
+UUIDs, size/count limits, opaque IDs, and duplicate blocking reduce accidental
+grants. An unknown field, a boolean or textual integer, an invalid source
+type, and an unknown `ApprovalArea` all prevent startup. The digest
+distinguishes changed content even when someone forgets to bump the declared
+version.
 
-App Role values e object IDs são dados de controle de acesso. Eles permanecem no token,
-Graph e arquivo protegido, mas não são retornados nem copiados para eventos. Mapping IDs
-devem ser identificadores não sensíveis. `department` permanece fora da autorização.
+App Role values and object IDs are access-control data. They remain in the
+token, Graph, and the protected file, but are not returned or copied into
+events. Mapping IDs must be non-sensitive identifiers. `department` stays
+outside authorization.
 
-Graph ou catálogo indisponível não promove o principal. Guest e identidade ambígua
-continuam sem capacidades por padrão. Segregação de funções permanece aplicada pelo
-domínio de revisão após a resolução da área.
+Graph or catalog unavailability does not promote the principal. Guests and
+ambiguous identity remain without capabilities by default. Separation of
+duties remains enforced by the review domain after area resolution.
 
 ## Operational impact
 
-IAM, Segurança e Governança de IA precisam definir reviewers e branch protection para
-o arquivo organizacional. O deployment deve montar o catálogo como read-only, apontar a
-variável de ambiente e reiniciar de forma controlada. Publicação deve testar caso
-permitido, negado, outro tenant, guest e grupo removido.
+IAM, Security, and AI Governance need to define reviewers and branch
+protection for the organizational file. The deployment must mount the catalog
+read-only, point to the environment variable, and restart in a controlled way.
+Publication must test the allowed case, the denied case, a different tenant, a
+guest, and a removed group.
 
-Revogação imediata exige nova versão, publicação e reinício enquanto cache não existe.
-Rollback republica uma revisão Git anteriormente aprovada. Métricas devem distinguir
-falha do catálogo, indisponibilidade Graph e ausência legítima de mapping.
+Immediate revocation requires a new version, publication, and restart while no
+cache exists. Rollback republishes a previously approved Git revision. Metrics
+must distinguish catalog failure, Graph unavailability, and a legitimately
+absent mapping.
 
 ## Follow-up
 
-- Implementar cache curto, invalidação, revogação urgente e stale identity fail-closed.
-- Tratar group overage e claims de grupos sem seguir URLs controladas por token.
-- Adicionar retry limitado, jitter e monitoramento do Graph.
-- Avaliar workflow administrativo persistido quando escala e segregação exigirem UI.
-- Avaliar migração da administração global para política versionada própria.
+- Implement a short cache, invalidation, urgent revocation, and fail-closed
+  stale identity.
+- Handle group overage and group claims without following URLs controlled by
+  a token.
+- Add bounded retry, jitter, and Graph monitoring.
+- Evaluate a persisted administrative workflow when scale and segregation
+  require a UI.
+- Evaluate migrating global admin to its own versioned policy.

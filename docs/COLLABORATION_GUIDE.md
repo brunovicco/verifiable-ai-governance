@@ -1,51 +1,51 @@
-# Orientação para Work e Codex
+# Guidance for Work and Codex
 
 ## Work
 
-Use para visão de produto, personas, jornadas, linguagem da interface, políticas,
-templates, critérios de risco, controles, RACI, stage gates e revisão funcional. Toda
-regra aceita deve resultar em artefato versionado neste repositório, não apenas em uma
-conversa.
+Use for product vision, personas, journeys, interface language, policies,
+templates, risk criteria, controls, RACI, stage gates and functional review.
+Every accepted rule must result in a versioned artifact in this repository, not
+just a conversation.
 
-Entregáveis típicos:
+Typical deliverables:
 
-- contexto, problema e decisão proposta;
-- usuários afetados e jornada;
-- regra de negócio e exemplos de fronteira;
-- áreas consultadas e aprovadoras;
-- critérios de aceite e evidências esperadas;
-- texto não técnico e documento correspondente.
+- context, problem and proposed decision;
+- affected users and journey;
+- business rule and boundary examples;
+- consulted areas and approvers;
+- acceptance criteria and expected evidence;
+- non-technical text and corresponding document.
 
 ## Codex
 
-Use para transformar artefatos aceitos em contratos, migrations, endpoints, telas,
-testes, segurança, CI, integrações e ADRs. Trabalhe em fatias verticais verificáveis e
-preserve comportamento fail-closed.
+Use to turn accepted artifacts into contracts, migrations, endpoints, screens,
+tests, security, CI, integrations and ADRs. Work in verifiable vertical slices and
+preserve fail-closed behavior.
 
-Antes de concluir uma mudança, verifique:
+Before finishing a change, check:
 
-- autorização no backend e segregação de funções;
-- migration e versionamento para alterações persistidas;
-- audit event sem conteúdo sensível;
-- testes de caminho positivo, negação e conflito;
-- documentação e contrato atualizados;
-- rollback ou tratamento para integração indisponível.
+- backend authorization and separation of duties;
+- migration and versioning for persisted changes;
+- audit event without sensitive content;
+- happy-path, denial and conflict tests;
+- documentation and contract updated;
+- rollback or handling for an unavailable integration.
 
-## Participação de outras áreas
+## Involvement of other areas
 
-Segurança, Infra, DevOps, Arquitetura, Privacidade, Jurídico, Compliance, Dados e
-Negócio não são revisores “fixos” em toda proposta. O policy engine determina
-aplicabilidade e registra a razão. Alterar um gatilho requer revisão do owner da
-política, exemplos, testes de regressão e nova versão de policy.
+Security, Infra, DevOps, Architecture, Privacy, Legal, Compliance, Data and
+Business are not "fixed" reviewers on every proposal. The policy engine determines
+applicability and records the reason. Changing a trigger requires review by the
+policy owner, examples, regression tests and a new policy version.
 
-## Formato de handoff
+## Handoff format
 
 ```text
-Objetivo e usuário
-Estado atual e decisão aceita
-Regras e casos de fronteira
-Áreas obrigatórias e evidências
-Critérios de aceite
-Arquivos/contratos impactados
-Riscos e itens explicitamente fora do escopo
+Objective and user
+Current state and accepted decision
+Rules and boundary cases
+Required areas and evidence
+Acceptance criteria
+Impacted files/contracts
+Risks and items explicitly out of scope
 ```

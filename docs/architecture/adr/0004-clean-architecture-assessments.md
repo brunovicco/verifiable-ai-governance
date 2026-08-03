@@ -1,44 +1,45 @@
-# ADR 0004 - Clean Architecture para assessments estruturados
+# ADR 0004 - Clean Architecture for structured assessments
 
-- Status: aceito
-- Data: 2026-07-31
+- Status: accepted
+- Date: 2026-07-31
 
-## Contexto
+## Context
 
-AIA, RIPD e análise de processamento internacional compartilham ciclo de vida,
-autorização, versionamento e auditoria, mas possuem respostas e regras de aplicabilidade
-diferentes. Vincular essas regras diretamente a FastAPI, Pydantic ou SQLAlchemy
-dificultaria testes, evolução de schema e futuras entradas por fila ou integração GRC.
+AIA, RIPD, and the international-processing analysis share lifecycle, authorization,
+versioning, and audit, but have different answers and applicability rules. Coupling
+these rules directly to FastAPI, Pydantic, or SQLAlchemy would make testing, schema
+evolution, and future queue-based or GRC-integration inputs harder.
 
-## Decisão
+## Decision
 
-- representar cada definição por tipos imutáveis e versionados no domínio puro;
-- concentrar aplicabilidade, cálculo do risco e transições em funções sem I/O;
-- implementar criar/atualizar, listar e submeter como casos de uso coesos;
-- declarar portas de store, auditoria e transação no módulo consumidor;
-- implementar as portas com adapters SQLAlchemy ligados no composition root;
-- mapear explicitamente DTOs Pydantic, valores de domínio e entidades ORM;
-- traduzir erros tipados para HTTP somente na borda;
-- exigir versão esperada nas mutações e unicidade de tipo por iniciativa no banco;
-- manter audit events sem o conteúdo das respostas;
-- documentar módulos, classes e operações públicas com docstrings.
+- represent each definition with immutable, versioned types in the pure domain;
+- concentrate applicability, risk calculation, and transitions in I/O-free functions;
+- implement create/update, list, and submit as cohesive use cases;
+- declare store, audit, and transaction ports in the consuming module;
+- implement the ports with SQLAlchemy adapters wired at the composition root;
+- explicitly map Pydantic DTOs, domain values, and ORM entities;
+- translate typed errors to HTTP only at the edge;
+- require an expected version on mutations and type uniqueness per initiative in the
+  database;
+- keep audit events free of response content;
+- document modules, classes, and public operations with docstrings.
 
-Esse desenho aplica responsabilidade única e inversão de dependência. Novos adapters
-podem ser adicionados sem alterar os casos de uso; novas definições exigem contrato e
-versão explícitos, evitando schemas genéricos que ocultem mudanças materiais.
+This design applies single responsibility and dependency inversion. New adapters can
+be added without changing the use cases; new definitions require an explicit contract
+and version, avoiding generic schemas that would hide material changes.
 
 ## Twelve-Factor
 
-O módulo não introduz estado de processo nem configuração codificada. Sessão de banco,
-identidade, clock e gerador de IDs entram pelas fronteiras existentes ou por injeção. A
-API pode escalar horizontalmente, PostgreSQL permanece recurso anexado por configuração
-e a auditoria continua emitindo eventos estruturados.
+The module introduces no process state or hardcoded configuration. Database session,
+identity, clock, and ID generator enter through existing boundaries or by injection.
+The API can scale horizontally, PostgreSQL remains an attached resource configured
+externally, and audit continues emitting structured events.
 
-## Consequências
+## Consequences
 
-- regras podem ser testadas sem servidor HTTP ou banco;
-- adapters e mappings acrescentam código, mas tornam fronteiras verificáveis;
-- assessment submetido fica somente leitura até a implementação do workflow de revisão;
-- criação concorrente é protegida pela constraint `uq_assessment_initiative_type`;
-- adicionar uma definição requer atualizar a união tipada, schemas, adapter e portal de
-  forma deliberada, incluindo uma nova versão de contrato.
+- rules can be tested without an HTTP server or database;
+- adapters and mappings add code, but make boundaries verifiable;
+- a submitted assessment stays read-only until the review workflow is implemented;
+- concurrent creation is protected by the `uq_assessment_initiative_type` constraint;
+- adding a definition requires deliberately updating the typed union, schemas,
+  adapter, and portal, including a new contract version.

@@ -1,8 +1,8 @@
-# ADR 0011 - Autenticação SPA com Microsoft Entra ID e MSAL
+# ADR 0011 - SPA authentication with Microsoft Entra ID and MSAL
 
 ## Status
 
-Aceito.
+Accepted.
 
 ## Date
 
@@ -10,98 +10,104 @@ Aceito.
 
 ## Context
 
-O portal Next.js é composto por páginas cliente que acessam diretamente a API FastAPI.
-Até esta decisão, todas as chamadas usavam headers explícitos de desenvolvimento para
-simular identidade e áreas. Esses headers são adequados somente ao Compose local e não
-podem atravessar o limite de confiança de um ambiente compartilhado.
+The Next.js portal consists of client pages that call the FastAPI API directly.
+Until this decision, every call used explicit development headers to simulate
+identity and areas. Those headers are appropriate only for the local Compose setup
+and cannot cross the trust boundary of a shared environment.
 
-A API já funciona como resource server OIDC e valida assinatura, issuer, audience,
-expiração e subject. Faltava ao portal obter um access token destinado à API sem
-coletar senha, persistir segredo de cliente ou permitir que o usuário digite sua
-identidade.
+The API already works as an OIDC resource server and validates signature, issuer,
+audience, expiration, and subject. What the portal lacked was a way to obtain an
+access token targeted at the API without collecting a password, persisting a client
+secret, or letting the user type in their own identity.
 
 ## Decision
 
-O portal corporativo será registrado no Entra como Single-Page Application pública e
-usará `@azure/msal-browser` e `@azure/msal-react`. O MSAL executará Authorization Code
-com PKCE e solicitará o scope delegado exposto pela app registration da API.
+The corporate portal will be registered in Entra as a public Single-Page Application
+and will use `@azure/msal-browser` and `@azure/msal-react`. MSAL will run
+Authorization Code with PKCE and request the delegated scope exposed by the API's
+app registration.
 
-A implementação adota:
+The implementation adopts:
 
-- authority construída exclusivamente como tenant específico em
+- an authority built exclusively as tenant-specific, at
   `https://login.microsoftonline.com/{tenant_id}`;
-- client ID, tenant ID, auth mode e scope delegado como configuração pública de build;
-- redirect e post-logout redirect limitados à origem atual do portal;
-- cache do MSAL em `sessionStorage`, sem `localStorage` ou cookie adicional;
-- logging de PII desabilitado e platform broker desabilitado nesta implementação web;
-- aquisição silenciosa antes de qualquer fallback interativo;
-- redirect interativo quando o Entra ou Conditional Access exigir reautenticação;
-- envio do access token somente em `Authorization: Bearer` para a API;
-- `credentials: omit` nas chamadas do portal;
-- remoção defensiva de `X-User-Id` e `X-User-Areas` no modo Entra;
-- headers simulados preservados somente quando `NEXT_PUBLIC_AUTH_MODE=local`.
+- client ID, tenant ID, auth mode, and delegated scope as public build configuration;
+- redirect and post-logout redirect restricted to the portal's current origin;
+- MSAL cache in `sessionStorage`, with no `localStorage` or additional cookie;
+- PII logging disabled and the platform broker disabled in this web implementation;
+- silent acquisition before any interactive fallback;
+- an interactive redirect when Entra or Conditional Access requires
+  reauthentication;
+- sending the access token only via `Authorization: Bearer` to the API;
+- `credentials: omit` on the portal's calls;
+- defensive removal of `X-User-Id` and `X-User-Areas` in Entra mode;
+- simulated headers preserved only when `NEXT_PUBLIC_AUTH_MODE=local`.
 
-O frontend nunca recebe client secret. A API continua responsável pela validação
-criptográfica e autorização; informações de tela ou claims de ID token não substituem
-o access token destinado à audience da API.
+The frontend never receives a client secret. The API remains responsible for
+cryptographic validation and authorization; on-screen information or ID-token claims
+do not substitute for the access token targeted at the API's audience.
 
 ## Alternatives considered
 
-- Manter headers digitáveis no ambiente corporativo: rejeitado por permitir
-  impersonação no cliente.
-- Fluxo implícito: rejeitado; Authorization Code com PKCE é o fluxo recomendado para
-  SPAs modernas.
-- Resource Owner Password Credentials: rejeitado por coletar senha e não atender
-  adequadamente MFA ou Conditional Access.
-- Guardar tokens em `localStorage`: rejeitado por aumentar a persistência entre
-  sessões do navegador.
-- Introduzir agora um BFF confidential client com sessão HttpOnly: adiado. Ele reduz a
-  exposição de tokens ao JavaScript, mas altera o modelo de deploy, exige sessão
-  server-side e credencial protegida. Pode ser adotado futuramente se o threat model
-  corporativo exigir esse boundary.
+- Keep typeable headers in the corporate environment: rejected because it allows
+  client-side impersonation.
+- Implicit flow: rejected; Authorization Code with PKCE is the recommended flow for
+  modern SPAs.
+- Resource Owner Password Credentials: rejected because it collects passwords and
+  does not adequately support MFA or Conditional Access.
+- Store tokens in `localStorage`: rejected because it increases persistence across
+  browser sessions.
+- Introduce a confidential-client BFF with an HttpOnly session now: deferred. It
+  reduces token exposure to JavaScript, but changes the deployment model and
+  requires a server-side session and a protected credential. It may be adopted
+  later if the corporate threat model requires that boundary.
 
 ## Consequences
 
-Usuários do modo Entra entram e saem pelo provedor corporativo, e decisões deixam de
-aceitar identidade manual no portal. O modo local continua rápido e reproduzível.
+Users in Entra mode sign in and out through the corporate provider, and decisions
+no longer accept manually entered identity in the portal. Local mode remains fast
+and reproducible.
 
-As variáveis `NEXT_PUBLIC_*` são incorporadas no build e não são segredos; mudar tenant,
-cliente ou scope exige novo build do portal. React foi atualizado de 19.2.0 para 19.2.8
-para atender o peer suportado pelo MSAL React sem ignorar a resolução do npm.
+`NEXT_PUBLIC_*` variables are baked into the build and are not secrets; changing
+tenant, client, or scope requires a new portal build. React was upgraded from
+19.2.0 to 19.2.8 to satisfy the peer version supported by MSAL React without
+bypassing npm's resolution.
 
-Como esta é uma SPA, access e refresh tokens são processados pelo JavaScript do MSAL.
-O projeto passa a depender ainda mais de prevenção de XSS, atualização de dependências
-e revisão de supply chain.
+Since this is an SPA, access and refresh tokens are handled by MSAL's JavaScript.
+The project now depends even more on XSS prevention, dependency updates, and
+supply-chain review.
 
 ## Security and privacy impact
 
-`sessionStorage` reduz persistência, mas não protege tokens contra JavaScript malicioso
-executando na mesma origem. Conteúdo não confiável não deve virar HTML executável;
-dependências e CSP precisam de assurance contínuo. Tokens, authorization codes e erros
-com claims não podem ser registrados em telemetria.
+`sessionStorage` reduces persistence, but does not protect tokens against
+malicious JavaScript running on the same origin. Untrusted content must not become
+executable HTML; dependencies and CSP need ongoing assurance. Tokens, authorization
+codes, and errors containing claims must not be logged in telemetry.
 
-A authority tenant-specific reduz autenticação acidental em outro diretório. A API
-deve continuar configurada com issuer e audience do mesmo tenant. Guest, App Roles,
-grupos e `department` ainda pertencem às fases posteriores e não são inferidos pela UI.
+The tenant-specific authority reduces accidental authentication into another
+directory. The API must remain configured with the issuer and audience of the same
+tenant. Guest, App Roles, groups, and `department` still belong to later phases and
+are not inferred by the UI.
 
-O nome e username exibidos vêm do cache de conta do MSAL e são dados pessoais usados
-somente para contexto de sessão. O portal não os persiste nesta fase.
+The name and username shown come from MSAL's account cache and are personal data
+used only for session context. The portal does not persist them at this stage.
 
 ## Operational impact
 
-IAM deve manter app registrations separadas para portal e API, redirect URIs exatas,
-scope delegado, consentimento e ownership. Mudanças exigem rebuild, smoke test de login,
-logout, renovação silenciosa e Conditional Access.
+IAM must maintain separate app registrations for the portal and the API, exact
+redirect URIs, the delegated scope, consent, and ownership. Changes require a
+rebuild and a smoke test of login, logout, silent renewal, and Conditional Access.
 
-Falha de configuração Entra interrompe o build. Falha de aquisição silenciosa não
-degrada para headers locais; inicia interação ou bloqueia a chamada.
+An Entra configuration failure breaks the build. A silent-acquisition failure does
+not degrade to local headers; it starts interaction or blocks the call.
 
 ## Follow-up
 
-- Validar o fluxo contra um tenant Entra real e políticas de Conditional Access.
-- Identidade corporativa `(tid, oid)`, tenant allowlist e política de guest: concluída
-  no ADR 0012.
-- Implementar OBO e enriquecimento mínimo via Microsoft Graph.
-- Criar catálogo versionado de App Roles/object IDs para `ApprovalArea`.
-- Definir CSP compatível com Next.js/MSAL e executar testes de XSS.
-- Avaliar BFF com sessão HttpOnly se o threat model de produção exigir.
+- Validate the flow against a real Entra tenant and Conditional Access policies.
+- Corporate identity `(tid, oid)`, tenant allowlist, and guest policy: completed in
+  ADR 0012.
+- Implement OBO and minimal enrichment via Microsoft Graph.
+- Create a versioned catalog of App Roles/object IDs for `ApprovalArea`.
+- Define a CSP compatible with Next.js/MSAL and run XSS tests.
+- Evaluate a BFF with an HttpOnly session if the production threat model requires
+  it.

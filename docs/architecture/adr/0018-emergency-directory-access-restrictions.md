@@ -1,100 +1,102 @@
-# ADR 0018 - Restrição emergencial de acesso de identidades Entra
+# ADR 0018 - Emergency restriction of Entra identity access
 
 ## Status
 
-Aceito.
+Accepted.
 
-## Data
+## Date
 
 2026-08-01.
 
-## Contexto
+## Context
 
-Invalidar o cache de autorização força uma nova consulta, mas não impede que uma
-identidade ainda válida volte a obter capacidades. Revogar sessões no Microsoft Entra
-ID também não encerra diretamente a sessão emitida pela própria aplicação e pode levar
-alguns minutos para produzir efeito. A plataforma precisa de um mecanismo sob seu
-controle que interrompa imediatamente todas as rotas autenticadas durante desligamento,
-comprometimento ou resposta a incidente.
+Invalidating the authorization cache forces a fresh lookup, but does not prevent an
+identity that is still valid from regaining capabilities. Revoking sessions in Microsoft
+Entra ID also does not directly end the session issued by the application itself, and
+can take a few minutes to take effect. The platform needs a mechanism under its own
+control that immediately stops all authenticated routes during offboarding, compromise,
+or incident response.
 
-O controle não pode depender da disponibilidade do Graph, manter uma lista apenas em
-memória, reutilizar um resultado stale ou transformar o cache de autorização em fonte
-de bloqueio.
+The control must not depend on Graph availability, keep an in-memory-only list, reuse a
+stale result, or turn the authorization cache into a source of blocking.
 
-## Decisão
+## Decision
 
-O PostgreSQL manterá o estado corrente de restrição por identidade estável
-`(tenant_id, object_id)`. A tabela `directory_access_restrictions` contém somente os
-IDs necessários ao binding, estado booleano, instante da mudança, versão e timestamps
-operacionais. O histórico permanece nos eventos hash-chained; nome, e-mail, perfil,
-token e grupos não são copiados.
+PostgreSQL will hold the current restriction state per stable identity
+`(tenant_id, object_id)`. The `directory_access_restrictions` table contains only the
+IDs needed for the binding, a boolean state, the instant of the change, version, and
+operational timestamps. History remains in the hash-chained events; name, email,
+profile, token, and groups are not copied.
 
-Depois da autenticação e antes de qualquer rota protegida, a API consulta esse estado
-em uma sessão curta. Uma identidade bloqueada recebe `403`; erro, binding inconsistente
-ou estado inválido recebe `503`. A consulta não usa cache positivo em memória, de modo
-que todas as réplicas observam o bloqueio persistido na próxima request. Identidades
-locais, sem vínculo de diretório, continuam fora desse controle corporativo.
+After authentication and before any protected route, the API queries this state in a
+short session. A blocked identity receives `403`; an error, an inconsistent binding, or
+an invalid state receives `503`. The query does not use a positive in-memory cache, so
+all replicas observe the persisted block on the next request. Local identities, without
+a directory binding, remain outside this corporate control.
 
-Dois comandos administrativos formam a borda operacional:
+Two administrative commands form the operational edge:
 
-- `POST /api/v1/auth/directory-access/block` suspende o acesso;
-- `POST /api/v1/auth/directory-access/restore` restaura o acesso.
+- `POST /api/v1/auth/directory-access/block` suspends access;
+- `POST /api/v1/auth/directory-access/restore` restores access.
 
-Ambos exigem `is_admin`, limitam o alvo a `OIDC_ALLOWED_TENANT_IDS`, aceitam motivo
-enumerado e referência curta de incidente. A transição usa upsert condicionado pelo
-instante para não sobrescrever evento concorrente mais recente.
+Both require `is_admin`, restrict the target to `OIDC_ALLOWED_TENANT_IDS`, accept an
+enumerated reason and a short incident reference. The transition uses an upsert
+conditioned on the instant, so as not to overwrite a more recent concurrent event.
 
-Na mesma transação, o comando:
+Within the same transaction, the command:
 
-1. altera o estado persistente;
-2. invalida o snapshot de autorização da identidade;
-3. grava evento de auditoria com digest SHA-256 do alvo;
-4. efetiva o commit.
+1. changes the persisted state;
+2. invalidates the identity's authorization snapshot;
+3. writes an audit event with a SHA-256 digest of the target;
+4. commits.
 
-Restaurar não recupera capacidades anteriores: a invalidação obriga uma resolução
-atual do catálogo, token e Graph quando a próxima operação exigir autorização.
+Restoring does not recover previous capabilities: the invalidation forces a current
+resolution of the catalog, token, and Graph the next time an operation requires
+authorization.
 
-## Limite com Microsoft Entra ID
+## Boundary with Microsoft Entra ID
 
-Este controle encerra acesso à plataforma, não altera a conta no tenant nem chama
-`revokeSignInSessions`. IAM ainda deve desabilitar a conta, remover App Roles/grupos,
-revogar sessões e aplicar Conditional Access conforme o incidente. A futura integração
-com essas ações será outro adapter e exigirá permissões, consentimento, threat model e
-validação em tenant não produtivo.
+This control ends access to the platform; it does not change the account in the tenant
+and does not call `revokeSignInSessions`. IAM must still disable the account, remove App
+Roles/groups, revoke sessions, and apply Conditional Access as the incident requires. A
+future integration with those actions would be a separate adapter and would require
+permissions, consent, a threat model, and validation in a non-production tenant.
 
-A documentação Microsoft informa que a aplicação controla sua própria sessão e que o
-Entra não a revoga diretamente. Também informa que `revokeSignInSessions` invalida
-refresh tokens e cookies do Entra, pode ter pequeno atraso e não atende sessões de
-usuários externos autenticados no tenant de origem.
+Microsoft's documentation states that the application controls its own session and that
+Entra does not revoke it directly. It also states that `revokeSignInSessions` invalidates
+Entra refresh tokens and cookies, may have a small delay, and does not cover sessions of
+external users authenticated in their home tenant.
 
-## Consequências
+## Consequences
 
-- toda request Entra protegida adiciona uma leitura curta no PostgreSQL;
-- indisponibilidade do store bloqueia o acesso corporativo em vez de ignorar o controle;
-- um administrador bloqueado não consegue restaurar a si mesmo; operação exige outra
-  identidade administrativa controlada conforme o procedimento de emergency access;
-- a restrição é global para a plataforma, não limitada a uma área de aprovação;
-- a trilha de auditoria prova cada transição sem expor os UUIDs do alvo no payload.
+- every protected Entra request adds a short PostgreSQL read;
+- store unavailability blocks corporate access instead of bypassing the control;
+- a blocked administrator cannot restore themselves; the operation requires another
+  administrative identity, following the emergency access procedure;
+- the restriction is platform-global, not limited to an approval area;
+- the audit trail proves each transition without exposing the target's UUIDs in the
+  payload.
 
-## Verificação
+## Verification
 
-- testes de domínio validam UUID, digest, tempo e versão;
-- testes de aplicação cobrem bloqueio, restauração, tenant boundary e falha atômica;
-- testes do adapter cobrem round-trip, concorrência e binding persistente;
-- teste HTTP demonstra que o bloqueio alcança uma rota de negócio em outra request;
-- a migração passa por upgrade, downgrade para `0005` e novo upgrade em PostgreSQL real.
+- domain tests validate UUID, digest, time, and version;
+- application tests cover block, restore, tenant boundary, and atomic failure;
+- adapter tests cover round-trip, concurrency, and persistent binding;
+- HTTP test demonstrates that a block reaches a business route on a subsequent request;
+- the migration passes upgrade, downgrade to `0005`, and re-upgrade on real PostgreSQL.
 
 ## Follow-up
 
-- implementar adapter separado para revogação de sessões no Microsoft Graph;
-- validar conta desabilitada, remoção de grupo/App Role, guest e Conditional Access em
-  tenant não produtivo;
-- adicionar métricas agregadas de bloqueio, restauração e falha de leitura;
-- integrar alertas e processo de emergency access sem registrar identidade do alvo.
+- implement a separate adapter for session revocation via Microsoft Graph;
+- validate disabled account, group/App Role removal, guest, and Conditional Access in a
+  non-production tenant;
+- add aggregated metrics for block, restore, and read failure;
+- integrate alerting and the emergency access process without logging the target's
+  identity.
 
-## Referências oficiais
+## Official references
 
-- [Revogar acesso de usuário em emergência](https://learn.microsoft.com/pt-br/entra/identity/users/users-revoke-access)
-- [`revokeSignInSessions` no Microsoft Graph](https://learn.microsoft.com/en-us/graph/api/user-revokesigninsessions?view=graph-rest-1.0)
+- [Revoke user access in an emergency](https://learn.microsoft.com/en-us/entra/identity/users/users-revoke-access)
+- [`revokeSignInSessions` in Microsoft Graph](https://learn.microsoft.com/en-us/graph/api/user-revokesigninsessions?view=graph-rest-1.0)
 - [Continuous Access Evaluation](https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-continuous-access-evaluation)
-- [Contas administrativas de acesso de emergência](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access)
+- [Emergency access administrative accounts](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access)

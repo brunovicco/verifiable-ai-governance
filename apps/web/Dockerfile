@@ -28,6 +28,11 @@ WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME=0.0.0.0
+# The standalone server only needs the `node` binary; npm/npx/yarn/corepack are
+# never invoked here, so drop them rather than carry their bundled dependencies
+# (e.g. tar, sigstore) as unused, unpatched attack surface in the runtime image.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx \
+    /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /opt/yarn-v*
 COPY --from=builder --chown=node:node /workspace/apps/web/.next/standalone ./
 COPY --from=builder --chown=node:node /workspace/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder --chown=node:node /workspace/packages/document-templates ./packages/document-templates
