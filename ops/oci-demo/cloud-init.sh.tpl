@@ -9,8 +9,6 @@ MINIO_PASSWORD="${minio_password}"
 AUDIT_SALT="${audit_salt}"
 APP_DOMAIN="${app_domain}"
 API_DOMAIN="${api_domain}"
-BASIC_AUTH_USER="${basic_auth_user}"
-BASIC_AUTH_PASSWORD="${basic_auth_password}"
 
 # --- 1. Sistema base ---
 export DEBIAN_FRONTEND=noninteractive
@@ -97,20 +95,22 @@ curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' > /etc/
 apt-get update -y
 apt-get install -y caddy
 
-AUTH_HASH="$(caddy hash-password --plaintext "$BASIC_AUTH_PASSWORD")"
-
+# Demo publica sem credencial: qualquer pessoa acessa e "loga" com uma
+# identidade local autodeclarada (modo dev, sem verificacao real - ver
+# NEXT_PUBLIC_AUTH_MODE=local acima). Sem uma barreira de escrita aqui,
+# isso permitiria qualquer visitante mutar dados. O matcher @write bloqueia
+# metodos que nao sejam leitura (GET/HEAD/OPTIONS) no dominio da API antes
+# de chegarem ao backend, mantendo a demo navegavel mas somente leitura.
 cat > /etc/caddy/Caddyfile <<CADDY_EOF
 $APP_DOMAIN {
-    basic_auth {
-        $BASIC_AUTH_USER $AUTH_HASH
-    }
     reverse_proxy 127.0.0.1:3000
 }
 
 $API_DOMAIN {
-    basic_auth {
-        $BASIC_AUTH_USER $AUTH_HASH
+    @write {
+        not method GET HEAD OPTIONS
     }
+    respond @write "Demo publica somente leitura - escrita desabilitada." 403
     reverse_proxy 127.0.0.1:8000
 }
 CADDY_EOF

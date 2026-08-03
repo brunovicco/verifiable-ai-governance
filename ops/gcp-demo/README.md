@@ -3,8 +3,17 @@
 Terraform que provisiona **tudo**: VPC, subnet, firewall, IP externo
 (estatico, opcional), a instancia Compute Engine, e — via `cloud-init.sh.tpl`
 como `user-data` — a configuracao completa do SO (swap, Docker), o clone do
-repositorio, o `docker compose up` e o Caddy com TLS automatico e Basic Auth
-temporario. Um `terraform apply` deixa a demo no ar.
+repositorio, o `docker compose up` e o Caddy com TLS automatico.
+
+A demo fica **publica e sem credencial**, mas **somente leitura**: qualquer
+visitante acessa o portal e "loga" com uma identidade local autodeclarada
+(modo dev do app, sem verificacao real — ver `NEXT_PUBLIC_AUTH_MODE=local`),
+consegue navegar e ler os dados, mas o Caddy bloqueia no dominio da API
+qualquer metodo que nao seja `GET`/`HEAD`/`OPTIONS` com `403` antes de chegar
+no backend — ninguem consegue criar, editar ou apagar nada pela demo publica.
+Isso e intencional (demo aberta pra visitacao, sem autenticacao real ainda),
+nao uma protecao de producao — trate como tal ate o Entra ID entrar (ver
+["Migrar para Entra ID depois"](#migrar-para-entra-id-depois)).
 
 Equivalente ao modulo [`ops/oci-demo/`](../oci-demo/), trocando a nuvem: o
 `cloud-init.sh.tpl` e identico nos dois (nao ha nada especifico de OCI ou GCP
@@ -78,8 +87,10 @@ Mesmo procedimento do modulo OCI: entre via SSH na instancia, edite
 `/opt/vai-governance/.env` com os valores de `OIDC_ISSUER`, `OIDC_JWKS_URL`,
 `OIDC_AUDIENCE`, os App Registrations do Entra e os `NEXT_PUBLIC_ENTRA_*`,
 rode `docker compose up --build -d` para aplicar o rebuild do `web`, e
-remova o bloco `basic_auth` de `/etc/caddy/Caddyfile` (seguido de
-`systemctl reload caddy`).
+remova o bloco `@write`/`respond` de `/etc/caddy/Caddyfile` no site do
+`$API_DOMAIN` (seguido de `systemctl reload caddy`) ja que a autorizacao
+passa a ser feita de verdade pelo Entra ID em vez do bloqueio de metodo na
+borda.
 
 ## Observacoes importantes
 

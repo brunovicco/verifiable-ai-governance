@@ -1,6 +1,6 @@
 # Copie para terraform.tfvars e preencha com os seus valores.
-# NUNCA commite terraform.tfvars (adicione ao .gitignore) — ele guarda
-# a senha de Basic Auth e referencia caminhos de credenciais locais.
+# NUNCA commite terraform.tfvars (adicione ao .gitignore) — ele referencia
+# caminhos de credenciais locais.
 
 tenancy_ocid     = "ocid1.tenancy.oc1..xxxxxxxx"
 user_ocid        = "ocid1.user.oc1..xxxxxxxx"
@@ -19,6 +19,3 @@ boot_volume_size_gb = 50
 
 app_domain = "app.seudominio.com"
 api_domain = "api.seudominio.com"
-
-basic_auth_user     = "demo"
-basic_auth_password = "defina-uma-senha-forte-aqui"

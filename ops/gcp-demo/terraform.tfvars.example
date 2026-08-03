@@ -1,6 +1,5 @@
 # Copie para terraform.tfvars e preencha com os seus valores.
-# NUNCA commite terraform.tfvars (adicione ao .gitignore) - ele guarda
-# a senha de Basic Auth.
+# NUNCA commite terraform.tfvars (adicione ao .gitignore).
 
 project_id = "seu-project-id-gcp"
 region     = "us-central1"
@@ -15,6 +14,3 @@ boot_disk_size_gb = 50
 
 app_domain = "app.seudominio.com"
 api_domain = "api.seudominio.com"
-
-basic_auth_user     = "demo"
-basic_auth_password = "defina-uma-senha-forte-aqui"
