@@ -25,6 +25,18 @@ files and manual checklists.
 critical-risk initiative's controls and approval gates, and a system's
 model/agent review.*
 
+## Live demo
+
+A public, read-only demonstration is available at:
+
+**[https://vaigov-app.duckdns.org](https://vaigov-app.duckdns.org)**
+
+The environment contains synthetic data. Anyone can browse in with a
+self-declared local identity (no real authentication yet); write operations,
+evidence uploads and governance decisions are rejected at the reverse proxy
+before they reach the API. See [`ops/gcp-demo/`](ops/gcp-demo/) for the
+infrastructure that provisions it.
+
 ## The problem
 
 AI initiatives often begin across documents, tickets, spreadsheets and conversations.

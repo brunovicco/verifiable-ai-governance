@@ -25,6 +25,18 @@ manuais desconectados da operação.
 controles e gates de aprovação de uma iniciativa crítica, e a revisão de
 modelo/agente de um sistema.*
 
+## Demo pública
+
+Uma demonstração pública e somente leitura está disponível em:
+
+**[https://vaigov-app.duckdns.org](https://vaigov-app.duckdns.org)**
+
+O ambiente contém dados sintéticos. Qualquer pessoa consegue navegar com uma
+identidade local autodeclarada (ainda sem autenticação real); operações de
+escrita, upload de evidências e decisões de governança são rejeitadas na
+borda antes de chegar à API. Veja [`ops/gcp-demo/`](ops/gcp-demo/) para a
+infraestrutura que provisiona essa demo.
+
 ## O problema
 
 Iniciativas de IA frequentemente começam em documentos, tickets, planilhas e conversas.
