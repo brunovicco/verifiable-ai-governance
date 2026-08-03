@@ -27,7 +27,7 @@ from sqlalchemy import select
 
 OWNER_HEADERS = {"X-User-Id": "system-owner"}
 STRANGER_HEADERS = {"X-User-Id": "stranger"}
-NOW = datetime(2026, 8, 1, 15, 0, tzinfo=UTC)
+NOW = datetime.now(UTC)
 
 
 def as_admin(user_id: str = "admin-1") -> None:
