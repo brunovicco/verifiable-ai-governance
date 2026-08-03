@@ -3,7 +3,9 @@
 Terraform que provisiona **tudo**: VPC, subnet, firewall, IP externo
 (estatico, opcional), a instancia Compute Engine, e — via `cloud-init.sh.tpl`
 como `user-data` — a configuracao completa do SO (swap, Docker), o clone do
-repositorio, o `docker compose up` e o Caddy com TLS automatico.
+repositorio, o `docker compose up`, a semeadura de dados de exemplo
+(`scripts/seed_demo_data.py`, dez iniciativas `[DEMO]` cobrindo o fluxo
+inteiro) e o Caddy com TLS automatico.
 
 A demo fica **publica e sem credencial**, mas **somente leitura**: qualquer
 visitante acessa o portal e "loga" com uma identidade local autodeclarada
@@ -107,6 +109,16 @@ borda.
   `git pull && docker compose up --build -d` manualmente, ou destrua e
   reaplique a instancia (`terraform taint google_compute_instance.vai_demo`
   seguido de `terraform apply`) para reprovisionar do zero.
+- **Dados de exemplo**: como o cloud-init so roda no primeiro boot, a
+  semeadura tambem so acontece nesse momento — reprovisionar do zero (item
+  acima) gera um Postgres novo e semeia de novo automaticamente, mas um
+  `docker compose up --build -d` manual sobre uma instancia ja provisionada
+  nao. Nesse caso rode manualmente: `docker compose cp
+  scripts/seed_demo_data.py api:/workspace/scripts/seed_demo_data.py &&
+  docker compose exec api python scripts/seed_demo_data.py` (e seguro
+  reexecutar — o script aborta sozinho se ja existirem iniciativas `[DEMO]`).
+  A falha da semeadura nunca bloqueia o resto do provisionamento (e
+  melhor-esforco, com aviso no log em vez de abortar).
 - **Arquitetura**: a imagem usada e `ubuntu-2404-lts-amd64` (x86_64), ao
   contrario do modulo OCI que usa ARM64 - todas as imagens do
   `docker-compose.yml` (incluindo o ClamAV pinado por digest) tambem

@@ -3,7 +3,9 @@
 Terraform que provisiona **tudo**: VCN, subnet, security list, IP público
 (reservado, opcional), a instância Ampere A1, e — via `cloud-init.sh.tpl` como
 `user_data` — a configuração completa do SO (swap, firewall interno, Docker),
-o clone do repositório, o `docker compose up` e o Caddy com TLS automático.
+o clone do repositório, o `docker compose up`, a semeadura de dados de
+exemplo (`scripts/seed_demo_data.py`, dez iniciativas `[DEMO]` cobrindo o
+fluxo inteiro) e o Caddy com TLS automático.
 
 A demo fica **pública e sem credencial**, mas **somente leitura**: qualquer
 visitante acessa o portal e "loga" com uma identidade local autodeclarada
@@ -114,6 +116,16 @@ apply/destroy fica auditável no próprio Console.
   SSH e rode `git pull && docker compose up --build -d` manualmente, ou
   destrua e reaplique a instância (`terraform taint oci_core_instance.vai_demo`
   seguido de `terraform apply`) para reprovisionar do zero.
+- **Dados de exemplo**: como o cloud-init só roda no primeiro boot, a
+  semeadura também só acontece nesse momento — reprovisionar do zero (item
+  acima) gera um Postgres novo e semeia de novo automaticamente, mas um
+  `docker compose up --build -d` manual sobre uma instância já provisionada
+  não. Nesse caso rode manualmente: `docker compose cp
+  scripts/seed_demo_data.py api:/workspace/scripts/seed_demo_data.py &&
+  docker compose exec api python scripts/seed_demo_data.py` (é seguro
+  reexecutar — o script aborta sozinho se já existirem iniciativas `[DEMO]`).
+  A falha da semeadura nunca bloqueia o resto do provisionamento (é
+  melhor-esforço, com aviso no log em vez de abortar).
 - **Arquitetura ARM64**: a instância é Ampere A1 (aarch64). Todas as imagens
   usadas pelo `docker-compose.yml` publicam manifesto multi-arch com suporte a
   `linux/arm64` — incluindo `clamav/clamav-debian:1.4.5@sha256:...`, a única
