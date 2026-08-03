@@ -5,6 +5,7 @@ export type IconName =
   | "portfolio"
   | "monitoring"
   | "documentation"
+  | "layers"
   | "plus"
   | "menu"
   | "close"
@@ -25,6 +26,7 @@ const paths: Record<IconName, ReactNode> = {
   portfolio: <><path d="M3 7.5h18v11.25A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18.75Z" /><path d="M8 7.5V5.25A2.25 2.25 0 0 1 10.25 3h3.5A2.25 2.25 0 0 1 16 5.25V7.5" /><path d="M3 12h18M10 12v2h4v-2" /></>,
   monitoring: <><path d="M4 19V9m5 10V5m5 14v-7m5 7V3" /><path d="M2.5 21h19" /></>,
   documentation: <><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v5h5M9 12h6M9 16h6" /></>,
+  layers: <><path d="m12 3 9 5-9 5-9-5Z" /><path d="m3 13 9 5 9-5" /></>,
   plus: <path d="M12 5v14M5 12h14" />,
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
   close: <path d="m6 6 12 12M18 6 6 18" />,

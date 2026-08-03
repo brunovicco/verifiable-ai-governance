@@ -14,6 +14,7 @@ interface NavItem { href: string; label: string; icon: IconName; exact?: boolean
 const navigation: NavItem[] = [
   { href: "/", label: "Portfólio", icon: "portfolio", exact: true },
   { href: "/dashboard", label: "Monitoramento", icon: "monitoring" },
+  { href: "/controles", label: "Controles", icon: "layers" },
   { href: "/documentacao", label: "Documentação", icon: "documentation" },
 ];
 
