@@ -49,7 +49,7 @@ requires-dist = [
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.13.0,<3" },
     { name = "python-multipart", specifier = ">=0.0.20,<1" },
     { name = "pyyaml", specifier = ">=6.0.2,<7" },
-    { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.40,<3" },
+    { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.51,<3" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.35.0,<1" },
 ]
 
