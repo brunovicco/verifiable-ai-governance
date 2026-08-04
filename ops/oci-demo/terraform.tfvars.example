@@ -1,0 +1,21 @@
+# Copie para terraform.tfvars e preencha com os seus valores.
+# NUNCA commite terraform.tfvars (adicione ao .gitignore) — ele referencia
+# caminhos de credenciais locais.
+
+tenancy_ocid     = "ocid1.tenancy.oc1..xxxxxxxx"
+user_ocid        = "ocid1.user.oc1..xxxxxxxx"
+fingerprint      = "xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx"
+private_key_path = "~/.oci/oci_api_key.pem"
+region           = "sa-saopaulo-1"
+
+compartment_ocid = "ocid1.tenancy.oc1..xxxxxxxx" # pode usar o root do tenancy
+
+ssh_public_key_path = "~/.ssh/oci-vai-demo.pub"
+ssh_allowed_cidr    = "203.0.113.10/32" # troque pelo SEU IP público
+
+instance_ocpus      = 2
+instance_memory_gb  = 12
+boot_volume_size_gb = 50
+
+app_domain = "app.seudominio.com"
+api_domain = "api.seudominio.com"

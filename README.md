@@ -2,6 +2,7 @@
 
 [Português](README.pt-BR.md)
 
+[![Release](https://img.shields.io/github/v/release/brunovicco/verifiable-ai-governance)](https://github.com/brunovicco/verifiable-ai-governance/releases/tag/v0.1.0)
 [![CI](https://github.com/brunovicco/verifiable-ai-governance/actions/workflows/ci.yml/badge.svg)](https://github.com/brunovicco/verifiable-ai-governance/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)
@@ -18,6 +19,25 @@ files and manual checklists.
 
 > **Maturity:** functional, production-oriented reference implementation. Selected
 > enterprise integrations still require validation in a real organizational environment.
+
+![Portal walkthrough: portfolio, operational dashboard, a critical-risk initiative with its risk breakdown and controls, and a system's model/agent review](docs/assets/dashboard-demo.gif)
+
+*Sample data from `make seed-demo` — portfolio, operational dashboard, a
+critical-risk initiative's controls and approval gates, and a system's
+model/agent review.*
+
+## Live demo
+
+A public, read-only demonstration is available at:
+
+**[https://vaigov-app.duckdns.org](https://vaigov-app.duckdns.org)** — running
+[v0.1.0](https://github.com/brunovicco/verifiable-ai-governance/releases/tag/v0.1.0).
+
+The environment contains synthetic data. Anyone can browse in with a
+self-declared local identity (no real authentication yet); write operations,
+evidence uploads and governance decisions are rejected at the reverse proxy
+before they reach the API. See [`ops/gcp-demo/`](ops/gcp-demo/) for the
+infrastructure that provisions it.
 
 ## The problem
 

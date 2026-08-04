@@ -1,21 +1,27 @@
-FROM node:22-alpine AS dependencies
+FROM node:26-alpine AS dependencies
 WORKDIR /workspace
 COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/package.json
 RUN npm ci
 
-FROM node:22-alpine AS builder
+FROM node:26-alpine AS builder
 WORKDIR /workspace
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000
 ARG NEXT_PUBLIC_AUTH_MODE=local
 ARG NEXT_PUBLIC_ENTRA_CLIENT_ID=
 ARG NEXT_PUBLIC_ENTRA_TENANT_ID=
 ARG NEXT_PUBLIC_ENTRA_API_SCOPE=
+ARG NEXT_PUBLIC_DEMO_READ_ONLY=false
+ARG NEXT_PUBLIC_DEPLOYMENT_LABEL=Ambiente local
+ARG NEXT_PUBLIC_GIT_SHA=
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
     NEXT_PUBLIC_AUTH_MODE=$NEXT_PUBLIC_AUTH_MODE \
     NEXT_PUBLIC_ENTRA_CLIENT_ID=$NEXT_PUBLIC_ENTRA_CLIENT_ID \
     NEXT_PUBLIC_ENTRA_TENANT_ID=$NEXT_PUBLIC_ENTRA_TENANT_ID \
-    NEXT_PUBLIC_ENTRA_API_SCOPE=$NEXT_PUBLIC_ENTRA_API_SCOPE
+    NEXT_PUBLIC_ENTRA_API_SCOPE=$NEXT_PUBLIC_ENTRA_API_SCOPE \
+    NEXT_PUBLIC_DEMO_READ_ONLY=$NEXT_PUBLIC_DEMO_READ_ONLY \
+    NEXT_PUBLIC_DEPLOYMENT_LABEL=$NEXT_PUBLIC_DEPLOYMENT_LABEL \
+    NEXT_PUBLIC_GIT_SHA=$NEXT_PUBLIC_GIT_SHA
 COPY --from=dependencies /workspace/node_modules ./node_modules
 COPY --from=dependencies /workspace/apps/web/node_modules ./apps/web/node_modules
 COPY package.json ./
@@ -23,7 +29,7 @@ COPY packages/document-templates ./packages/document-templates
 COPY apps/web ./apps/web
 RUN npm run build:web
 
-FROM node:22-alpine AS runner
+FROM node:26-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \

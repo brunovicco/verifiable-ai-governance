@@ -16,18 +16,22 @@ disclaimer: >
   Top 10 for Agentic Applications 2026 (dez/2025, genai.owasp.org) e MITRE ATLAS, cujas
   táticas e técnicas foram conferidas contra o relatório MITRE SAFE-AI (abr/2025,
   atlas.mitre.org) e as referências cruzadas que o próprio OWASP Top 10 faz para IDs de
-  técnica do ATLAS. Não constitui parecer jurídico, certificação ou declaração de
-  conformidade, e deve ser revisada por jurídico/compliance antes de qualquer uso
-  formal. Citações do NIST AI RMF usam função/categoria nomeada (ex.: "GOVERN 2") como
+  técnica do ATLAS.
+
+  Não constitui parecer jurídico, certificação ou declaração de conformidade, e deve
+  ser revisada por jurídico/compliance antes de qualquer uso formal.
+
+  Citações do NIST AI RMF usam função/categoria nomeada (ex.: "GOVERN 2") como
   granularidade padrão em todo o crosswalk; subcategoria numerada (ex.: "GOVERN 1.6")
   só é citada nos poucos casos em que ela corresponde de forma direta e inequívoca ao
-  controle - uma escolha editorial deliberada de manter a maioria das citações no nível
-  mais estável, não uma limitação de acesso à fonte. O concept note "NIST AI RMF:
-  Trustworthy Use of AI in Critical Infrastructure Profile" (abr/2026) ainda não define
-  categorias de risco citáveis - é um documento de planejamento, não um perfil
-  publicado - e por isso não está referenciado aqui; será avaliado quando (e se) um
-  perfil completo for publicado. ISO/IEC 42001 permanece pendente por ser norma
-  licenciada, sem acesso ao texto oficial.
+  controle — uma escolha editorial deliberada de manter a maioria das citações no nível
+  mais estável, não uma limitação de acesso à fonte.
+
+  O concept note "NIST AI RMF: Trustworthy Use of AI in Critical Infrastructure
+  Profile" (abr/2026) ainda não define categorias de risco citáveis — é um documento de
+  planejamento, não um perfil publicado — e por isso não está referenciado aqui; será
+  avaliado quando (e se) um perfil completo for publicado. ISO/IEC 42001 permanece
+  pendente por ser norma licenciada, sem acesso ao texto oficial.
 entries:
   - control_id: GOV-ORG-001
     references:
@@ -284,7 +288,7 @@ entries:
         reference: "ASI03"
         title: Identity and Privilege Abuse
         note: >
-          Mitigação nº1 do ASI03 é "Enforce Task-Scoped, Time-Bound Permissions" -
+          Mitigação nº 1 do ASI03 é "Enforce Task-Scoped, Time-Bound Permissions" —
           correspondência direta com este controle.
 
   - control_id: GOV-AGT-004
@@ -317,23 +321,23 @@ entries:
         reference: "2.9 Information Security"
         title: Information Security
       - framework: owasp_llm_top10
-        reference: "Top 10 (geral)"
+        reference: "Checklist completo"
         title: Referência ampla para modelagem de ameaças
         note: >
           Não é um item específico da lista; usar a lista completa como checklist
           de ameaças ao construir o threat model.
       - framework: mitre_atlas
-        reference: "ATLAS Matrix (geral)"
+        reference: "Matriz completa (14 táticas)"
         title: Referência ampla de táticas e técnicas adversárias contra IA
         note: >
           Não é uma técnica específica; usar a matriz completa do MITRE ATLAS (14
           táticas, de reconhecimento a impacto) como checklist ao construir o
           threat model, como o próprio OWASP Top 10 recomenda para cada item.
       - framework: owasp_agentic_top10
-        reference: "ASI Top 10 (geral)"
+        reference: "Checklist completo (ASI01–ASI10)"
         title: Referência ampla para modelagem de ameaças em sistemas agênticos
         note: >
-          Não é um item específico da lista; usar os dez itens (ASI01-ASI10) como
+          Não é um item específico da lista; usar os dez itens (ASI01–ASI10) como
           checklist adicional quando o sistema usa agentes, ferramentas ou
           protocolos multi-agente.
 

@@ -25,8 +25,7 @@ export default function DocumentationPage() {
         </div>
         <p>
           Consulte modelos versionados para transformar decisões, riscos e controles em
-          documentação consistente. Os arquivos desta biblioteca vêm diretamente do pacote
-          <code>document-templates</code>.
+          documentação consistente.
         </p>
       </section>
 

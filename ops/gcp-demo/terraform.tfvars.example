@@ -1,0 +1,16 @@
+# Copie para terraform.tfvars e preencha com os seus valores.
+# NUNCA commite terraform.tfvars (adicione ao .gitignore).
+
+project_id = "seu-project-id-gcp"
+region     = "us-central1"
+zone       = "us-central1-a"
+
+ssh_public_key_path = "~/.ssh/gcp-vai-demo.pub"
+ssh_username         = "ubuntu"
+ssh_allowed_cidr    = "203.0.113.10/32" # troque pelo SEU IP publico
+
+machine_type      = "e2-standard-2"
+boot_disk_size_gb = 50
+
+app_domain = "app.seudominio.com"
+api_domain = "api.seudominio.com"

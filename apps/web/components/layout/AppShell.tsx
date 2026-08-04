@@ -6,7 +6,9 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
 import { PortalAuthStatus } from "@/components/auth/PortalAuth";
+import { DemoReadOnlyBanner } from "@/components/layout/DemoReadOnlyBanner";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { getDeploymentLabel, getGitSha, isDemoReadOnly } from "@/lib/demo";
 
 interface AppShellProps { children: ReactNode; }
 interface NavItem { href: string; label: string; icon: IconName; exact?: boolean; }
@@ -41,7 +43,11 @@ export function AppShell({ children }: AppShellProps) {
           <span><strong>Verifiable AI</strong><small>Governance Platform</small></span>
           <button aria-label="Fechar menu" className="vg-icon-button vg-sidebar__close" onClick={() => setMenuOpen(false)} type="button"><Icon name="close" /></button>
         </div>
-        <Link className="vg-sidebar__cta" href="/initiatives/new" onClick={() => setMenuOpen(false)}><Icon name="plus" size={18} />Nova iniciativa</Link>
+        {isDemoReadOnly() ? (
+          <span aria-disabled="true" className="vg-sidebar__cta vg-sidebar__cta--disabled" title="Disponível apenas em uma instalação autenticada"><Icon name="plus" size={18} />Nova iniciativa</span>
+        ) : (
+          <Link className="vg-sidebar__cta" href="/initiatives/new" onClick={() => setMenuOpen(false)}><Icon name="plus" size={18} />Nova iniciativa</Link>
+        )}
         <nav aria-label="Navegação principal" className="vg-sidebar__nav">
           <p className="vg-sidebar__section-label">Workspace</p>
           {navigation.map((item) => {
@@ -50,11 +56,12 @@ export function AppShell({ children }: AppShellProps) {
           })}
         </nav>
         <div className="vg-sidebar__footer">
-          <div className="vg-environment"><span className="vg-environment__dot" />Ambiente local</div>
-          <span>v0.1 · Reference platform</span>
+          <div className="vg-environment"><span className="vg-environment__dot" />{getDeploymentLabel()}</div>
+          <span>v0.1 · Reference platform{getGitSha() ? ` · ${getGitSha()}` : ""}</span>
         </div>
       </aside>
       <div className="vg-workspace">
+        <DemoReadOnlyBanner />
         <header className="vg-topbar">
           <div className="vg-topbar__left">
             <button aria-expanded={menuOpen} aria-label="Abrir navegação" className="vg-icon-button vg-menu-button" onClick={() => setMenuOpen(true)} type="button"><Icon name="menu" /></button>
