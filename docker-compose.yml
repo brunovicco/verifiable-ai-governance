@@ -126,6 +126,18 @@ services:
         condition: service_started
       malware-scanner:
         condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   web:
     build:
@@ -152,7 +164,8 @@ services:
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   governance-postgres:
