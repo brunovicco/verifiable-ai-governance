@@ -13,6 +13,9 @@ RUN uv sync --frozen --package ai-governance-api --no-dev --no-editable
 FROM python:3.14-slim-bookworm
 WORKDIR /workspace
 RUN addgroup --system governance && adduser --system --ingroup governance governance
+# The app runs entirely out of the venv copied below; the base image's system pip
+# (and its vendored msgpack) is unused attack surface, not a project dependency.
+RUN python -m pip uninstall --yes pip && rm -rf /usr/local/lib/python3.14/ensurepip
 COPY --from=builder /workspace/.venv /workspace/.venv
 COPY apps/api/alembic.ini /workspace/alembic.ini
 COPY apps/api/alembic /workspace/alembic
