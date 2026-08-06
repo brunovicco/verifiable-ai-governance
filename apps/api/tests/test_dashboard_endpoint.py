@@ -25,7 +25,7 @@ from governance_schemas import (
 )
 from httpx import AsyncClient
 
-NOW = datetime(2026, 8, 2, 15, 0, tzinfo=UTC)
+NOW = datetime.now(UTC)
 ANY_USER_HEADERS = {"X-User-Id": "any-authenticated-user"}
 
 
