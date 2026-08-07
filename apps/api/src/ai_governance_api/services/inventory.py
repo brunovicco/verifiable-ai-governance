@@ -17,6 +17,7 @@ from ai_governance_api.domain.asset_registry import (
     AssetReviewError,
     AssetReviewForbidden,
     ModelReviewCandidate,
+    model_scope_digest,
     review_agent_scope,
     review_is_current,
     review_model_scope,
@@ -167,9 +168,7 @@ class InventoryService:
         self._require_version(ai_system.version, request.expected_version)
 
         changes = request.model_dump(mode="json", exclude_unset=True, exclude={"expected_version"})
-        owner_changed = (
-            "owner_id" in changes and changes["owner_id"] != ai_system.owner_id
-        )
+        owner_changed = "owner_id" in changes and changes["owner_id"] != ai_system.owner_id
         self._apply_changes(ai_system, changes)
         invalidated_reviews = (
             await self._invalidate_system_asset_reviews(
@@ -694,8 +693,7 @@ class InventoryService:
     def _clear_asset_review(asset: ModelAsset | Agent) -> bool:
         """Invalidate current review evidence and return whether state changed."""
         had_review = (
-            asset.approved_scope_digest is not None
-            or asset.status is EntityStatus.APPROVED
+            asset.approved_scope_digest is not None or asset.status is EntityStatus.APPROVED
         )
         if not had_review:
             return False
@@ -729,9 +727,18 @@ class InventoryService:
                 if model.next_review_at is not None
                 else None
             )
-            if model.status is not EntityStatus.APPROVED or not review_is_current(
-                next_review_at=model_deadline,
-                now=now,
+            scope_matches = (
+                model.approved_scope_digest is not None
+                and model.approved_scope_digest
+                == model_scope_digest(InventoryService._model_review_candidate(model))
+            )
+            if (
+                model.status is not EntityStatus.APPROVED
+                or not scope_matches
+                or not review_is_current(
+                    next_review_at=model_deadline,
+                    now=now,
+                )
             ):
                 unavailable.append(model.id)
             elif model_deadline is not None and model_deadline < requested_deadline:
@@ -826,9 +833,7 @@ class InventoryService:
         await self._record_event(
             principal=principal,
             action=f"{decision.kind.value}.reviewed",
-            entity_type=(
-                "model_asset" if isinstance(asset, ModelAsset) else "agent"
-            ),
+            entity_type=("model_asset" if isinstance(asset, ModelAsset) else "agent"),
             entity_id=asset.id,
             entity_version=asset.version,
             initiative_id=ai_system.initiative_id,

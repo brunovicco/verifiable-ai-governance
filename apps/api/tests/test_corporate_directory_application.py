@@ -59,9 +59,7 @@ async def test_directory_profile_is_bound_to_authenticated_identity() -> None:
 
 
 async def test_directory_enrichment_rejects_principal_without_directory_identity() -> None:
-    directory = FixedDirectory(
-        CorporateDirectoryProfile(tenant_id=TENANT_ID, object_id=OBJECT_ID)
-    )
+    directory = FixedDirectory(CorporateDirectoryProfile(tenant_id=TENANT_ID, object_id=OBJECT_ID))
 
     with pytest.raises(CorporateDirectoryNotApplicable):
         await ResolveCorporateDirectory(directory).execute(
@@ -83,9 +81,7 @@ async def test_directory_enrichment_rejects_identity_mismatch(
     tenant_id: str,
     object_id: str,
 ) -> None:
-    directory = FixedDirectory(
-        CorporateDirectoryProfile(tenant_id=tenant_id, object_id=object_id)
-    )
+    directory = FixedDirectory(CorporateDirectoryProfile(tenant_id=tenant_id, object_id=object_id))
 
     with pytest.raises(CorporateDirectoryIdentityMismatch):
         await ResolveCorporateDirectory(directory).execute(

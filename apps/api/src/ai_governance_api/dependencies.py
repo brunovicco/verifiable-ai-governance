@@ -165,9 +165,7 @@ DirectoryAuthorizationResolverDependency = Annotated[
 
 def get_reuse_directory_authorization() -> ReuseDirectoryAuthorization:
     """Build the shared authorization-cache query."""
-    return ReuseDirectoryAuthorization(
-        SqlAlchemyDirectoryAuthorizationCacheReader(SessionFactory)
-    )
+    return ReuseDirectoryAuthorization(SqlAlchemyDirectoryAuthorizationCacheReader(SessionFactory))
 
 
 def get_cache_resolved_directory_authorization(
@@ -211,9 +209,7 @@ InvalidateDirectoryAuthorizationDependency = Annotated[
 
 def get_require_active_directory_access() -> RequireActiveDirectoryAccess:
     """Build the per-request emergency access query with a short DB session."""
-    return RequireActiveDirectoryAccess(
-        SqlAlchemyDirectoryAccessReader(SessionFactory)
-    )
+    return RequireActiveDirectoryAccess(SqlAlchemyDirectoryAccessReader(SessionFactory))
 
 
 RequireActiveDirectoryAccessDependency = Annotated[

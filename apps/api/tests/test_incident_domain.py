@@ -38,8 +38,7 @@ def test_incident_transitions_follow_the_allowed_forward_map() -> None:
 
 def test_remediation_plan_moves_open_or_contained_forward_and_is_idempotent() -> None:
     assert (
-        resulting_status_after_remediation_plan(IncidentStatus.OPEN)
-        is IncidentStatus.REMEDIATING
+        resulting_status_after_remediation_plan(IncidentStatus.OPEN) is IncidentStatus.REMEDIATING
     )
     assert (
         resulting_status_after_remediation_plan(IncidentStatus.CONTAINED)

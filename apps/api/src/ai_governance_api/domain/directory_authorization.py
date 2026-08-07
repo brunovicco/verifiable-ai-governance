@@ -143,19 +143,15 @@ class DirectoryAuthorizationCatalog:
         if identity is None:
             return principal
         groups = frozenset(
-            _canonical_uuid(group_id, "resolved group object ID")
-            for group_id in group_object_ids
+            _canonical_uuid(group_id, "resolved group object ID") for group_id in group_object_ids
         )
         if groups and group_resolution_source in {
             DirectoryGroupResolutionSource.NONE,
             DirectoryGroupResolutionSource.OVERAGE_UNRESOLVED,
         }:
-            raise DirectoryAuthorizationError(
-                "Resolved groups require a trusted resolution source"
-            )
+            raise DirectoryAuthorizationError("Resolved groups require a trusted resolution source")
         eligible = identity.account_type is DirectoryAccountType.MEMBER or (
-            identity.account_type is DirectoryAccountType.GUEST
-            and guest_approvals_enabled
+            identity.account_type is DirectoryAccountType.GUEST and guest_approvals_enabled
         )
         matched = (
             tuple(

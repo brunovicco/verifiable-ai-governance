@@ -51,13 +51,9 @@ def upgrade() -> None:
         op.alter_column("agents", "deployment_region", server_default=None)
 
     op.execute(
-        "CREATE INDEX IF NOT EXISTS ix_model_assets_next_review_at "
-        "ON model_assets (next_review_at)"
+        "CREATE INDEX IF NOT EXISTS ix_model_assets_next_review_at ON model_assets (next_review_at)"
     )
-    op.execute(
-        "CREATE INDEX IF NOT EXISTS ix_agents_next_review_at "
-        "ON agents (next_review_at)"
-    )
+    op.execute("CREATE INDEX IF NOT EXISTS ix_agents_next_review_at ON agents (next_review_at)")
 
 
 def downgrade() -> None:
@@ -92,7 +88,4 @@ def _add_review_columns(table_name: str) -> None:
 
 def _column_names(table_name: str) -> set[str]:
     """Return current column names for idempotent bootstrap compatibility."""
-    return {
-        column["name"]
-        for column in sa.inspect(op.get_bind()).get_columns(table_name)
-    }
+    return {column["name"] for column in sa.inspect(op.get_bind()).get_columns(table_name)}

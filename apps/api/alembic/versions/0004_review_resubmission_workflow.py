@@ -64,9 +64,7 @@ def upgrade() -> None:
     _add_review_columns(inspector)
     _backfill_legacy_rounds(bind)
 
-    op.execute(
-        "ALTER TABLE approvals DROP CONSTRAINT IF EXISTS uq_approval_initiative_area"
-    )
+    op.execute("ALTER TABLE approvals DROP CONSTRAINT IF EXISTS uq_approval_initiative_area")
     op.execute("DROP INDEX IF EXISTS uq_approval_initiative_area")
     op.execute(
         "CREATE UNIQUE INDEX IF NOT EXISTS uq_approval_initiative_round_area "
@@ -81,14 +79,9 @@ def downgrade() -> None:
         sa.text("SELECT 1 FROM review_submissions WHERE review_round > 1 LIMIT 1")
     ).first()
     if has_later_round is not None:
-        raise RuntimeError(
-            "Downgrade refused: review rounds greater than one would be destroyed"
-        )
+        raise RuntimeError("Downgrade refused: review rounds greater than one would be destroyed")
 
-    op.execute(
-        "ALTER TABLE approvals "
-        "DROP CONSTRAINT IF EXISTS uq_approval_initiative_round_area"
-    )
+    op.execute("ALTER TABLE approvals DROP CONSTRAINT IF EXISTS uq_approval_initiative_round_area")
     op.execute("DROP INDEX IF EXISTS uq_approval_initiative_round_area")
     op.execute(
         "CREATE UNIQUE INDEX IF NOT EXISTS uq_approval_initiative_area "
@@ -103,9 +96,7 @@ def downgrade() -> None:
 
 def _add_review_columns(inspector: sa.Inspector) -> None:
     """Add review projection columns when upgrading an existing database."""
-    initiative_columns = {
-        item["name"] for item in inspector.get_columns("initiatives")
-    }
+    initiative_columns = {item["name"] for item in inspector.get_columns("initiatives")}
     if "current_review_round" not in initiative_columns:
         op.add_column(
             "initiatives",
@@ -214,9 +205,7 @@ def _backfill_legacy_rounds(bind: sa.Connection) -> None:
             {"submission_id": submission_id, "initiative_id": initiative["id"]},
         )
         bind.execute(
-            sa.text(
-                "UPDATE initiatives SET current_review_round = 1 WHERE id = :initiative_id"
-            ),
+            sa.text("UPDATE initiatives SET current_review_round = 1 WHERE id = :initiative_id"),
             {"initiative_id": initiative["id"]},
         )
 

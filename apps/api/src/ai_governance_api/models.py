@@ -84,9 +84,7 @@ class ReviewableAssetMixin:
     def review_state(self) -> AssetReviewState:
         """Return current review validity while preserving lifecycle status."""
         deadline = self.next_review_at
-        if deadline is not None and (
-            deadline.tzinfo is None or deadline.utcoffset() is None
-        ):
+        if deadline is not None and (deadline.tzinfo is None or deadline.utcoffset() is None):
             deadline = deadline.replace(tzinfo=UTC)
         return asset_review_state(
             approved_scope_digest=self.approved_scope_digest,
@@ -146,9 +144,7 @@ class Initiative(VersionedMixin, Base):
         back_populates="initiative", cascade="all, delete-orphan", lazy="selectin"
     )
     assessments: Mapped[list["Assessment"]] = relationship(back_populates="initiative")
-    systems: Mapped[list["AISystem"]] = relationship(
-        back_populates="initiative", lazy="selectin"
-    )
+    systems: Mapped[list["AISystem"]] = relationship(back_populates="initiative", lazy="selectin")
     review_submissions: Mapped[list["ReviewSubmission"]] = relationship(
         back_populates="initiative", cascade="all, delete-orphan", lazy="selectin"
     )
@@ -183,15 +179,9 @@ class AISystem(VersionedMixin, Base):
     metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
 
     initiative: Mapped[Initiative] = relationship(back_populates="systems")
-    models: Mapped[list["ModelAsset"]] = relationship(
-        back_populates="ai_system", lazy="selectin"
-    )
-    agents: Mapped[list["Agent"]] = relationship(
-        back_populates="ai_system", lazy="selectin"
-    )
-    incidents: Mapped[list["Incident"]] = relationship(
-        back_populates="ai_system", lazy="selectin"
-    )
+    models: Mapped[list["ModelAsset"]] = relationship(back_populates="ai_system", lazy="selectin")
+    agents: Mapped[list["Agent"]] = relationship(back_populates="ai_system", lazy="selectin")
+    incidents: Mapped[list["Incident"]] = relationship(back_populates="ai_system", lazy="selectin")
 
 
 class ModelAsset(ReviewableAssetMixin, VersionedMixin, Base):
@@ -272,9 +262,7 @@ class ModelRoutingDecisionEntry(Base):
     initiative_id: Mapped[str] = mapped_column(
         ForeignKey("initiatives.id"), nullable=False, index=True
     )
-    agent_id: Mapped[str] = mapped_column(
-        ForeignKey("agents.id"), nullable=False, index=True
-    )
+    agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"), nullable=False, index=True)
     requested_by: Mapped[str] = mapped_column(String(200), nullable=False)
     requested_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, index=True
@@ -381,9 +369,7 @@ class Approval(VersionedMixin, Base):
     superseded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     initiative: Mapped[Initiative] = relationship(back_populates="approvals")
-    review_submission: Mapped["ReviewSubmission | None"] = relationship(
-        back_populates="approvals"
-    )
+    review_submission: Mapped["ReviewSubmission | None"] = relationship(back_populates="approvals")
     evidence: Mapped[list["Evidence"]] = relationship(back_populates="approval")
 
 
@@ -441,9 +427,7 @@ class Evidence(VersionedMixin, Base):
     original_filename: Mapped[str | None] = mapped_column(String(255))
     content_type: Mapped[str | None] = mapped_column(String(100))
     size_bytes: Mapped[int | None] = mapped_column(Integer)
-    scan_status: Mapped[str] = mapped_column(
-        String(50), default="not_applicable", nullable=False
-    )
+    scan_status: Mapped[str] = mapped_column(String(50), default="not_applicable", nullable=False)
     scanner: Mapped[str | None] = mapped_column(String(100))
     scanned_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     storage_bucket: Mapped[str | None] = mapped_column(String(255))
@@ -487,9 +471,7 @@ class PolicyException(VersionedMixin, Base):
     __tablename__ = "policy_exceptions"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
-    incident_id: Mapped[str] = mapped_column(
-        ForeignKey("incidents.id"), nullable=False, index=True
-    )
+    incident_id: Mapped[str] = mapped_column(ForeignKey("incidents.id"), nullable=False, index=True)
     ai_system_id: Mapped[str] = mapped_column(
         ForeignKey("ai_systems.id"), nullable=False, index=True
     )

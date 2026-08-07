@@ -32,12 +32,8 @@ async def test_canonical_seed_is_complete_and_idempotent() -> None:
     assert current.initiative_id == created.initiative_id
     assert current.ai_system_id == created.ai_system_id
     assert current.agent_id == created.agent_id
-    assert current.allowed_routing_decision_id == (
-        created.allowed_routing_decision_id
-    )
-    assert current.blocked_routing_decision_id == (
-        created.blocked_routing_decision_id
-    )
+    assert current.allowed_routing_decision_id == (created.allowed_routing_decision_id)
+    assert current.blocked_routing_decision_id == (created.blocked_routing_decision_id)
     assert current.assessment_count == 3
     assert current.approval_count >= 1
     assert current.evidence_count >= 6
@@ -70,8 +66,7 @@ async def test_partial_existing_scenario_fails_closed() -> None:
     async with SessionFactory() as session:
         await session.execute(
             delete(ModelRoutingDecisionEntry).where(
-                ModelRoutingDecisionEntry.id
-                == summary.blocked_routing_decision_id
+                ModelRoutingDecisionEntry.id == summary.blocked_routing_decision_id
             )
         )
         await session.commit()

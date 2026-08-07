@@ -98,9 +98,7 @@ class ReuseDirectoryAuthorization:
         identity = principal.directory_identity
         if identity is None:
             return None
-        snapshot = await self._cache.load(
-            DirectoryAuthorizationCacheKey.from_identity(identity)
-        )
+        snapshot = await self._cache.load(DirectoryAuthorizationCacheKey.from_identity(identity))
         if snapshot is None or not snapshot.is_fresh(
             now=self._clock(),
             catalog_digest=catalog_digest,

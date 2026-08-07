@@ -114,9 +114,7 @@ def test_policy_model_router_requires_explicit_per_agent_credentials() -> None:
         policy_model_router_api_keys_json='{"Knowledge agent":"secret"}',
     )
 
-    assert settings.policy_model_router_api_key_map == {
-        "Knowledge agent": "secret"
-    }
+    assert settings.policy_model_router_api_key_map == {"Knowledge agent": "secret"}
     assert "secret" not in repr(settings)
 
     with pytest.raises(ValidationError, match="API_KEYS_JSON is required"):

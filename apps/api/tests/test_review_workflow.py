@@ -198,9 +198,7 @@ async def test_change_request_resubmission_preserves_review_history(
     assert stale_gate.status_code == 409
 
     second_gate = next(
-        item
-        for item in second_round["approvals"]
-        if item["review_round"] == 2 and item["required"]
+        item for item in second_round["approvals"] if item["review_round"] == 2 and item["required"]
     )
     approved = await client.post(
         f"/api/v1/initiatives/{initiative_id}/approvals/{second_gate['id']}/decision",

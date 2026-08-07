@@ -101,17 +101,11 @@ async def _drop_alembic_version_table() -> None:
 async def _set_database_heads(heads: frozenset[str] | set[str]) -> None:
     async with engine.begin() as connection:
         await connection.execute(
-            text(
-                "CREATE TABLE alembic_version "
-                "(version_num VARCHAR(255) NOT NULL PRIMARY KEY)"
-            )
+            text("CREATE TABLE alembic_version (version_num VARCHAR(255) NOT NULL PRIMARY KEY)")
         )
         for head in sorted(heads):
             await connection.execute(
-                text(
-                    "INSERT INTO alembic_version (version_num) "
-                    "VALUES (:version_num)"
-                ),
+                text("INSERT INTO alembic_version (version_num) VALUES (:version_num)"),
                 {"version_num": head},
             )
 

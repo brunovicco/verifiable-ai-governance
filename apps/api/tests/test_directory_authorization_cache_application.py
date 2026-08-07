@@ -119,9 +119,7 @@ def cached_snapshot(*, expires_at: datetime) -> DirectoryAuthorizationSnapshot:
         expires_at=expires_at,
         matched_mapping_ids=("security-reviewers",),
         source_types=("group",),
-        original_group_resolution_source=(
-            DirectoryGroupResolutionSource.MICROSOFT_GRAPH
-        ),
+        original_group_resolution_source=(DirectoryGroupResolutionSource.MICROSOFT_GRAPH),
     )
 
 
@@ -254,9 +252,7 @@ async def test_admin_cannot_create_marker_outside_configured_tenant() -> None:
             MemoryCache(),
             RecordingAudit(),
             RecordingTransaction(),
-            allowed_tenant_ids=frozenset({
-                "33333333-3333-4333-8333-333333333333"
-            }),
+            allowed_tenant_ids=frozenset({"33333333-3333-4333-8333-333333333333"}),
             clock=lambda: NOW,
         ).execute(
             tenant_id=TENANT_ID,

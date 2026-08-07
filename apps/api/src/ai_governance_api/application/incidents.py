@@ -71,9 +71,7 @@ class IncidentRepositoryPort(Protocol):
         """Return the incident, its system context, and the agent under lock."""
         ...
 
-    async def save_agent_kill_switch(
-        self, state: AgentKillSwitchState
-    ) -> AgentKillSwitchState:
+    async def save_agent_kill_switch(self, state: AgentKillSwitchState) -> AgentKillSwitchState:
         """Persist one agent's kill-switch state without committing."""
         ...
 
@@ -87,9 +85,7 @@ class IncidentRepositoryPort(Protocol):
         """Insert or update one policy exception without committing."""
         ...
 
-    async def list_exceptions_for_incident(
-        self, incident_id: str
-    ) -> list[PolicyExceptionRecord]:
+    async def list_exceptions_for_incident(self, incident_id: str) -> list[PolicyExceptionRecord]:
         """Return policy exceptions for one incident in reverse chronological order."""
         ...
 
@@ -280,9 +276,7 @@ class IncidentService:
         principal: Principal,
     ) -> AgentKillSwitchState:
         """Trip an agent's declared kill switch during incident response."""
-        context, incident, agent = await self._require_agent_for_kill_switch(
-            incident_id, agent_id
-        )
+        context, incident, agent = await self._require_agent_for_kill_switch(incident_id, agent_id)
         self._require_owner_or_admin(context, principal)
         self._require_version(agent.version, expected_version)
         self._require_domain(
@@ -315,9 +309,7 @@ class IncidentService:
         principal: Principal,
     ) -> AgentKillSwitchState:
         """Restore a previously engaged kill switch."""
-        context, _incident, agent = await self._require_agent_for_kill_switch(
-            incident_id, agent_id
-        )
+        context, _incident, agent = await self._require_agent_for_kill_switch(incident_id, agent_id)
         self._require_owner_or_admin(context, principal)
         self._require_version(agent.version, expected_version)
         self._require_domain(
@@ -434,9 +426,7 @@ class IncidentService:
                 "Only an administrator can revoke a temporary exception",
             )
         self._require_version(exception.version, expected_version)
-        self._require_domain(
-            lambda: validate_exception_revocation(current_status=exception.status)
-        )
+        self._require_domain(lambda: validate_exception_revocation(current_status=exception.status))
         now = self._clock()
         updated = self._bump_exception(
             exception,
@@ -533,9 +523,7 @@ class IncidentService:
             raise ApplicationError(ErrorKind.NOT_FOUND, "Exception not found")
         return found
 
-    def _require_owner_or_admin(
-        self, context: IncidentSystemContext, principal: Principal
-    ) -> None:
+    def _require_owner_or_admin(self, context: IncidentSystemContext, principal: Principal) -> None:
         """Restrict incident commands to the AI system owner or an administrator."""
         if context.ai_system_owner_id != principal.user_id and not principal.is_admin:
             raise ApplicationError(

@@ -42,8 +42,9 @@ class SqlAlchemyDashboardStore:
     async def get_routing_outcome_counts(self) -> RoutingOutcomeCounts:
         """Return aggregated routing-decision outcome counts and top block reasons."""
         outcome_rows = await self._session.execute(
-            select(ModelRoutingDecisionEntry.outcome, func.count())
-            .group_by(ModelRoutingDecisionEntry.outcome)
+            select(ModelRoutingDecisionEntry.outcome, func.count()).group_by(
+                ModelRoutingDecisionEntry.outcome
+            )
         )
         outcome_counts = {outcome: count for outcome, count in outcome_rows}
 
@@ -58,8 +59,11 @@ class SqlAlchemyDashboardStore:
             (reason_code, count) for reason_code, count in reason_rows if reason_code is not None
         )
         cost_limit_exceeded = next(
-            (count for reason_code, count in top_blocked_reason_codes
-             if reason_code == RoutingBlockCode.COST_LIMIT_EXCEEDED.value),
+            (
+                count
+                for reason_code, count in top_blocked_reason_codes
+                if reason_code == RoutingBlockCode.COST_LIMIT_EXCEEDED.value
+            ),
             0,
         )
 
@@ -109,9 +113,7 @@ class SqlAlchemyDashboardStore:
             select(Incident.remediation_due_at).where(Incident.status != IncidentStatus.CLOSED)
         )
         overdue_remediation = sum(
-            1
-            for (due_at,) in open_rows.tuples()
-            if due_at is not None and _as_utc(due_at) < now
+            1 for (due_at,) in open_rows.tuples() if due_at is not None and _as_utc(due_at) < now
         )
 
         return IncidentCounts(

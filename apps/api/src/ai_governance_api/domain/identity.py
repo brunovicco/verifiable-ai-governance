@@ -48,9 +48,7 @@ class DirectoryGroupClaims:
     def __post_init__(self) -> None:
         """Prevent incomplete claim states from carrying authorization inputs."""
         if self.state is not DirectoryGroupClaimState.COMPLETE and self.object_ids:
-            raise IdentityMappingError(
-                "Incomplete OIDC group claims cannot contain object IDs"
-            )
+            raise IdentityMappingError("Incomplete OIDC group claims cannot contain object IDs")
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,9 +84,7 @@ class Principal:
     is_admin: bool = False
     directory_identity: DirectoryIdentity | None = None
     directory_role_values: frozenset[str] = field(default_factory=frozenset)
-    directory_group_claims: DirectoryGroupClaims = field(
-        default_factory=DirectoryGroupClaims
-    )
+    directory_group_claims: DirectoryGroupClaims = field(default_factory=DirectoryGroupClaims)
     authorization_provenance: "AuthorizationProvenance | None" = None
 
 
@@ -101,9 +97,7 @@ class AuthorizationProvenance:
     catalog_digest: str
     matched_mapping_ids: tuple[str, ...] = ()
     source_types: tuple[str, ...] = ()
-    group_resolution_source: DirectoryGroupResolutionSource = (
-        DirectoryGroupResolutionSource.NONE
-    )
+    group_resolution_source: DirectoryGroupResolutionSource = DirectoryGroupResolutionSource.NONE
 
 
 def principal_from_claims(
@@ -131,9 +125,7 @@ def principal_from_claims(
         else raw_areas
     )
     approval_areas = (
-        frozenset()
-        if directory_identity is not None
-        else parse_approval_areas(raw_areas)
+        frozenset() if directory_identity is not None else parse_approval_areas(raw_areas)
     )
     directory_role_values = (
         _directory_role_values(raw_directory_roles)
@@ -221,9 +213,7 @@ def _directory_group_claims(
     raw_groups = _claim_at_path(claims, claim_path)
     if raw_groups is None:
         return DirectoryGroupClaims()
-    if not isinstance(raw_groups, list) or not all(
-        isinstance(value, str) for value in raw_groups
-    ):
+    if not isinstance(raw_groups, list) or not all(isinstance(value, str) for value in raw_groups):
         raise IdentityMappingError("OIDC groups claim is invalid")
     if len(raw_groups) > 200:
         raise IdentityMappingError("OIDC groups claim exceeds the JWT item limit")
@@ -233,13 +223,9 @@ def _directory_group_claims(
         try:
             group_id = UUID(value.strip())
         except (ValueError, AttributeError) as exc:
-            raise IdentityMappingError(
-                "OIDC groups claim contains an invalid object ID"
-            ) from exc
+            raise IdentityMappingError("OIDC groups claim contains an invalid object ID") from exc
         if group_id.int == 0:
-            raise IdentityMappingError(
-                "OIDC groups claim contains an invalid object ID"
-            )
+            raise IdentityMappingError("OIDC groups claim contains an invalid object ID")
         object_ids.add(str(group_id))
     return DirectoryGroupClaims(
         state=DirectoryGroupClaimState.COMPLETE,

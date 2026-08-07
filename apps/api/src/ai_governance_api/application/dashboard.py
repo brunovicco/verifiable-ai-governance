@@ -199,9 +199,7 @@ class BuildDashboardSnapshot:
         cycle_times = CycleTimes(
             review_round_avg_hours=_average(cycle_time_samples.review_round_hours),
             review_round_samples=len(cycle_time_samples.review_round_hours),
-            incident_remediation_avg_hours=_average(
-                cycle_time_samples.incident_remediation_hours
-            ),
+            incident_remediation_avg_hours=_average(cycle_time_samples.incident_remediation_hours),
             incident_remediation_samples=len(cycle_time_samples.incident_remediation_hours),
         )
 

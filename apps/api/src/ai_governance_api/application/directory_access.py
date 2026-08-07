@@ -99,9 +99,7 @@ class RequireActiveDirectoryAccess:
         try:
             target = DirectoryAccessTarget.from_identity(identity)
         except DirectoryAccessError as exc:
-            raise DirectoryAccessUnavailable(
-                "Authenticated directory identity is invalid"
-            ) from exc
+            raise DirectoryAccessUnavailable("Authenticated directory identity is invalid") from exc
         state = await self._reader.load(target)
         if state is not None and state.blocked:
             raise ApplicationError(

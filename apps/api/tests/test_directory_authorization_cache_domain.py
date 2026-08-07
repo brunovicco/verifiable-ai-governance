@@ -43,9 +43,7 @@ def snapshot(**overrides: object) -> DirectoryAuthorizationSnapshot:
         "expires_at": NOW + timedelta(seconds=60),
         "matched_mapping_ids": ("security-reviewers",),
         "source_types": ("group",),
-        "original_group_resolution_source": (
-            DirectoryGroupResolutionSource.MICROSOFT_GRAPH
-        ),
+        "original_group_resolution_source": (DirectoryGroupResolutionSource.MICROSOFT_GRAPH),
     }
     values.update(overrides)
     return DirectoryAuthorizationSnapshot(**values)
@@ -79,9 +77,7 @@ def test_expiry_catalog_change_and_invalidation_make_snapshot_stale() -> None:
 
 def test_snapshot_cannot_authorize_another_directory_identity() -> None:
     with pytest.raises(DirectoryAuthorizationCacheError, match="does not match"):
-        snapshot().authorize(
-            corporate_principal(object_id="33333333-3333-4333-8333-333333333333")
-        )
+        snapshot().authorize(corporate_principal(object_id="33333333-3333-4333-8333-333333333333"))
 
 
 def test_cache_key_produces_stable_minimized_identifiers() -> None:

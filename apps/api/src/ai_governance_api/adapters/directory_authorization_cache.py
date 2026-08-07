@@ -55,9 +55,7 @@ class SqlAlchemyDirectoryAuthorizationCache:
         try:
             return DirectoryAuthorizationSnapshot(
                 key=key,
-                approval_areas=frozenset(
-                    ApprovalArea(value) for value in entity.approval_areas
-                ),
+                approval_areas=frozenset(ApprovalArea(value) for value in entity.approval_areas),
                 catalog_id=entity.catalog_id or "",
                 catalog_version=entity.catalog_version or "",
                 catalog_digest=entity.catalog_digest or "",
@@ -70,9 +68,7 @@ class SqlAlchemyDirectoryAuthorizationCache:
                     or DirectoryGroupResolutionSource.NONE.value
                 ),
                 invalidated_at=(
-                    _as_utc(entity.invalidated_at)
-                    if entity.invalidated_at is not None
-                    else None
+                    _as_utc(entity.invalidated_at) if entity.invalidated_at is not None else None
                 ),
                 version=entity.version,
             )
@@ -94,9 +90,7 @@ class SqlAlchemyDirectoryAuthorizationCache:
             "approval_areas": sorted(area.value for area in snapshot.approval_areas),
             "matched_mapping_ids": list(snapshot.matched_mapping_ids),
             "source_types": list(snapshot.source_types),
-            "original_group_resolution_source": (
-                snapshot.original_group_resolution_source.value
-            ),
+            "original_group_resolution_source": (snapshot.original_group_resolution_source.value),
             "resolved_at": snapshot.resolved_at,
             "expires_at": snapshot.expires_at,
             "invalidated_at": None,

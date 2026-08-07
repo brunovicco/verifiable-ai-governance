@@ -41,9 +41,7 @@ def test_api_waits_for_explicit_successful_migration() -> None:
     ]
     assert migration["environment"]["AUTO_CREATE_SCHEMA"] == "false"
     assert api["environment"]["AUTO_CREATE_SCHEMA"] == "false"
-    assert api["depends_on"]["migrate"] == {
-        "condition": "service_completed_successfully"
-    }
+    assert api["depends_on"]["migrate"] == {"condition": "service_completed_successfully"}
 
 
 def test_web_authentication_build_configuration_is_explicit() -> None:
@@ -76,15 +74,9 @@ def test_api_corporate_identity_policy_is_environment_driven() -> None:
 
     assert environment["OIDC_IDENTITY_MODE"] == "${OIDC_IDENTITY_MODE:-subject}"
     assert environment["OIDC_ALLOWED_TENANT_IDS"] == "${OIDC_ALLOWED_TENANT_IDS:-}"
-    assert environment["OIDC_GUEST_APPROVALS_ENABLED"] == (
-        "${OIDC_GUEST_APPROVALS_ENABLED:-false}"
-    )
-    assert environment["OIDC_ENTRA_APP_ROLES_CLAIM"] == (
-        "${OIDC_ENTRA_APP_ROLES_CLAIM:-roles}"
-    )
-    assert environment["OIDC_ENTRA_GROUPS_CLAIM"] == (
-        "${OIDC_ENTRA_GROUPS_CLAIM:-groups}"
-    )
+    assert environment["OIDC_GUEST_APPROVALS_ENABLED"] == ("${OIDC_GUEST_APPROVALS_ENABLED:-false}")
+    assert environment["OIDC_ENTRA_APP_ROLES_CLAIM"] == ("${OIDC_ENTRA_APP_ROLES_CLAIM:-roles}")
+    assert environment["OIDC_ENTRA_GROUPS_CLAIM"] == ("${OIDC_ENTRA_GROUPS_CLAIM:-groups}")
     assert environment["DIRECTORY_AUTHORIZATION_CATALOG_PATH"] == (
         "${DIRECTORY_AUTHORIZATION_CATALOG_PATH:-}"
     )
@@ -104,12 +96,8 @@ def test_api_graph_obo_configuration_is_environment_driven() -> None:
 
     assert environment["MICROSOFT_GRAPH_ENABLED"] == "${MICROSOFT_GRAPH_ENABLED:-false}"
     assert environment["MICROSOFT_GRAPH_CLIENT_ID"] == "${MICROSOFT_GRAPH_CLIENT_ID:-}"
-    assert environment["MICROSOFT_GRAPH_CLIENT_SECRET"] == (
-        "${MICROSOFT_GRAPH_CLIENT_SECRET:-}"
-    )
-    assert environment["MICROSOFT_GRAPH_MAX_ATTEMPTS"] == (
-        "${MICROSOFT_GRAPH_MAX_ATTEMPTS:-3}"
-    )
+    assert environment["MICROSOFT_GRAPH_CLIENT_SECRET"] == ("${MICROSOFT_GRAPH_CLIENT_SECRET:-}")
+    assert environment["MICROSOFT_GRAPH_MAX_ATTEMPTS"] == ("${MICROSOFT_GRAPH_MAX_ATTEMPTS:-3}")
     assert environment["MICROSOFT_GRAPH_BACKOFF_BASE_SECONDS"] == (
         "${MICROSOFT_GRAPH_BACKOFF_BASE_SECONDS:-0.25}"
     )
@@ -130,9 +118,7 @@ def test_api_policy_model_router_configuration_is_environment_driven() -> None:
 
     environment = compose["x-api-environment"]
 
-    assert environment["POLICY_MODEL_ROUTER_ENABLED"] == (
-        "${POLICY_MODEL_ROUTER_ENABLED:-false}"
-    )
+    assert environment["POLICY_MODEL_ROUTER_ENABLED"] == ("${POLICY_MODEL_ROUTER_ENABLED:-false}")
     assert environment["POLICY_MODEL_ROUTER_BASE_URL"] == (
         "${POLICY_MODEL_ROUTER_BASE_URL:-http://host.docker.internal:8082}"
     )

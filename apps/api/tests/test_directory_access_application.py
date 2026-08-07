@@ -135,9 +135,7 @@ async def test_active_access_query_rejects_blocked_identity() -> None:
     )
 
     with pytest.raises(ApplicationError) as caught:
-        await RequireActiveDirectoryAccess(MemoryAccessStore(state)).execute(
-            corporate_principal()
-        )
+        await RequireActiveDirectoryAccess(MemoryAccessStore(state)).execute(corporate_principal())
 
     assert caught.value.kind is ErrorKind.FORBIDDEN
 

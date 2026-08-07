@@ -242,16 +242,12 @@ async def inspect_canonical_demo() -> CanonicalDemoSummary | None:
     """Return the validated canonical scenario, or ``None`` when it is absent."""
     async with SessionFactory() as session:
         initiatives = tuple(
-            await session.scalars(
-                select(Initiative).where(Initiative.name == INITIATIVE_NAME)
-            )
+            await session.scalars(select(Initiative).where(Initiative.name == INITIATIVE_NAME))
         )
         if not initiatives:
             return None
         if len(initiatives) != 1:
-            raise CanonicalDemoDriftError(
-                "Expected exactly one canonical demo initiative"
-            )
+            raise CanonicalDemoDriftError("Expected exactly one canonical demo initiative")
         rows = await _load_scenario_rows(session, initiatives[0])
 
     errors = _validate_scenario(rows)
@@ -281,13 +277,9 @@ def validate_reset_request(
 ) -> None:
     """Enforce a production block and an exact destructive-reset confirmation."""
     if environment is AppEnvironment.PRODUCTION:
-        raise DemoResetRefused(
-            "Canonical demo reset is disabled when APP_ENV=production"
-        )
+        raise DemoResetRefused("Canonical demo reset is disabled when APP_ENV=production")
     if confirmation != RESET_CONFIRMATION:
-        raise DemoResetRefused(
-            f"Reset requires the exact confirmation {RESET_CONFIRMATION!r}"
-        )
+        raise DemoResetRefused(f"Reset requires the exact confirmation {RESET_CONFIRMATION!r}")
 
 
 def write_summary(summary: CanonicalDemoSummary, output_path: Path) -> None:
@@ -320,9 +312,7 @@ async def _create_canonical_demo() -> None:
 
     allowed, blocked = await _record_routing_decisions(agent.id)
     if allowed.outcome is not RoutingEnforcementOutcome.ALLOWED:
-        raise CanonicalDemoDriftError(
-            "Expected the approved model-group scenario to be allowed"
-        )
+        raise CanonicalDemoDriftError("Expected the approved model-group scenario to be allowed")
     if blocked.outcome is not RoutingEnforcementOutcome.BLOCKED:
         raise CanonicalDemoDriftError(
             "Expected the out-of-scope model-group scenario to be blocked"
@@ -469,9 +459,7 @@ async def _create_and_submit_assessments(initiative_id: str) -> None:
                 transfer_mechanism=(
                     "Cláusulas contratuais e avaliação de transferência internacional."
                 ),
-                legal_basis=(
-                    "Execução de contrato com salvaguardas e minimização de dados."
-                ),
+                legal_basis=("Execução de contrato com salvaguardas e minimização de dados."),
                 safeguards=(
                     "redação de PII antes da inferência",
                     "zero data retention contratual",
@@ -583,9 +571,7 @@ async def _submit_and_approve_initiative(initiative_id: str) -> None:
         )
 
     async with SessionFactory() as session:
-        initiative = await InitiativeService(session, POLICY_EVALUATOR).get(
-            initiative_id
-        )
+        initiative = await InitiativeService(session, POLICY_EVALUATOR).get(initiative_id)
         areas = tuple(
             approval.area
             for approval in initiative.current_approvals
@@ -599,8 +585,7 @@ async def _submit_and_approve_initiative(initiative_id: str) -> None:
             gate = next(
                 approval
                 for approval in initiative.current_approvals
-                if approval.area is area
-                and approval.status is ApprovalStatus.PENDING
+                if approval.area is area and approval.status is ApprovalStatus.PENDING
             )
             await service.decide_approval(
                 initiative_id,
@@ -608,8 +593,7 @@ async def _submit_and_approve_initiative(initiative_id: str) -> None:
                 ApprovalDecisionRequest(
                     decision=ApprovalStatus.APPROVED,
                     comments=(
-                        f"Área {area.value} aprovou o escopo versionado da "
-                        "demonstração canônica."
+                        f"Área {area.value} aprovou o escopo versionado da demonstração canônica."
                     ),
                     evidence_uri=(
                         f"urn:demo:{SCENARIO_ID}:approval:"
@@ -659,9 +643,7 @@ async def _create_approved_model(ai_system_id: str, review_deadline: datetime) -
                 model_version="2026.08.0",
                 routing_group=APPROVED_ROUTING_GROUP,
                 deployment_region="Brazil South",
-                approved_use_cases=[
-                    "redação de parecer de crédito a partir de fatos estruturados"
-                ],
+                approved_use_cases=["redação de parecer de crédito a partir de fatos estruturados"],
                 prohibited_use_cases=[
                     "aprovação autônoma de crédito",
                     "alteração de rating ou limite",
@@ -875,50 +857,30 @@ async def _load_scenario_rows(
 ) -> _ScenarioRows:
     """Load the complete scenario using explicit queries and relationships."""
     systems = tuple(
-        await session.scalars(
-            select(AISystem).where(AISystem.initiative_id == initiative.id)
-        )
+        await session.scalars(select(AISystem).where(AISystem.initiative_id == initiative.id))
     )
     if len(systems) != 1:
-        raise CanonicalDemoDriftError(
-            f"Expected one canonical AI system, found {len(systems)}"
-        )
+        raise CanonicalDemoDriftError(f"Expected one canonical AI system, found {len(systems)}")
     ai_system = systems[0]
 
     models = tuple(
-        await session.scalars(
-            select(ModelAsset).where(ModelAsset.ai_system_id == ai_system.id)
-        )
+        await session.scalars(select(ModelAsset).where(ModelAsset.ai_system_id == ai_system.id))
     )
-    approved_models = tuple(
-        model for model in models if model.model_name == APPROVED_MODEL_NAME
-    )
+    approved_models = tuple(model for model in models if model.model_name == APPROVED_MODEL_NAME)
     out_of_scope_models = tuple(
         model for model in models if model.model_name == OUT_OF_SCOPE_MODEL_NAME
     )
     if len(approved_models) != 1 or len(out_of_scope_models) != 1:
-        raise CanonicalDemoDriftError(
-            "Canonical model inventory is missing or duplicated"
-        )
+        raise CanonicalDemoDriftError("Canonical model inventory is missing or duplicated")
 
-    agents = tuple(
-        await session.scalars(
-            select(Agent).where(Agent.ai_system_id == ai_system.id)
-        )
-    )
+    agents = tuple(await session.scalars(select(Agent).where(Agent.ai_system_id == ai_system.id)))
     matching_agents = tuple(agent for agent in agents if agent.name == AGENT_NAME)
     if len(matching_agents) != 1:
-        raise CanonicalDemoDriftError(
-            "Canonical governed agent is missing or duplicated"
-        )
+        raise CanonicalDemoDriftError("Canonical governed agent is missing or duplicated")
     agent = matching_agents[0]
 
     assessments = tuple(
-        await session.scalars(
-            select(Assessment).where(
-                Assessment.initiative_id == initiative.id
-            )
-        )
+        await session.scalars(select(Assessment).where(Assessment.initiative_id == initiative.id))
     )
     approvals = tuple(
         await session.scalars(
@@ -929,9 +891,7 @@ async def _load_scenario_rows(
         )
     )
     evidence = tuple(
-        await session.scalars(
-            select(Evidence).where(Evidence.initiative_id == initiative.id)
-        )
+        await session.scalars(select(Evidence).where(Evidence.initiative_id == initiative.id))
     )
     routing_decisions = tuple(
         await session.scalars(
@@ -950,9 +910,7 @@ async def _load_scenario_rows(
         )
     )
     if len(incidents) != 1:
-        raise CanonicalDemoDriftError(
-            "Canonical runtime incident is missing or duplicated"
-        )
+        raise CanonicalDemoDriftError("Canonical runtime incident is missing or duplicated")
 
     return _ScenarioRows(
         initiative=initiative,
@@ -972,29 +930,21 @@ def _validate_scenario(rows: _ScenarioRows) -> list[str]:
     """Return every material inconsistency instead of stopping at the first."""
     errors: list[str] = []
     if rows.initiative.status is not EntityStatus.APPROVED:
-        errors.append(
-            f"initiative status is {rows.initiative.status.value}, expected approved"
-        )
+        errors.append(f"initiative status is {rows.initiative.status.value}, expected approved")
     if rows.ai_system.name != SYSTEM_NAME:
         errors.append("canonical AI system name changed")
     if rows.ai_system.status is not EntityStatus.ACTIVE:
-        errors.append(
-            f"AI system status is {rows.ai_system.status.value}, expected active"
-        )
+        errors.append(f"AI system status is {rows.ai_system.status.value}, expected active")
     metadata = rows.ai_system.metadata_json
     if metadata.get("demo_seed") != {
         "scenario_id": SCENARIO_ID,
         "scenario_version": SCENARIO_VERSION,
     }:
         errors.append("AI system demo-seed metadata is missing or changed")
-    if tuple(sorted(metadata.get("control_ids", []))) != tuple(
-        sorted(CONTROL_IDS)
-    ):
+    if tuple(sorted(metadata.get("control_ids", []))) != tuple(sorted(CONTROL_IDS)):
         errors.append("canonical control set is missing or changed")
 
-    assessment_kinds = frozenset(
-        assessment.assessment_type for assessment in rows.assessments
-    )
+    assessment_kinds = frozenset(assessment.assessment_type for assessment in rows.assessments)
     if assessment_kinds != EXPECTED_ASSESSMENT_KINDS:
         errors.append(
             "assessment kinds differ from the canonical AI impact, RIPD and "
@@ -1002,10 +952,7 @@ def _validate_scenario(rows: _ScenarioRows) -> list[str]:
         )
     if not rows.approvals:
         errors.append("initiative has no current approval gates")
-    if any(
-        approval.status is not ApprovalStatus.APPROVED
-        for approval in rows.approvals
-    ):
+    if any(approval.status is not ApprovalStatus.APPROVED for approval in rows.approvals):
         errors.append("not every current approval gate is approved")
 
     evidence_kinds = frozenset(item.kind for item in rows.evidence)
@@ -1033,9 +980,7 @@ def _validate_scenario(rows: _ScenarioRows) -> list[str]:
     if rows.agent.kill_switch_engaged:
         errors.append("P0.3 seed must not leave the kill switch engaged")
 
-    decisions_by_task = {
-        decision.task_id: decision for decision in rows.routing_decisions
-    }
+    decisions_by_task = {decision.task_id: decision for decision in rows.routing_decisions}
     if set(decisions_by_task) != {ALLOWED_TASK_ID, BLOCKED_TASK_ID}:
         errors.append("canonical allowed/blocked routing decisions are incomplete")
     else:
@@ -1053,9 +998,7 @@ def _validate_scenario(rows: _ScenarioRows) -> list[str]:
             errors.append("blocked routing decision reason code changed")
 
     if rows.incident.status is not IncidentStatus.REMEDIATING:
-        errors.append(
-            f"incident status is {rows.incident.status.value}, expected remediating"
-        )
+        errors.append(f"incident status is {rows.incident.status.value}, expected remediating")
     if rows.incident.remediation_owner_id is None:
         errors.append("incident remediation owner is missing")
     if rows.incident.remediation_due_at is None:
@@ -1069,9 +1012,7 @@ def _summary_from_rows(
     state: str,
 ) -> CanonicalDemoSummary:
     """Build a concise manifest from a validated database projection."""
-    decisions_by_task = {
-        decision.task_id: decision for decision in rows.routing_decisions
-    }
+    decisions_by_task = {decision.task_id: decision for decision in rows.routing_decisions}
     return CanonicalDemoSummary(
         scenario_id=SCENARIO_ID,
         scenario_version=SCENARIO_VERSION,

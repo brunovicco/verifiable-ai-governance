@@ -117,9 +117,7 @@ class PolicyExceptionRecord:
 def transition_incident_status(current: IncidentStatus, target: IncidentStatus) -> None:
     """Allow only the explicit forward transitions of the incident lifecycle."""
     if target not in _ALLOWED_INCIDENT_TRANSITIONS[current]:
-        raise IncidentDomainError(
-            f"Cannot move incident from {current.value} to {target.value}"
-        )
+        raise IncidentDomainError(f"Cannot move incident from {current.value} to {target.value}")
 
 
 def resulting_status_after_remediation_plan(current: IncidentStatus) -> IncidentStatus:
@@ -138,9 +136,7 @@ def require_remediation_plan_before_close(
 ) -> None:
     """Refuse to close an incident without a recorded remediation plan."""
     if not remediation_owner_id or remediation_due_at is None or not remediation_description:
-        raise IncidentDomainError(
-            "Incident requires a recorded remediation plan before closing"
-        )
+        raise IncidentDomainError("Incident requires a recorded remediation plan before closing")
 
 
 def validate_kill_switch_engage(
@@ -192,9 +188,7 @@ def validate_exception_decision(
     if current_status is not ExceptionStatus.PENDING:
         raise IncidentDomainError("Exception is not pending a decision")
     if requested_by == decided_by:
-        raise IncidentForbidden(
-            "Exception cannot be approved or rejected by its own requester"
-        )
+        raise IncidentForbidden("Exception cannot be approved or rejected by its own requester")
 
 
 def validate_exception_revocation(*, current_status: ExceptionStatus) -> None:

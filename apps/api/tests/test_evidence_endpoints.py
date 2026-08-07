@@ -141,6 +141,4 @@ async def test_request_body_limit_runs_before_multipart_parsing(client: AsyncCli
     )
 
     assert response.status_code == 413
-    assert response.json() == {
-        "detail": "Evidence request exceeds the configured upload limit"
-    }
+    assert response.json() == {"detail": "Evidence request exceeds the configured upload limit"}
