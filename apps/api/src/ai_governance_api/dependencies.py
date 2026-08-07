@@ -41,6 +41,9 @@ from ai_governance_api.adapters import (
     SqlAlchemyTransaction,
     YamlDirectoryAuthorizationCatalog,
 )
+from ai_governance_api.adapters.runtime_authorization_issuer import (
+    build_runtime_authorization_issuer,
+)
 from ai_governance_api.application import (
     BlockDirectoryAccess,
     BuildDashboardSnapshot,
@@ -511,12 +514,17 @@ def get_request_model_routing_decision(
     router: Annotated[PolicyModelRouterPort, Depends(get_policy_model_router)],
 ) -> RequestModelRoutingDecision:
     """Build routing enforcement without holding a DB session across network I/O."""
+    settings = get_settings()
+    authorization_issuer = (
+        build_runtime_authorization_issuer() if settings.policy_model_router_enabled else None
+    )
     return RequestModelRoutingDecision(
         SqlAlchemyModelRoutingScopeReader(SessionFactory),
         router,
         SqlAlchemyModelRoutingDecisionStore(session),
         SqlAlchemyModelRoutingAudit(session),
         SqlAlchemyTransaction(session),
+        authorization_issuer=authorization_issuer,
     )
 
 

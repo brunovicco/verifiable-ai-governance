@@ -94,7 +94,7 @@ INCIDENT_TITLE = "Tentativa bloqueada de uso de modelo fora do escopo"
 WORKFLOW_ID = "demo-credit-pj-2026-001"
 ALLOWED_TASK_ID = "draft-opinion-authorized-model"
 BLOCKED_TASK_ID = "draft-opinion-unapproved-model"
-APPROVED_ROUTING_GROUP = "credit-opinion-approved"
+APPROVED_ROUTING_GROUP = "reasoning-strong"
 OUT_OF_SCOPE_ROUTING_GROUP = "credit-opinion-experimental"
 RESET_CONFIRMATION = "CANONICAL-DEMO-ONLY"
 

@@ -214,8 +214,13 @@ class PolicyModelRouterHttpAdapter:
 
 
 def _request_payload(request: PolicyModelRouterRequest) -> dict[str, object]:
-    """Serialize the exact versioned request without prompt or document content."""
-    return {
+    """Serialize the request and its required signed Governance authorization."""
+    authorization = request.runtime_authorization
+    if authorization is None:
+        raise ModelRouterUnavailable(
+            "Signed runtime authorization is required for policy-model-router"
+        )
+    route_request: dict[str, object] = {
         "schema_version": request.schema_version,
         "requested_at": request.requested_at.isoformat(),
         "workflow_id": request.workflow_id,
@@ -229,6 +234,10 @@ def _request_payload(request: PolicyModelRouterRequest) -> dict[str, object]:
         "structured_output_required": request.structured_output_required,
         "max_latency_ms": request.max_latency_ms,
         "max_cost_usd": str(request.max_cost_usd),
+    }
+    return {
+        "request": route_request,
+        "authorization": authorization.model_dump(mode="json"),
     }
 
 
