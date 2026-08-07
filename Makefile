@@ -1,4 +1,4 @@
-.PHONY: setup dev dev-api dev-web test lint format build quality migrate compose-up compose-down oidc-up oidc-verify oidc-down backup backup-verify backup-restore-test backup-restore seed-demo
+.PHONY: setup dev dev-api dev-web test lint format build quality migrate compose-up compose-down oidc-up oidc-verify oidc-down backup backup-verify backup-restore-test backup-restore seed-demo seed-demo-check seed-demo-reset seed-demo-gallery
 
 BACKUP_DIR ?= backups/manual
 
@@ -22,7 +22,7 @@ test:
 
 lint:
 	uv run python -m ruff check .
-	uv run python -m mypy apps/api/src packages/governance-schemas/src packages/policy-engine/src
+	uv run python -m mypy apps/api/src packages/governance-schemas/src packages/policy-engine/src scripts/canonical_demo_seed.py scripts/seed_canonical_demo.py
 	npm run lint:web
 
 format:
@@ -68,4 +68,13 @@ backup-restore:
 	uv run python scripts/manage_backups.py restore --backup "$(BACKUP_DIR)" --database "$(RESTORE_DATABASE)" --bucket "$(RESTORE_BUCKET)"
 
 seed-demo:
+	uv run python -m scripts.seed_canonical_demo
+
+seed-demo-check:
+	uv run python -m scripts.seed_canonical_demo --check
+
+seed-demo-reset:
+	uv run python -m scripts.seed_canonical_demo --reset --confirm-reset CANONICAL-DEMO-ONLY
+
+seed-demo-gallery:
 	uv run python scripts/seed_demo_data.py
