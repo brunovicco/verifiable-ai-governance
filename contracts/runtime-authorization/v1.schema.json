@@ -1,0 +1,471 @@
+{
+  "$defs": {
+    "AuthorizedRuntimeModel": {
+      "additionalProperties": false,
+      "description": "One reviewed model that may satisfy this authorization.",
+      "properties": {
+        "allowed_data_classes": {
+          "items": {
+            "$ref": "#/$defs/DataClassification"
+          },
+          "minItems": 1,
+          "title": "Allowed Data Classes",
+          "type": "array"
+        },
+        "entity_version": {
+          "minimum": 1,
+          "title": "Entity Version",
+          "type": "integer"
+        },
+        "model_id": {
+          "format": "uuid",
+          "title": "Model Id",
+          "type": "string"
+        },
+        "model_version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Model Version",
+          "type": "string"
+        },
+        "review_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Review Digest",
+          "type": "string"
+        },
+        "routing_group": {
+          "maxLength": 100,
+          "minLength": 2,
+          "pattern": "^[a-z0-9][a-z0-9._-]*$",
+          "title": "Routing Group",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model_id",
+        "entity_version",
+        "model_version",
+        "routing_group",
+        "review_digest",
+        "allowed_data_classes"
+      ],
+      "title": "AuthorizedRuntimeModel",
+      "type": "object"
+    },
+    "AutonomyLevel": {
+      "description": "Increasing levels of AI system action autonomy.",
+      "enum": [
+        "a0_information",
+        "a1_recommendation",
+        "a2_prepare_for_approval",
+        "a3_reversible_actions",
+        "a4_high_impact_actions",
+        "a5_high_autonomy"
+      ],
+      "title": "AutonomyLevel",
+      "type": "string"
+    },
+    "DataClassification": {
+      "description": "Sensitivity classification for data handled by an initiative.",
+      "enum": [
+        "public",
+        "internal",
+        "confidential",
+        "restricted"
+      ],
+      "title": "DataClassification",
+      "type": "string"
+    },
+    "RiskTier": {
+      "description": "Business-facing risk classification.",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "title": "RiskTier",
+      "type": "string"
+    },
+    "RuntimeAuthorizationClaims": {
+      "additionalProperties": false,
+      "description": "Short-lived claims produced by Governance for one runtime request.",
+      "properties": {
+        "audience": {
+          "items": {
+            "maxLength": 200,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Audience",
+          "type": "array"
+        },
+        "authorization_id": {
+          "format": "uuid",
+          "title": "Authorization Id",
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "title": "Expires At",
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "title": "Issued At",
+          "type": "string"
+        },
+        "issuer": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Issuer",
+          "type": "string"
+        },
+        "not_before": {
+          "format": "date-time",
+          "title": "Not Before",
+          "type": "string"
+        },
+        "policy": {
+          "$ref": "#/$defs/RuntimeAuthorizationPolicyProvenance"
+        },
+        "request": {
+          "$ref": "#/$defs/RuntimeRequestBinding"
+        },
+        "schema_version": {
+          "const": "1.0",
+          "default": "1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/RuntimeAuthorizationScope"
+        },
+        "scope_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Scope Digest",
+          "type": "string"
+        },
+        "subject": {
+          "$ref": "#/$defs/RuntimeAuthorizationSubject"
+        }
+      },
+      "required": [
+        "authorization_id",
+        "issuer",
+        "audience",
+        "issued_at",
+        "not_before",
+        "expires_at",
+        "subject",
+        "request",
+        "scope",
+        "scope_digest",
+        "policy"
+      ],
+      "title": "RuntimeAuthorizationClaims",
+      "type": "object"
+    },
+    "RuntimeAuthorizationPolicyProvenance": {
+      "additionalProperties": false,
+      "description": "Exact governance artifacts that produced the runtime authorization.",
+      "properties": {
+        "control_catalog_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Control Catalog Digest",
+          "type": "string"
+        },
+        "control_catalog_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Control Catalog Id",
+          "type": "string"
+        },
+        "control_catalog_version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Control Catalog Version",
+          "type": "string"
+        },
+        "policy_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Policy Digest",
+          "type": "string"
+        },
+        "policy_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "policy_version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Policy Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "policy_id",
+        "policy_version",
+        "policy_digest",
+        "control_catalog_id",
+        "control_catalog_version",
+        "control_catalog_digest"
+      ],
+      "title": "RuntimeAuthorizationPolicyProvenance",
+      "type": "object"
+    },
+    "RuntimeAuthorizationProtectedHeader": {
+      "additionalProperties": false,
+      "description": "Metadata covered by the signature together with the claims.",
+      "properties": {
+        "alg": {
+          "const": "Ed25519",
+          "default": "Ed25519",
+          "title": "Alg",
+          "type": "string"
+        },
+        "kid": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Kid",
+          "type": "string"
+        },
+        "typ": {
+          "const": "application/vnd.verifiable-ai-governance.runtime-authorization+json",
+          "default": "application/vnd.verifiable-ai-governance.runtime-authorization+json",
+          "title": "Typ",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kid"
+      ],
+      "title": "RuntimeAuthorizationProtectedHeader",
+      "type": "object"
+    },
+    "RuntimeAuthorizationScope": {
+      "additionalProperties": false,
+      "description": "Effective machine-enforceable boundary approved for one runtime request.",
+      "properties": {
+        "allowed_tools": {
+          "default": [],
+          "items": {
+            "maxLength": 200,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+            "type": "string"
+          },
+          "title": "Allowed Tools",
+          "type": "array"
+        },
+        "autonomy_level": {
+          "$ref": "#/$defs/AutonomyLevel"
+        },
+        "data_classification": {
+          "$ref": "#/$defs/DataClassification"
+        },
+        "human_approval_points": {
+          "default": [],
+          "items": {
+            "maxLength": 300,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Human Approval Points",
+          "type": "array"
+        },
+        "kill_switch_enabled": {
+          "const": true,
+          "default": true,
+          "title": "Kill Switch Enabled",
+          "type": "boolean"
+        },
+        "max_runtime_seconds": {
+          "maximum": 86400,
+          "minimum": 1,
+          "title": "Max Runtime Seconds",
+          "type": "integer"
+        },
+        "models": {
+          "items": {
+            "$ref": "#/$defs/AuthorizedRuntimeModel"
+          },
+          "minItems": 1,
+          "title": "Models",
+          "type": "array"
+        },
+        "permissions": {
+          "default": [],
+          "items": {
+            "maxLength": 200,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+            "type": "string"
+          },
+          "title": "Permissions",
+          "type": "array"
+        },
+        "risk_tier": {
+          "$ref": "#/$defs/RiskTier"
+        }
+      },
+      "required": [
+        "risk_tier",
+        "data_classification",
+        "autonomy_level",
+        "models",
+        "max_runtime_seconds"
+      ],
+      "title": "RuntimeAuthorizationScope",
+      "type": "object"
+    },
+    "RuntimeAuthorizationSubject": {
+      "additionalProperties": false,
+      "description": "Governed subject whose approved runtime scope is being authorized.",
+      "properties": {
+        "agent_id": {
+          "format": "uuid",
+          "title": "Agent Id",
+          "type": "string"
+        },
+        "agent_review_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Agent Review Digest",
+          "type": "string"
+        },
+        "agent_version": {
+          "minimum": 1,
+          "title": "Agent Version",
+          "type": "integer"
+        },
+        "ai_system_id": {
+          "format": "uuid",
+          "title": "Ai System Id",
+          "type": "string"
+        },
+        "ai_system_version": {
+          "minimum": 1,
+          "title": "Ai System Version",
+          "type": "integer"
+        },
+        "initiative_id": {
+          "format": "uuid",
+          "title": "Initiative Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "initiative_id",
+        "ai_system_id",
+        "ai_system_version",
+        "agent_id",
+        "agent_version",
+        "agent_review_digest"
+      ],
+      "title": "RuntimeAuthorizationSubject",
+      "type": "object"
+    },
+    "RuntimeRequestBinding": {
+      "additionalProperties": false,
+      "description": "Exact request facts that prevent authorization replay across tasks.",
+      "properties": {
+        "context_tokens_estimated": {
+          "maximum": 10000000,
+          "minimum": 0,
+          "title": "Context Tokens Estimated",
+          "type": "integer"
+        },
+        "max_cost_usd_micros": {
+          "maximum": 1000000000000,
+          "minimum": 0,
+          "title": "Max Cost Usd Micros",
+          "type": "integer"
+        },
+        "max_latency_ms": {
+          "maximum": 3600000,
+          "minimum": 1,
+          "title": "Max Latency Ms",
+          "type": "integer"
+        },
+        "max_output_tokens_estimated": {
+          "maximum": 1000000,
+          "minimum": 0,
+          "title": "Max Output Tokens Estimated",
+          "type": "integer"
+        },
+        "structured_output_required": {
+          "title": "Structured Output Required",
+          "type": "boolean"
+        },
+        "task_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "workflow_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Workflow Id",
+          "type": "string"
+        },
+        "workload": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Workload",
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id",
+        "task_id",
+        "workload",
+        "context_tokens_estimated",
+        "max_output_tokens_estimated",
+        "structured_output_required",
+        "max_latency_ms",
+        "max_cost_usd_micros"
+      ],
+      "title": "RuntimeRequestBinding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Wire envelope whose protected header and claims are signed together.",
+  "properties": {
+    "claims": {
+      "$ref": "#/$defs/RuntimeAuthorizationClaims"
+    },
+    "protected": {
+      "$ref": "#/$defs/RuntimeAuthorizationProtectedHeader"
+    },
+    "signature": {
+      "maxLength": 86,
+      "minLength": 86,
+      "pattern": "^[A-Za-z0-9_-]{86}$",
+      "title": "Signature",
+      "type": "string"
+    }
+  },
+  "required": [
+    "protected",
+    "claims",
+    "signature"
+  ],
+  "title": "SignedRuntimeAuthorization",
+  "type": "object"
+}
