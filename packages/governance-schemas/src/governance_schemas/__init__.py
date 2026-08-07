@@ -33,6 +33,17 @@ from governance_schemas.policy import (
     PolicyDecision,
     RiskBreakdown,
 )
+from governance_schemas.runtime_authorization import (
+    AuthorizedRuntimeModel,
+    RuntimeAuthorizationClaims,
+    RuntimeAuthorizationPolicyProvenance,
+    RuntimeAuthorizationProtectedHeader,
+    RuntimeAuthorizationScope,
+    RuntimeAuthorizationSubject,
+    RuntimeRequestBinding,
+    SignedRuntimeAuthorization,
+    canonical_json_bytes,
+)
 
 __all__ = [
     "ApprovalArea",
@@ -60,4 +71,13 @@ __all__ = [
     "PolicyDecision",
     "RiskBreakdown",
     "RiskTier",
+    "AuthorizedRuntimeModel",
+    "RuntimeAuthorizationClaims",
+    "RuntimeAuthorizationPolicyProvenance",
+    "RuntimeAuthorizationProtectedHeader",
+    "RuntimeAuthorizationScope",
+    "RuntimeAuthorizationSubject",
+    "RuntimeRequestBinding",
+    "SignedRuntimeAuthorization",
+    "canonical_json_bytes",
 ]

@@ -4,7 +4,7 @@ import base64
 import hashlib
 import json
 from datetime import UTC, datetime, timedelta
-from typing import Annotated, Final, Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -15,11 +15,11 @@ from governance_schemas.enums import (
     RiskTier,
 )
 
-RUNTIME_AUTHORIZATION_SCHEMA_VERSION: Final[Literal["1.0"]] = "1.0"
-RUNTIME_AUTHORIZATION_MEDIA_TYPE: Final[
-    Literal["application/vnd.verifiable-ai-governance.runtime-authorization+json"]
+RUNTIME_AUTHORIZATION_SCHEMA_VERSION: Literal["1.0"] = "1.0"
+RUNTIME_AUTHORIZATION_MEDIA_TYPE: Literal[
+    "application/vnd.verifiable-ai-governance.runtime-authorization+json"
 ] = "application/vnd.verifiable-ai-governance.runtime-authorization+json"
-RUNTIME_AUTHORIZATION_SIGNATURE_ALGORITHM: Final[Literal["Ed25519"]] = "Ed25519"
+RUNTIME_AUTHORIZATION_SIGNATURE_ALGORITHM: Literal["Ed25519"] = "Ed25519"
 MAX_AUTHORIZATION_LIFETIME_SECONDS = 600
 
 Digest = Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
