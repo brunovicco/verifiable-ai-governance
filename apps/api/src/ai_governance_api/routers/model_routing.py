@@ -99,6 +99,7 @@ def _to_read(record: ModelRoutingDecisionRecord) -> ModelRoutingDecisionRead:
             "policy_digest": record.policy_digest,
             "service_version": record.service_version,
             "environment": record.environment,
+            "runtime_violation": record.runtime_violation,
             "version": record.version,
             "created_at": record.created_at,
             "updated_at": record.updated_at,

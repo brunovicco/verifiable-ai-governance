@@ -1,0 +1,245 @@
+{
+  "$defs": {
+    "RuntimeViolationAuthorizationContext": {
+      "additionalProperties": false,
+      "description": "Non-secret authorization identifiers observed at enforcement time.",
+      "properties": {
+        "authorization_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authorization Id"
+        },
+        "key_id": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Key Id"
+        },
+        "scope_digest": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scope Digest"
+        },
+        "signing_digest": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Signing Digest"
+        },
+        "state": {
+          "$ref": "#/$defs/RuntimeViolationAuthorizationState"
+        }
+      },
+      "required": [
+        "state"
+      ],
+      "title": "RuntimeViolationAuthorizationContext",
+      "type": "object"
+    },
+    "RuntimeViolationAuthorizationState": {
+      "description": "How far the supplied authorization passed the Router trust boundary.",
+      "enum": [
+        "absent",
+        "present",
+        "verified"
+      ],
+      "title": "RuntimeViolationAuthorizationState",
+      "type": "string"
+    },
+    "RuntimeViolationCategory": {
+      "description": "Stable bounded classification for machine-actionable violations.",
+      "enum": [
+        "authorization",
+        "replay",
+        "request_binding",
+        "governance_provenance",
+        "model_scope"
+      ],
+      "title": "RuntimeViolationCategory",
+      "type": "string"
+    },
+    "RuntimeViolationEvent": {
+      "additionalProperties": false,
+      "description": "One Router-side enforcement denial with no prompt, output, or credential content.",
+      "properties": {
+        "authorization": {
+          "$ref": "#/$defs/RuntimeViolationAuthorizationContext"
+        },
+        "category": {
+          "$ref": "#/$defs/RuntimeViolationCategory"
+        },
+        "code": {
+          "maxLength": 100,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9_]*$",
+          "title": "Code",
+          "type": "string"
+        },
+        "correlation_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "enforcement_action": {
+          "const": "blocked",
+          "default": "blocked",
+          "title": "Enforcement Action",
+          "type": "string"
+        },
+        "environment": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Environment",
+          "type": "string"
+        },
+        "event_id": {
+          "format": "uuid",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "occurred_at": {
+          "format": "date-time",
+          "title": "Occurred At",
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/RuntimeViolationRequestContext"
+        },
+        "schema_version": {
+          "const": "1.0",
+          "default": "1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "selected_model_group": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selected Model Group"
+        },
+        "service_version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Service Version",
+          "type": "string"
+        },
+        "source_service": {
+          "const": "policy-model-router",
+          "default": "policy-model-router",
+          "title": "Source Service",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "occurred_at",
+        "service_version",
+        "environment",
+        "correlation_id",
+        "category",
+        "code",
+        "request",
+        "authorization"
+      ],
+      "title": "RuntimeViolationEvent",
+      "type": "object"
+    },
+    "RuntimeViolationRequestContext": {
+      "additionalProperties": false,
+      "description": "Content-free request identity sufficient for binding and audit.",
+      "properties": {
+        "agent_name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Agent Name",
+          "type": "string"
+        },
+        "task_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Task Id",
+          "type": "string"
+        },
+        "workflow_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Workflow Id",
+          "type": "string"
+        },
+        "workload": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Workload",
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id",
+        "task_id",
+        "agent_name",
+        "workload"
+      ],
+      "title": "RuntimeViolationRequestContext",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Event plus self-integrity digest consumed and persisted by Governance.",
+  "properties": {
+    "event": {
+      "$ref": "#/$defs/RuntimeViolationEvent"
+    },
+    "event_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Event Digest",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event",
+    "event_digest"
+  ],
+  "title": "RuntimeViolationEnvelope",
+  "type": "object"
+}

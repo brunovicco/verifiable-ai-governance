@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from typing import Protocol
 from uuid import uuid4
 
-from governance_schemas import SignedRuntimeAuthorization
+from governance_schemas import RuntimeViolationEnvelope, SignedRuntimeAuthorization
 
 from ai_governance_api.application.runtime_authorization_issuance import (
     RuntimeAuthorizationIssuanceError,
@@ -36,6 +36,14 @@ type IdFactory = Callable[[], str]
 
 class ModelRouterUnavailable(RuntimeError):
     """Raised when the external policy decision point cannot be trusted."""
+
+
+class ModelRouterViolation(RuntimeError):
+    """Raised when Router returns trusted evidence for a fail-closed denial."""
+
+    def __init__(self, violation: RuntimeViolationEnvelope) -> None:
+        super().__init__(violation.event.code)
+        self.violation = violation
 
 
 class ModelRoutingScopeReaderPort(Protocol):
@@ -189,6 +197,18 @@ class RequestModelRoutingDecision:
                 request,
                 correlation_id=record.id,
             )
+        except ModelRouterViolation as exc:
+            return await self._finalize(
+                record,
+                principal=principal,
+                outcome=RoutingEnforcementOutcome.BLOCKED,
+                source=RoutingDecisionSource.POLICY_MODEL_ROUTER,
+                block=RoutingBlock(
+                    exc.violation.event.code,
+                    "Policy model router blocked runtime authorization",
+                ),
+                runtime_violation=exc.violation,
+            )
         except ModelRouterUnavailable:
             return await self._finalize(
                 record,
@@ -306,6 +326,7 @@ class RequestModelRoutingDecision:
         source: RoutingDecisionSource,
         block: RoutingBlock | None,
         provider_decision: PolicyModelRouterDecision | None = None,
+        runtime_violation: RuntimeViolationEnvelope | None = None,
     ) -> ModelRoutingDecisionRecord:
         """Finalize a pending attempt and append its enforcement audit event."""
         completed = finalize_routing_record(
@@ -315,6 +336,7 @@ class RequestModelRoutingDecision:
             decided_at=self._clock(),
             block=block,
             provider_decision=provider_decision,
+            runtime_violation=runtime_violation,
         )
         return await self._persist(
             completed,

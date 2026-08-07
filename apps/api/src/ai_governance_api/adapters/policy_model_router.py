@@ -5,6 +5,10 @@ from datetime import datetime, timedelta
 from typing import Annotated, Literal
 
 import httpx
+from governance_schemas import (
+    RuntimeViolationAuthorizationState,
+    RuntimeViolationEnvelope,
+)
 from pydantic import (
     AfterValidator,
     BaseModel,
@@ -14,7 +18,10 @@ from pydantic import (
     ValidationError,
 )
 
-from ai_governance_api.application.model_routing import ModelRouterUnavailable
+from ai_governance_api.application.model_routing import (
+    ModelRouterUnavailable,
+    ModelRouterViolation,
+)
 from ai_governance_api.domain.model_routing import (
     PolicyModelRouterDecision,
     PolicyModelRouterRequest,
@@ -116,6 +123,13 @@ class _RejectedEnvelopeContract(_StrictContract):
     decision: _RejectedDecisionContract
 
 
+class _RuntimeViolationErrorEnvelopeContract(_StrictContract):
+    """Validated Router authorization-denial envelope."""
+
+    error: _ErrorContract
+    violation: RuntimeViolationEnvelope
+
+
 class PolicyModelRouterHttpAdapter:
     """Call policy-model-router once with per-agent credentials and strict bounds."""
 
@@ -186,6 +200,16 @@ class PolicyModelRouterHttpAdapter:
                 decision = _rejected_to_domain(envelope.decision)
                 _require_request_binding(request, decision)
                 return decision
+            if status_code == 403:
+                denied = _RuntimeViolationErrorEnvelopeContract.model_validate(payload)
+                if denied.error.code != denied.violation.event.code:
+                    raise ModelRouterUnavailable("Policy model router violation code mismatch")
+                _require_violation_binding(
+                    request,
+                    correlation_id,
+                    denied.violation,
+                )
+                raise ModelRouterViolation(denied.violation)
         except (UnicodeDecodeError, json.JSONDecodeError, ValidationError, TypeError) as exc:
             raise ModelRouterUnavailable("Policy model router response is invalid") from exc
         raise ModelRouterUnavailable(
@@ -252,6 +276,44 @@ def _require_request_binding(
         or decision.task_id != request.task_id
     ):
         raise ModelRouterUnavailable("Policy model router decision does not match the request")
+
+
+def _require_violation_binding(
+    request: PolicyModelRouterRequest,
+    correlation_id: str,
+    violation: RuntimeViolationEnvelope,
+) -> None:
+    """Reject a valid-shaped violation that is not bound to the request Governance sent."""
+    event = violation.event
+    expected_authorization = request.runtime_authorization
+    if expected_authorization is None:
+        raise ModelRouterUnavailable("Router violation has no expected authorization binding")
+    if (
+        event.correlation_id != correlation_id
+        or event.request.workflow_id != request.workflow_id
+        or event.request.task_id != request.task_id
+        or event.request.agent_name != request.agent_name
+        or event.request.workload != request.workload.value
+    ):
+        raise ModelRouterUnavailable("Policy model router violation does not match the request")
+
+    authorization = event.authorization
+    if authorization.state is RuntimeViolationAuthorizationState.ABSENT:
+        raise ModelRouterUnavailable("Router violation lost the supplied authorization binding")
+    if (
+        authorization.authorization_id != expected_authorization.claims.authorization_id
+        or authorization.key_id != expected_authorization.protected.kid
+        or authorization.signing_digest != expected_authorization.signing_digest()
+        or authorization.scope_digest != expected_authorization.claims.scope_digest
+    ):
+        raise ModelRouterUnavailable("Router violation authorization binding is invalid")
+    if (
+        event.category.value == "model_scope"
+        and authorization.state is not RuntimeViolationAuthorizationState.VERIFIED
+    ):
+        raise ModelRouterUnavailable(
+            "Model-scope violation was not based on verified authorization"
+        )
 
 
 def _accepted_to_domain(contract: _AcceptedDecisionContract) -> PolicyModelRouterDecision:
