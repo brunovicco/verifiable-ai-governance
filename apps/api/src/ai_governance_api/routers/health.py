@@ -22,6 +22,7 @@ async def liveness() -> dict[str, str]:
 
 @router.get(
     "/health/ready",
+    response_model=None,
     responses={
         503: {
             "description": "A required runtime check failed.",
