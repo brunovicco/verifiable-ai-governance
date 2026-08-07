@@ -146,19 +146,22 @@ class PolicyModelRouterHttpAdapter:
         if api_key is None:
             raise ModelRouterUnavailable("No routing credential configured for governed agent")
         try:
-            async with httpx.AsyncClient(
-                timeout=self._timeout,
-                transport=self._transport,
-            ) as client, client.stream(
-                "POST",
-                self._route_url,
-                headers={
-                    "Content-Type": "application/json",
-                    "X-API-Key": api_key,
-                    "X-Correlation-Id": correlation_id,
-                },
-                json=_request_payload(request),
-            ) as response:
+            async with (
+                httpx.AsyncClient(
+                    timeout=self._timeout,
+                    transport=self._transport,
+                ) as client,
+                client.stream(
+                    "POST",
+                    self._route_url,
+                    headers={
+                        "Content-Type": "application/json",
+                        "X-API-Key": api_key,
+                        "X-Correlation-Id": correlation_id,
+                    },
+                    json=_request_payload(request),
+                ) as response,
+            ):
                 body = await self._read_bounded(response)
                 status_code = response.status_code
         except httpx.HTTPError as exc:
@@ -167,9 +170,7 @@ class PolicyModelRouterHttpAdapter:
         try:
             payload = json.loads(body)
             if status_code == 200:
-                decision = _accepted_to_domain(
-                    _AcceptedDecisionContract.model_validate(payload)
-                )
+                decision = _accepted_to_domain(_AcceptedDecisionContract.model_validate(payload))
                 _require_request_binding(request, decision)
                 return decision
             if status_code == 422:
@@ -241,9 +242,7 @@ def _require_request_binding(
         or decision.workflow_id != request.workflow_id
         or decision.task_id != request.task_id
     ):
-        raise ModelRouterUnavailable(
-            "Policy model router decision does not match the request"
-        )
+        raise ModelRouterUnavailable("Policy model router decision does not match the request")
 
 
 def _accepted_to_domain(contract: _AcceptedDecisionContract) -> PolicyModelRouterDecision:

@@ -21,8 +21,7 @@ def build_parser() -> argparse.ArgumentParser:
     """Build the bounded canonical-demo command-line interface."""
     parser = argparse.ArgumentParser(
         description=(
-            "Create or validate the canonical governed credit demo. "
-            "Reruns are idempotent."
+            "Create or validate the canonical governed credit demo. Reruns are idempotent."
         )
     )
     parser.add_argument(
@@ -69,9 +68,7 @@ async def run(args: argparse.Namespace) -> int:
     if args.check:
         summary = await inspect_canonical_demo()
         if summary is None:
-            raise CanonicalDemoDriftError(
-                "Canonical demo is absent; run make seed-demo"
-            )
+            raise CanonicalDemoDriftError("Canonical demo is absent; run make seed-demo")
     else:
         summary = await ensure_canonical_demo()
 
@@ -89,14 +86,8 @@ async def run(args: argparse.Namespace) -> int:
             f"[seed-demo] scenario={summary.scenario_id} "
             f"version={summary.scenario_version} state={summary.state}"
         )
-        print(
-            "[seed-demo] allowed routing decision: "
-            f"{summary.allowed_routing_decision_id}"
-        )
-        print(
-            "[seed-demo] blocked routing decision: "
-            f"{summary.blocked_routing_decision_id}"
-        )
+        print(f"[seed-demo] allowed routing decision: {summary.allowed_routing_decision_id}")
+        print(f"[seed-demo] blocked routing decision: {summary.blocked_routing_decision_id}")
         print(f"[seed-demo] incident: {summary.incident_id}")
         print(f"[seed-demo] manifest: {args.output}")
     return 0

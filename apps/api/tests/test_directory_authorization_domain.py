@@ -91,9 +91,7 @@ def test_catalog_combines_exact_app_role_and_transitive_group_mappings() -> None
         guest_approvals_enabled=False,
     )
 
-    assert authorized.approval_areas == frozenset(
-        {ApprovalArea.SECURITY, ApprovalArea.PRIVACY}
-    )
+    assert authorized.approval_areas == frozenset({ApprovalArea.SECURITY, ApprovalArea.PRIVACY})
     assert authorized.authorization_provenance is not None
     assert authorized.authorization_provenance.catalog_version == "2026.08.1"
     assert len(authorized.authorization_provenance.catalog_digest) == 64
@@ -162,9 +160,7 @@ def test_unresolved_overage_denies_groups_but_preserves_exact_app_roles() -> Non
 
     assert authorized.approval_areas == frozenset({ApprovalArea.SECURITY})
     assert authorized.authorization_provenance is not None
-    assert authorized.authorization_provenance.matched_mapping_ids == (
-        "entra-role-security",
-    )
+    assert authorized.authorization_provenance.matched_mapping_ids == ("entra-role-security",)
     assert (
         authorized.authorization_provenance.group_resolution_source
         is DirectoryGroupResolutionSource.OVERAGE_UNRESOLVED

@@ -169,9 +169,7 @@ async def test_adapter_rejects_unbound_or_oversized_responses() -> None:
         api_keys={AGENT_NAME: "agent-secret"},
         timeout_seconds=1,
         max_response_bytes=1024,
-        transport=httpx.MockTransport(
-            lambda _: httpx.Response(200, content=b"x" * 1025)
-        ),
+        transport=httpx.MockTransport(lambda _: httpx.Response(200, content=b"x" * 1025)),
     )
     with pytest.raises(ModelRouterUnavailable, match="too large"):
         await oversized.decide(router_request(), correlation_id="attempt-1")

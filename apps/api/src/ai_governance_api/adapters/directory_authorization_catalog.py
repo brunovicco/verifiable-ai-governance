@@ -53,9 +53,7 @@ class YamlDirectoryAuthorizationCatalog:
     @classmethod
     def from_package(cls) -> DirectoryAuthorizationCatalog:
         """Load the fail-closed catalog bundled with the API package."""
-        resource = files("ai_governance_api").joinpath(
-            "directory_authorization_catalog.yaml"
-        )
+        resource = files("ai_governance_api").joinpath("directory_authorization_catalog.yaml")
         try:
             content = resource.read_text(encoding="utf-8")
         except OSError as exc:

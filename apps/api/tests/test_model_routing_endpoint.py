@@ -5,6 +5,12 @@ from datetime import UTC, datetime, timedelta
 from ai_governance_api.application.model_routing import ModelRouterUnavailable
 from ai_governance_api.database import SessionFactory
 from ai_governance_api.dependencies import get_policy_model_router
+from ai_governance_api.domain.asset_registry import (
+    AgentReviewCandidate,
+    ModelReviewCandidate,
+    agent_scope_digest,
+    model_scope_digest,
+)
 from ai_governance_api.domain.model_routing import (
     PolicyModelRouterDecision,
     PolicyModelRouterRequest,
@@ -159,6 +165,20 @@ async def seed_reviewed_agent() -> str:
             production=True,
             metadata_json={},
         )
+        model_digest = model_scope_digest(
+            ModelReviewCandidate(
+                provider="Example AI",
+                model_name="governed-small",
+                model_version="2026-08-01",
+                routing_group="fast-small",
+                deployment_region="Brazil South",
+                approved_use_cases=("document extraction",),
+                prohibited_use_cases=(),
+                allowed_data_classes=("internal",),
+                evaluation_baseline={"dataset": "document-eval-v1"},
+                deprecation_date=None,
+            )
+        )
         model = ModelAsset(
             id="model-routing",
             ai_system=ai_system,
@@ -172,11 +192,28 @@ async def seed_reviewed_agent() -> str:
             allowed_data_classes=["internal"],
             status=EntityStatus.APPROVED,
             evaluation_baseline={"dataset": "document-eval-v1"},
-            approved_scope_digest="a" * 64,
+            approved_scope_digest=model_digest,
             reviewed_by="architecture-reviewer",
             reviewed_at=now,
             next_review_at=now + timedelta(days=30),
             review_reference="ARCH-2026-200",
+        )
+        agent_digest = agent_scope_digest(
+            AgentReviewCandidate(
+                name="Knowledge agent",
+                purpose="Extract structured facts from approved internal documents.",
+                owner_id="agent-owner",
+                agent_version="1.0.0",
+                deployment_region="Brazil South",
+                autonomy_level=AutonomyLevel.A1_RECOMMENDATION,
+                allowed_models=(model.id,),
+                tools=(),
+                permissions=(),
+                max_cost=0.50,
+                max_runtime_seconds=30,
+                human_approval_points=(),
+                kill_switch_enabled=True,
+            )
         )
         agent = Agent(
             id="agent-routing",
@@ -195,7 +232,7 @@ async def seed_reviewed_agent() -> str:
             human_approval_points=[],
             kill_switch_enabled=True,
             status=EntityStatus.APPROVED,
-            approved_scope_digest="b" * 64,
+            approved_scope_digest=agent_digest,
             reviewed_by="security-reviewer",
             reviewed_at=now,
             next_review_at=now + timedelta(days=20),
@@ -268,9 +305,7 @@ async def test_endpoint_blocks_router_group_outside_current_registry_scope(
     client: AsyncClient,
 ) -> None:
     agent_id = await seed_reviewed_agent()
-    app.dependency_overrides[get_policy_model_router] = lambda: AcceptedRouter(
-        "reasoning-strong"
-    )
+    app.dependency_overrides[get_policy_model_router] = lambda: AcceptedRouter("reasoning-strong")
     try:
         response = await client.post(
             f"/api/v1/agents/{agent_id}/routing-decisions",

@@ -180,9 +180,7 @@ class Settings(BaseSettings):
             or len(path) != 2
             or path[1] != "v2.0"
         ):
-            raise ValueError(
-                "OIDC_ISSUER must be a tenant-specific Microsoft Entra v2 issuer"
-            )
+            raise ValueError("OIDC_ISSUER must be a tenant-specific Microsoft Entra v2 issuer")
         try:
             return str(UUID(path[0]))
         except ValueError as exc:
@@ -248,9 +246,7 @@ class Settings(BaseSettings):
             if self.oidc_identity_mode is OidcIdentityMode.ENTRA:
                 self._validate_entra_identity_boundary()
             elif self.oidc_allowed_tenant_ids.strip() or self.oidc_guest_approvals_enabled:
-                raise ValueError(
-                    "Entra tenant and guest settings require OIDC_IDENTITY_MODE=entra"
-                )
+                raise ValueError("Entra tenant and guest settings require OIDC_IDENTITY_MODE=entra")
         if self.microsoft_graph_enabled:
             self._validate_microsoft_graph()
         if self.policy_model_router_enabled:
@@ -307,10 +303,7 @@ class Settings(BaseSettings):
 
     def _validate_entra_identity_boundary(self) -> None:
         """Require tenant-specific Entra trust coherent with the tenant allowlist."""
-        if (
-            not self.oidc_entra_app_roles_claim.strip()
-            or not self.oidc_entra_groups_claim.strip()
-        ):
+        if not self.oidc_entra_app_roles_claim.strip() or not self.oidc_entra_groups_claim.strip():
             raise ValueError("OIDC Entra claim paths must not be empty")
         allowed_tenants = self.oidc_allowed_tenant_id_set
         if not allowed_tenants:

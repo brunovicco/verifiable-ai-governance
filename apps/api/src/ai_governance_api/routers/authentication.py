@@ -112,9 +112,7 @@ async def current_identity(
                 catalog_id=principal.authorization_provenance.catalog_id,
                 catalog_version=principal.authorization_provenance.catalog_version,
                 catalog_digest=principal.authorization_provenance.catalog_digest,
-                matched_mapping_ids=list(
-                    principal.authorization_provenance.matched_mapping_ids
-                ),
+                matched_mapping_ids=list(principal.authorization_provenance.matched_mapping_ids),
                 source_types=list(principal.authorization_provenance.source_types),
                 group_resolution_source=(
                     principal.authorization_provenance.group_resolution_source

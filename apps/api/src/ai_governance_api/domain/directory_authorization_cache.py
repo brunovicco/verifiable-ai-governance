@@ -122,9 +122,7 @@ class DirectoryAuthorizationSnapshot:
             DirectoryGroupResolutionSource.TOKEN,
             DirectoryGroupResolutionSource.MICROSOFT_GRAPH,
         }:
-            raise DirectoryAuthorizationCacheError(
-                "Original group resolution source is invalid"
-            )
+            raise DirectoryAuthorizationCacheError("Original group resolution source is invalid")
         _require_aware(self.resolved_at, "resolved_at")
         _require_aware(self.expires_at, "expires_at")
         if self.expires_at <= self.resolved_at:
@@ -142,10 +140,7 @@ class DirectoryAuthorizationSnapshot:
         return (
             self.catalog_digest == catalog_digest
             and now < self.expires_at
-            and (
-                self.invalidated_at is None
-                or self.resolved_at > self.invalidated_at
-            )
+            and (self.invalidated_at is None or self.resolved_at > self.invalidated_at)
         )
 
     def authorize(self, principal: Principal) -> Principal:

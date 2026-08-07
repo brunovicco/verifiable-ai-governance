@@ -169,10 +169,7 @@ def validate_applicability(
         raise AssessmentNotApplicable("Initiative is not open for assessment")
     if kind is AssessmentKind.RIPD and not initiative.personal_data:
         raise AssessmentNotApplicable("RIPD requires declared personal data processing")
-    if (
-        kind is AssessmentKind.INTERNATIONAL_PROCESSING
-        and not initiative.international_processing
-    ):
+    if kind is AssessmentKind.INTERNATIONAL_PROCESSING and not initiative.international_processing:
         raise AssessmentNotApplicable(
             "International processing assessment requires a declared cross-border flow"
         )

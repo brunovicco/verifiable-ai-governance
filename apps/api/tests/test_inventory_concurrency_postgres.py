@@ -81,16 +81,13 @@ async def test_concurrent_model_update_and_review_are_serialized() -> None:
         conflicts = [
             result
             for result in results
-            if isinstance(result, ApplicationError)
-            and result.kind is ErrorKind.CONFLICT
+            if isinstance(result, ApplicationError) and result.kind is ErrorKind.CONFLICT
         ]
         assert len(successes) == 1
         assert len(conflicts) == 1
 
         async with session_factory() as session:
-            persisted = await session.scalar(
-                select(ModelAsset).where(ModelAsset.id == model_id)
-            )
+            persisted = await session.scalar(select(ModelAsset).where(ModelAsset.id == model_id))
             assert persisted is not None
             assert persisted.version == 2
             if persisted.status is EntityStatus.APPROVED:

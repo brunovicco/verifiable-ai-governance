@@ -43,11 +43,7 @@ async def request_model_routing_decision(
     response = _to_read(record)
     if record.outcome is RoutingEnforcementOutcome.ALLOWED:
         return response
-    status_code = (
-        503
-        if record.outcome is RoutingEnforcementOutcome.DEPENDENCY_UNAVAILABLE
-        else 422
-    )
+    status_code = 503 if record.outcome is RoutingEnforcementOutcome.DEPENDENCY_UNAVAILABLE else 422
     return JSONResponse(status_code=status_code, content=response.model_dump(mode="json"))
 
 

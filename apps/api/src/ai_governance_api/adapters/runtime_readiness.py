@@ -111,9 +111,7 @@ async def check_runtime_readiness(
         async with asyncio.timeout(timeout_seconds):
             async with selected_engine.connect() as connection:
                 await connection.execute(text("SELECT 1"))
-                current_heads = frozenset(
-                    await connection.run_sync(_read_current_heads)
-                )
+                current_heads = frozenset(await connection.run_sync(_read_current_heads))
     except Exception as exc:
         _log_readiness_failure("database", exc)
         return RuntimeReadinessReport(

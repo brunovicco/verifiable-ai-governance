@@ -89,8 +89,10 @@ class GovernanceControlCatalog:
             )
 
         clauses = _selector_clauses(rule, context)
-        applicable = all(result for result, _, _ in clauses) if rule.match == "all" else any(
-            result for result, _, _ in clauses
+        applicable = (
+            all(result for result, _, _ in clauses)
+            if rule.match == "all"
+            else any(result for result, _, _ in clauses)
         )
         if applicable:
             reasons = tuple(matched for result, matched, _ in clauses if result)

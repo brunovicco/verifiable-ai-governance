@@ -34,9 +34,7 @@ def snapshot(resolved_at: datetime) -> DirectoryAuthorizationSnapshot:
         expires_at=resolved_at + timedelta(seconds=60),
         matched_mapping_ids=("security-reviewers",),
         source_types=("group",),
-        original_group_resolution_source=(
-            DirectoryGroupResolutionSource.MICROSOFT_GRAPH
-        ),
+        original_group_resolution_source=(DirectoryGroupResolutionSource.MICROSOFT_GRAPH),
     )
 
 

@@ -114,9 +114,7 @@ class S3ObjectStorage:
         """Create a local-development bucket without weakening production policy."""
         parameters: dict[str, object] = {"Bucket": self._bucket}
         if self._region != "us-east-1":
-            parameters["CreateBucketConfiguration"] = {
-                "LocationConstraint": self._region
-            }
+            parameters["CreateBucketConfiguration"] = {"LocationConstraint": self._region}
         try:
             await asyncio.to_thread(self._client.create_bucket, **parameters)
         except (BotoCoreError, ClientError, OSError) as exc:

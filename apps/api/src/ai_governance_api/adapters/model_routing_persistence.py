@@ -10,6 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import joinedload
 
 from ai_governance_api.audit import append_audit_event
+from ai_governance_api.domain.asset_registry import (
+    AgentReviewCandidate,
+    ModelReviewCandidate,
+    agent_scope_digest,
+    model_scope_digest,
+)
 from ai_governance_api.domain.model_routing import (
     GovernedRoutingModel,
     GovernedRoutingScope,
@@ -24,6 +30,7 @@ from ai_governance_api.domain.model_routing import (
 from ai_governance_api.models import (
     Agent,
     AISystem,
+    ModelAsset,
     ModelRoutingDecisionEntry,
 )
 
@@ -79,9 +86,11 @@ class SqlAlchemyModelRoutingScopeReader:
                         allowed_data_classes=tuple(model.allowed_data_classes),
                         approved_scope_digest=model.approved_scope_digest,
                         next_review_at=_optional_utc(model.next_review_at),
+                        scope_digest_matches=_model_scope_matches(model),
                     )
                     for model in ai_system.models
                 ),
+                agent_scope_digest_matches=_agent_scope_matches(agent),
             )
 
 
@@ -181,6 +190,49 @@ class SqlAlchemyModelRoutingAudit:
         )
 
 
+def _agent_scope_matches(agent: Agent) -> bool:
+    """Compare fresh agent facts with the review-bound digest."""
+    approved_digest = agent.approved_scope_digest
+    if approved_digest is None:
+        return False
+    candidate = AgentReviewCandidate(
+        name=agent.name,
+        purpose=agent.purpose,
+        owner_id=agent.owner_id,
+        agent_version=agent.agent_version,
+        deployment_region=agent.deployment_region,
+        autonomy_level=agent.autonomy_level,
+        allowed_models=tuple(agent.allowed_models),
+        tools=tuple(agent.tools),
+        permissions=tuple(agent.permissions),
+        max_cost=agent.max_cost,
+        max_runtime_seconds=agent.max_runtime_seconds,
+        human_approval_points=tuple(agent.human_approval_points),
+        kill_switch_enabled=agent.kill_switch_enabled,
+    )
+    return approved_digest == agent_scope_digest(candidate)
+
+
+def _model_scope_matches(model: ModelAsset) -> bool:
+    """Compare fresh model facts with the review-bound digest."""
+    approved_digest = model.approved_scope_digest
+    if approved_digest is None:
+        return False
+    candidate = ModelReviewCandidate(
+        provider=model.provider,
+        model_name=model.model_name,
+        model_version=model.model_version,
+        routing_group=model.routing_group,
+        deployment_region=model.deployment_region,
+        approved_use_cases=tuple(model.approved_use_cases),
+        prohibited_use_cases=tuple(model.prohibited_use_cases),
+        allowed_data_classes=tuple(model.allowed_data_classes),
+        evaluation_baseline=model.evaluation_baseline,
+        deprecation_date=_optional_utc(model.deprecation_date),
+    )
+    return approved_digest == model_scope_digest(candidate)
+
+
 def _record_values(record: ModelRoutingDecisionRecord) -> dict[str, object]:
     """Map a pure routing record into persistence column values."""
     return {
@@ -269,8 +321,7 @@ def _to_domain(entity: ModelRoutingDecisionEntry) -> ModelRoutingDecisionRecord:
         observed_value=entity.observed_value,
         required_value=entity.required_value,
         rejected_candidates=tuple(
-            RejectedRoutingCandidate(**candidate)
-            for candidate in entity.rejected_candidates
+            RejectedRoutingCandidate(**candidate) for candidate in entity.rejected_candidates
         ),
         policy_id=entity.policy_id,
         policy_version=entity.policy_version,

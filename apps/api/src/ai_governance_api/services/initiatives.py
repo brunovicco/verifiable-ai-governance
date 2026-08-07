@@ -224,9 +224,7 @@ class InitiativeService:
             payload={
                 "review_round": initiative.current_review_round,
                 "changed_fields": sorted(changes),
-                "change_reason_sha256": hashlib.sha256(
-                    request.change_reason.encode()
-                ).hexdigest(),
+                "change_reason_sha256": hashlib.sha256(request.change_reason.encode()).hexdigest(),
                 "policy_id": decision.policy_id,
                 "policy_version": decision.policy_version,
                 "risk_tier": decision.tier.value,
@@ -330,9 +328,7 @@ class InitiativeService:
                 "catalog_id": principal.authorization_provenance.catalog_id,
                 "catalog_version": principal.authorization_provenance.catalog_version,
                 "catalog_digest": principal.authorization_provenance.catalog_digest,
-                "matched_mapping_ids": list(
-                    principal.authorization_provenance.matched_mapping_ids
-                ),
+                "matched_mapping_ids": list(principal.authorization_provenance.matched_mapping_ids),
                 "source_types": list(principal.authorization_provenance.source_types),
                 "group_resolution_source": (
                     principal.authorization_provenance.group_resolution_source.value
@@ -361,9 +357,7 @@ class InitiativeService:
     ) -> list[ReviewSubmission]:
         """Return content-minimized review rounds to authorized participants."""
         initiative = await self.get(initiative_id)
-        can_review = any(
-            item.area in principal.approval_areas for item in initiative.approvals
-        )
+        can_review = any(item.area in principal.approval_areas for item in initiative.approvals)
         if (
             initiative.business_owner_id != principal.user_id
             and not principal.is_admin
@@ -565,9 +559,7 @@ class InitiativeService:
                 required=requirement.required,
                 reason=requirement.reason,
                 status=(
-                    ApprovalStatus.PENDING
-                    if requirement.required
-                    else ApprovalStatus.NOT_REQUIRED
+                    ApprovalStatus.PENDING if requirement.required else ApprovalStatus.NOT_REQUIRED
                 ),
                 requested_at=requested_at if requirement.required else None,
             )
@@ -651,9 +643,7 @@ class InitiativeService:
         }
         required = set(required_documents) & structured_documents
         ready = {
-            item.assessment_type
-            for item in assessments
-            if item.status is EntityStatus.UNDER_REVIEW
+            item.assessment_type for item in assessments if item.status is EntityStatus.UNDER_REVIEW
         }
         blocking = sorted(required - ready)
         if blocking:

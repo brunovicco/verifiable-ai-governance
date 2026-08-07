@@ -44,9 +44,7 @@ class GovernanceControlCrosswalk:
         return cls.from_yaml(content, catalog)
 
     @classmethod
-    def from_path(
-        cls, path: str | Path, catalog: ControlCatalog
-    ) -> "GovernanceControlCrosswalk":
+    def from_path(cls, path: str | Path, catalog: ControlCatalog) -> "GovernanceControlCrosswalk":
         """Load an explicitly configured crosswalk without falling back on failure."""
         try:
             content = Path(path).read_text(encoding="utf-8")

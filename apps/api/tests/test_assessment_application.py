@@ -40,11 +40,7 @@ class FakeAssessmentStore:
     async def list_for_initiative(self, initiative_id: str) -> list[AssessmentRecord]:
         """Return matching records ordered by definition."""
         return sorted(
-            (
-                record
-                for record in self.records.values()
-                if record.initiative_id == initiative_id
-            ),
+            (record for record in self.records.values() if record.initiative_id == initiative_id),
             key=lambda record: record.kind.value,
         )
 

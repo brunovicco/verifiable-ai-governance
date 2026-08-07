@@ -32,9 +32,7 @@ NOW = datetime.now(UTC)
 
 def as_admin(user_id: str = "admin-1") -> None:
     """Override the resolved principal with an administrator for one call."""
-    app.dependency_overrides[get_principal] = lambda: Principal(
-        user_id=user_id, is_admin=True
-    )
+    app.dependency_overrides[get_principal] = lambda: Principal(user_id=user_id, is_admin=True)
 
 
 def clear_principal_override() -> None:
@@ -132,15 +130,11 @@ async def test_incident_lifecycle_report_contain_remediate_close(
     incident_id = reported.json()["id"]
     assert reported.json()["status"] == "open"
 
-    fetched = await client.get(
-        f"/api/v1/incidents/{incident_id}", headers=OWNER_HEADERS
-    )
+    fetched = await client.get(f"/api/v1/incidents/{incident_id}", headers=OWNER_HEADERS)
     assert fetched.status_code == 200
     assert fetched.json()["id"] == incident_id
 
-    forbidden = await client.get(
-        f"/api/v1/incidents/{incident_id}", headers=STRANGER_HEADERS
-    )
+    forbidden = await client.get(f"/api/v1/incidents/{incident_id}", headers=STRANGER_HEADERS)
     assert forbidden.status_code == 403
 
     contained = await client.post(
@@ -172,9 +166,7 @@ async def test_incident_lifecycle_report_contain_remediate_close(
     assert closed.status_code == 200
     assert closed.json()["status"] == "closed"
 
-    listed = await client.get(
-        f"/api/v1/systems/{system_id}/incidents", headers=OWNER_HEADERS
-    )
+    listed = await client.get(f"/api/v1/systems/{system_id}/incidents", headers=OWNER_HEADERS)
     assert [item["id"] for item in listed.json()] == [incident_id]
 
     async with SessionFactory() as session:
@@ -328,9 +320,7 @@ async def test_exception_request_decide_and_revoke(client: AsyncClient) -> None:
     finally:
         clear_principal_override()
 
-    listed = await client.get(
-        f"/api/v1/incidents/{incident_id}/exceptions", headers=OWNER_HEADERS
-    )
+    listed = await client.get(f"/api/v1/incidents/{incident_id}/exceptions", headers=OWNER_HEADERS)
     assert [item["id"] for item in listed.json()] == [exception_id]
 
     async with SessionFactory() as session:

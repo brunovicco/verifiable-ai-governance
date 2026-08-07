@@ -22,9 +22,7 @@ def upgrade() -> None:
         "NOT NULL DEFAULT 'not_applicable'"
     )
     op.execute("ALTER TABLE evidence ADD COLUMN IF NOT EXISTS scanner VARCHAR(100)")
-    op.execute(
-        "ALTER TABLE evidence ADD COLUMN IF NOT EXISTS scanned_at TIMESTAMP WITH TIME ZONE"
-    )
+    op.execute("ALTER TABLE evidence ADD COLUMN IF NOT EXISTS scanned_at TIMESTAMP WITH TIME ZONE")
     op.execute("ALTER TABLE evidence ADD COLUMN IF NOT EXISTS storage_bucket VARCHAR(255)")
     op.execute("ALTER TABLE evidence ADD COLUMN IF NOT EXISTS storage_key VARCHAR(1024)")
 

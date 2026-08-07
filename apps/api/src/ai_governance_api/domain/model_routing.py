@@ -51,7 +51,9 @@ class RoutingBlockCode(StrEnum):
     SYSTEM_NOT_OPERATIONAL = "system_not_operational"
     AGENT_NOT_APPROVED = "agent_not_approved"
     AGENT_REVIEW_NOT_CURRENT = "agent_review_not_current"
+    AGENT_SCOPE_DRIFTED = "agent_scope_drifted"
     APPROVED_MODEL_UNAVAILABLE = "approved_model_unavailable"
+    MODEL_SCOPE_DRIFTED = "model_scope_drifted"
     DATA_CLASSIFICATION_NOT_APPROVED = "data_classification_not_approved"
     COST_LIMIT_EXCEEDED = "cost_limit_exceeded"
     REGISTRY_SCOPE_CHANGED = "registry_scope_changed"
@@ -85,6 +87,7 @@ class GovernedRoutingModel:
     allowed_data_classes: tuple[str, ...]
     approved_scope_digest: str | None
     next_review_at: datetime | None
+    scope_digest_matches: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -108,6 +111,7 @@ class GovernedRoutingScope:
     agent_allowed_model_ids: tuple[str, ...]
     agent_max_cost: Decimal | None
     models: tuple[GovernedRoutingModel, ...]
+    agent_scope_digest_matches: bool = True
 
     @property
     def digest(self) -> str:
@@ -124,6 +128,7 @@ class GovernedRoutingScope:
                 "agent_name": self.agent_name,
                 "agent_status": self.agent_status.value,
                 "agent_approved_scope_digest": self.agent_approved_scope_digest,
+                "agent_scope_digest_matches": self.agent_scope_digest_matches,
                 "agent_next_review_at": _datetime_text(self.agent_next_review_at),
                 "agent_allowed_model_ids": sorted(self.agent_allowed_model_ids),
                 "agent_max_cost": (
@@ -137,6 +142,7 @@ class GovernedRoutingScope:
                         "routing_group": model.routing_group,
                         "allowed_data_classes": sorted(model.allowed_data_classes),
                         "approved_scope_digest": model.approved_scope_digest,
+                        "scope_digest_matches": model.scope_digest_matches,
                         "next_review_at": _datetime_text(model.next_review_at),
                     }
                     for model in sorted(self.models, key=lambda item: item.id)
@@ -289,6 +295,11 @@ def evaluate_routing_scope(
             RoutingBlockCode.AGENT_NOT_APPROVED,
             "Agent does not have an approved runtime scope",
         )
+    if not scope.agent_scope_digest_matches:
+        return RoutingBlock(
+            RoutingBlockCode.AGENT_SCOPE_DRIFTED,
+            "Agent material scope no longer matches its approved review digest",
+        )
     if not _review_current(
         scope.agent_approved_scope_digest,
         scope.agent_next_review_at,
@@ -300,13 +311,23 @@ def evaluate_routing_scope(
         )
     eligible_models = _eligible_models(scope, now=now)
     if not eligible_models:
+        allowed_ids = set(scope.agent_allowed_model_ids)
+        if any(
+            model.id in allowed_ids
+            and model.status is EntityStatus.APPROVED
+            and not model.scope_digest_matches
+            for model in scope.models
+        ):
+            return RoutingBlock(
+                RoutingBlockCode.MODEL_SCOPE_DRIFTED,
+                "An allowed model no longer matches its approved review digest",
+            )
         return RoutingBlock(
             RoutingBlockCode.APPROVED_MODEL_UNAVAILABLE,
             "Agent has no currently approved model available for routing",
         )
     if not any(
-        scope.data_classification.value in model.allowed_data_classes
-        for model in eligible_models
+        scope.data_classification.value in model.allowed_data_classes for model in eligible_models
     ):
         return RoutingBlock(
             RoutingBlockCode.DATA_CLASSIFICATION_NOT_APPROVED,
@@ -386,12 +407,16 @@ def finalize_routing_record(
         reason=(
             block.reason
             if block is not None
-            else provider_decision.reason if provider_decision is not None else None
+            else provider_decision.reason
+            if provider_decision is not None
+            else None
         ),
         reason_code=(
             block.code
             if block is not None
-            else provider_decision.reason_code if provider_decision is not None else None
+            else provider_decision.reason_code
+            if provider_decision is not None
+            else None
         ),
         observed_value=(
             provider_decision.observed_value if provider_decision is not None else None
@@ -406,9 +431,7 @@ def finalize_routing_record(
         policy_version=(
             provider_decision.policy_version if provider_decision is not None else None
         ),
-        policy_digest=(
-            provider_decision.policy_digest if provider_decision is not None else None
-        ),
+        policy_digest=(provider_decision.policy_digest if provider_decision is not None else None),
         service_version=(
             provider_decision.service_version if provider_decision is not None else None
         ),
@@ -432,6 +455,7 @@ def _eligible_models(
         and model.status is EntityStatus.APPROVED
         and bool(model.routing_group.strip())
         and model.routing_group != "unassigned"
+        and model.scope_digest_matches
         and _review_current(model.approved_scope_digest, model.next_review_at, now)
     )
 

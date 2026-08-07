@@ -199,10 +199,14 @@ class RequestModelRoutingDecision:
         scope = await self._scope_reader.get(agent_id)
         if scope is None:
             raise ApplicationError(ErrorKind.NOT_FOUND, "Agent not found")
-        if principal.user_id not in {
-            scope.ai_system_owner_id,
-            scope.agent_owner_id,
-        } and not principal.is_admin:
+        if (
+            principal.user_id
+            not in {
+                scope.ai_system_owner_id,
+                scope.agent_owner_id,
+            }
+            and not principal.is_admin
+        ):
             raise ApplicationError(
                 ErrorKind.FORBIDDEN,
                 "Only the system owner, agent owner, or an administrator can request routing",
@@ -323,10 +327,14 @@ class ListModelRoutingDecisions:
         scope = await self._scope_reader.get(agent_id)
         if scope is None:
             raise ApplicationError(ErrorKind.NOT_FOUND, "Agent not found")
-        if principal.user_id not in {
-            scope.ai_system_owner_id,
-            scope.agent_owner_id,
-        } and not principal.is_admin:
+        if (
+            principal.user_id
+            not in {
+                scope.ai_system_owner_id,
+                scope.agent_owner_id,
+            }
+            and not principal.is_admin
+        ):
             raise ApplicationError(
                 ErrorKind.FORBIDDEN,
                 "Only the system owner, agent owner, or an administrator can view routing",
