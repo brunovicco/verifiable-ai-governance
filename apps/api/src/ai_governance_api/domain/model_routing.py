@@ -12,12 +12,14 @@ from governance_schemas import (
     DataClassification,
     EntityStatus,
     RiskTier,
+    RuntimeViolationEnvelope,
     SignedRuntimeAuthorization,
 )
 
 from ai_governance_api.domain.asset_registry import review_is_current
 
 P1_3_SIGNED_RUNTIME_AUTHORIZATION = True
+P1_4_DURABLE_RUNTIME_VIOLATIONS = True
 
 
 class RoutingWorkload(StrEnum):
@@ -276,6 +278,7 @@ class ModelRoutingDecisionRecord:
     version: int
     created_at: datetime
     updated_at: datetime
+    runtime_violation: RuntimeViolationEnvelope | None = None
 
 
 def build_router_request(
@@ -409,6 +412,7 @@ def finalize_routing_record(
     decided_at: datetime,
     block: RoutingBlock | None = None,
     provider_decision: PolicyModelRouterDecision | None = None,
+    runtime_violation: RuntimeViolationEnvelope | None = None,
 ) -> ModelRoutingDecisionRecord:
     """Produce the immutable completed projection for a pending attempt."""
     if record.outcome is not RoutingEnforcementOutcome.PENDING:
@@ -460,6 +464,7 @@ def finalize_routing_record(
             provider_decision.service_version if provider_decision is not None else None
         ),
         environment=(provider_decision.environment if provider_decision is not None else None),
+        runtime_violation=runtime_violation,
         version=record.version + 1,
         updated_at=decided_at,
     )

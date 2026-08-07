@@ -44,6 +44,14 @@ from governance_schemas.runtime_authorization import (
     SignedRuntimeAuthorization,
     canonical_json_bytes,
 )
+from governance_schemas.runtime_violation import (
+    RuntimeViolationAuthorizationContext,
+    RuntimeViolationAuthorizationState,
+    RuntimeViolationCategory,
+    RuntimeViolationEnvelope,
+    RuntimeViolationEvent,
+    RuntimeViolationRequestContext,
+)
 
 __all__ = [
     "ApprovalArea",
@@ -71,6 +79,12 @@ __all__ = [
     "PolicyDecision",
     "RiskBreakdown",
     "RiskTier",
+    "RuntimeViolationAuthorizationContext",
+    "RuntimeViolationAuthorizationState",
+    "RuntimeViolationCategory",
+    "RuntimeViolationEnvelope",
+    "RuntimeViolationEvent",
+    "RuntimeViolationRequestContext",
     "AuthorizedRuntimeModel",
     "RuntimeAuthorizationClaims",
     "RuntimeAuthorizationPolicyProvenance",

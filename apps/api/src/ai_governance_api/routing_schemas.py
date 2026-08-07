@@ -3,6 +3,7 @@
 from datetime import datetime
 from decimal import Decimal
 
+from governance_schemas import RuntimeViolationEnvelope
 from pydantic import BaseModel, ConfigDict, Field
 
 from ai_governance_api.domain.model_routing import (
@@ -93,6 +94,7 @@ class ModelRoutingDecisionRead(BaseModel):
     policy_digest: str | None
     service_version: str | None
     environment: str | None
+    runtime_violation: RuntimeViolationEnvelope | None = None
     version: int
     created_at: datetime
     updated_at: datetime

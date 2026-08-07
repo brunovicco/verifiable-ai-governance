@@ -4,7 +4,7 @@ from dataclasses import asdict
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from governance_schemas import DataClassification, RiskTier
+from governance_schemas import DataClassification, RiskTier, RuntimeViolationEnvelope
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import joinedload
@@ -176,6 +176,16 @@ class SqlAlchemyModelRoutingAudit:
             payload["selected_model_group"] = record.selected_model_group
         if record.reason_code is not None:
             payload["reason_code"] = record.reason_code
+        if record.runtime_violation is not None:
+            violation = record.runtime_violation
+            payload.update(
+                {
+                    "violation_event_id": str(violation.event.event_id),
+                    "violation_category": violation.event.category.value,
+                    "violation_code": violation.event.code,
+                    "violation_digest": violation.event_digest,
+                }
+            )
         if record.policy_id is not None:
             payload.update(
                 {
@@ -280,6 +290,27 @@ def _record_values(record: ModelRoutingDecisionRecord) -> dict[str, object]:
         "policy_digest": record.policy_digest,
         "service_version": record.service_version,
         "environment": record.environment,
+        "violation_event_id": (
+            str(record.runtime_violation.event.event_id)
+            if record.runtime_violation is not None
+            else None
+        ),
+        "violation_category": (
+            record.runtime_violation.event.category.value
+            if record.runtime_violation is not None
+            else None
+        ),
+        "violation_code": (
+            record.runtime_violation.event.code if record.runtime_violation is not None else None
+        ),
+        "violation_digest": (
+            record.runtime_violation.event_digest if record.runtime_violation is not None else None
+        ),
+        "violation_payload": (
+            record.runtime_violation.model_dump(mode="json")
+            if record.runtime_violation is not None
+            else None
+        ),
         "version": record.version,
         "created_at": record.created_at,
         "updated_at": record.updated_at,
@@ -338,7 +369,42 @@ def _to_domain(entity: ModelRoutingDecisionEntry) -> ModelRoutingDecisionRecord:
         version=entity.version,
         created_at=_as_utc(entity.created_at),
         updated_at=_as_utc(entity.updated_at),
+        runtime_violation=_runtime_violation_from_entity(entity),
     )
+
+
+def _runtime_violation_from_entity(
+    entity: ModelRoutingDecisionEntry,
+) -> RuntimeViolationEnvelope | None:
+    """Validate stored payload integrity and denormalized query columns."""
+    if entity.violation_payload is None:
+        if any(
+            value is not None
+            for value in (
+                entity.violation_event_id,
+                entity.violation_category,
+                entity.violation_code,
+                entity.violation_digest,
+            )
+        ):
+            raise ValueError("Routing violation metadata exists without payload")
+        return None
+    violation = RuntimeViolationEnvelope.model_validate(entity.violation_payload)
+    expected = (
+        str(violation.event.event_id),
+        violation.event.category.value,
+        violation.event.code,
+        violation.event_digest,
+    )
+    observed = (
+        entity.violation_event_id,
+        entity.violation_category,
+        entity.violation_code,
+        entity.violation_digest,
+    )
+    if observed != expected:
+        raise ValueError("Stored routing violation metadata does not match payload")
+    return violation
 
 
 def _optional_utc(value: datetime | None) -> datetime | None:
