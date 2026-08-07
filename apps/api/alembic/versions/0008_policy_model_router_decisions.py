@@ -136,7 +136,4 @@ def _table_names() -> set[str]:
 
 def _column_names(table_name: str) -> set[str]:
     """Return current column names for bootstrap-compatible migrations."""
-    return {
-        column["name"]
-        for column in sa.inspect(op.get_bind()).get_columns(table_name)
-    }
+    return {column["name"] for column in sa.inspect(op.get_bind()).get_columns(table_name)}

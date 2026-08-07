@@ -52,9 +52,7 @@ class AuthorizationProvenanceRead(BaseModel):
     catalog_digest: str = Field(pattern=r"^[a-f0-9]{64}$")
     matched_mapping_ids: list[str] = Field(default_factory=list)
     source_types: list[str] = Field(default_factory=list)
-    group_resolution_source: DirectoryGroupResolutionSource = (
-        DirectoryGroupResolutionSource.NONE
-    )
+    group_resolution_source: DirectoryGroupResolutionSource = DirectoryGroupResolutionSource.NONE
 
 
 class PrincipalRead(BaseModel):

@@ -45,9 +45,7 @@ class SqlAlchemyDirectoryAccessStore:
                 target.entry_id,
             )
         except SQLAlchemyError as exc:
-            raise DirectoryAccessUnavailable(
-                "Directory access state could not be read"
-            ) from exc
+            raise DirectoryAccessUnavailable("Directory access state could not be read") from exc
         if entity is None:
             return None
         return _state_from_entity(entity, target)
@@ -100,13 +98,9 @@ class SqlAlchemyDirectoryAccessStore:
         except DirectoryAccessUnavailable:
             raise
         except SQLAlchemyError as exc:
-            raise DirectoryAccessUnavailable(
-                "Directory access state could not be updated"
-            ) from exc
+            raise DirectoryAccessUnavailable("Directory access state could not be updated") from exc
         if entity is None:
-            raise DirectoryAccessUnavailable(
-                "Directory access state was not persisted"
-            )
+            raise DirectoryAccessUnavailable("Directory access state was not persisted")
         return _state_from_entity(entity, target)
 
     def _dialect_insert(self, values: dict[str, Any]) -> Any:
@@ -177,9 +171,7 @@ class SqlAlchemyDirectoryAccessAudit:
                 self._session,
                 actor_id=actor_id,
                 action=(
-                    "directory_access.blocked"
-                    if state.blocked
-                    else "directory_access.restored"
+                    "directory_access.blocked" if state.blocked else "directory_access.restored"
                 ),
                 entity_type="directory_access_restriction",
                 entity_id=state.target.entry_id,
@@ -212,9 +204,7 @@ class SqlAlchemyDirectoryAccessTransaction:
             await self._session.commit()
         except SQLAlchemyError as exc:
             await self._session.rollback()
-            raise DirectoryAccessUnavailable(
-                "Directory access transaction failed"
-            ) from exc
+            raise DirectoryAccessUnavailable("Directory access transaction failed") from exc
 
 
 def _state_from_entity(
@@ -223,9 +213,7 @@ def _state_from_entity(
 ) -> DirectoryAccessState:
     """Validate persistence binding before returning a domain state."""
     if entity.tenant_id != target.tenant_id or entity.object_id != target.object_id:
-        raise DirectoryAccessUnavailable(
-            "Directory access identity binding is invalid"
-        )
+        raise DirectoryAccessUnavailable("Directory access identity binding is invalid")
     try:
         return DirectoryAccessState(
             target=target,
@@ -234,9 +222,7 @@ def _state_from_entity(
             version=entity.version,
         )
     except DirectoryAccessError as exc:
-        raise DirectoryAccessUnavailable(
-            "Directory access state is invalid"
-        ) from exc
+        raise DirectoryAccessUnavailable("Directory access state is invalid") from exc
 
 
 def _as_utc(value: datetime | None) -> datetime:

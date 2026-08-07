@@ -42,9 +42,7 @@ async def test_admin_invalidation_is_shared_and_audited_without_raw_target(
         oidc_identity_mode="entra",
         oidc_allowed_tenant_ids=TENANT_ID,
         oidc_issuer=f"https://login.microsoftonline.com/{TENANT_ID}/v2.0",
-        oidc_jwks_url=(
-            f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
-        ),
+        oidc_jwks_url=(f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"),
     )
     try:
         response = await client.post(
@@ -67,9 +65,7 @@ async def test_admin_invalidation_is_shared_and_audited_without_raw_target(
     async with SessionFactory() as session:
         entry = await session.get(DirectoryAuthorizationCacheEntry, key.entry_id)
         event = await session.scalar(
-            select(AuditEvent).where(
-                AuditEvent.entity_type == "directory_authorization_cache"
-            )
+            select(AuditEvent).where(AuditEvent.entity_type == "directory_authorization_cache")
         )
 
     assert entry is not None

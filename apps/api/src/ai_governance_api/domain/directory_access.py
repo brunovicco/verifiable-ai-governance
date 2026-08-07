@@ -31,9 +31,7 @@ class DirectoryAccessRestoreReason(StrEnum):
     ACCESS_REINSTATED = "access_reinstated"
 
 
-type DirectoryAccessChangeReason = (
-    DirectoryAccessBlockReason | DirectoryAccessRestoreReason
-)
+type DirectoryAccessChangeReason = DirectoryAccessBlockReason | DirectoryAccessRestoreReason
 
 
 @dataclass(frozen=True, slots=True)

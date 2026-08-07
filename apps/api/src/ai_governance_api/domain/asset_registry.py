@@ -107,6 +107,70 @@ class AssetReviewDecision:
     reviewer_area: ApprovalArea
 
 
+def model_scope_digest(candidate: ModelReviewCandidate) -> str:
+    """Return the canonical digest of the material model review scope."""
+    return _scope_digest(_model_scope(candidate))
+
+
+def agent_scope_digest(candidate: AgentReviewCandidate) -> str:
+    """Return the canonical digest of the material agent review scope."""
+    return _scope_digest(_agent_scope(candidate))
+
+
+def _model_scope(candidate: ModelReviewCandidate) -> dict[str, Any]:
+    """Project material model facts into the canonical review payload."""
+    return {
+        "provider": candidate.provider,
+        "model_name": candidate.model_name,
+        "model_version": candidate.model_version,
+        "routing_group": candidate.routing_group,
+        "deployment_region": candidate.deployment_region,
+        "approved_use_cases": sorted(candidate.approved_use_cases),
+        "prohibited_use_cases": sorted(candidate.prohibited_use_cases),
+        "allowed_data_classes": sorted(candidate.allowed_data_classes),
+        "evaluation_baseline": candidate.evaluation_baseline,
+        "deprecation_date": (
+            candidate.deprecation_date.isoformat()
+            if candidate.deprecation_date is not None
+            else None
+        ),
+    }
+
+
+def _agent_scope(candidate: AgentReviewCandidate) -> dict[str, Any]:
+    """Project material agent facts into the canonical review payload."""
+    return {
+        "name": candidate.name,
+        "purpose": candidate.purpose,
+        "owner_id": candidate.owner_id,
+        "agent_version": candidate.agent_version,
+        "deployment_region": candidate.deployment_region,
+        "autonomy_level": candidate.autonomy_level.value,
+        "allowed_models": sorted(candidate.allowed_models),
+        "tools": sorted(candidate.tools),
+        "permissions": sorted(candidate.permissions),
+        "max_cost": candidate.max_cost,
+        "max_runtime_seconds": candidate.max_runtime_seconds,
+        "human_approval_points": sorted(candidate.human_approval_points),
+        "kill_switch_enabled": candidate.kill_switch_enabled,
+    }
+
+
+def _scope_digest(scope: dict[str, Any]) -> str:
+    """Hash deterministic JSON scope, rejecting non-canonical values."""
+    try:
+        canonical = json.dumps(
+            scope,
+            ensure_ascii=False,
+            allow_nan=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+    except (TypeError, ValueError) as exc:
+        raise AssetReviewError("Asset scope is not canonically serializable") from exc
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def review_model_scope(
     candidate: ModelReviewCandidate,
     context: AssetReviewContext,
@@ -136,22 +200,7 @@ def review_model_scope(
         RegistryAssetKind.MODEL,
         context,
         ApprovalArea.ARCHITECTURE,
-        {
-            "provider": candidate.provider,
-            "model_name": candidate.model_name,
-            "model_version": candidate.model_version,
-            "routing_group": candidate.routing_group,
-            "deployment_region": candidate.deployment_region,
-            "approved_use_cases": sorted(candidate.approved_use_cases),
-            "prohibited_use_cases": sorted(candidate.prohibited_use_cases),
-            "allowed_data_classes": sorted(candidate.allowed_data_classes),
-            "evaluation_baseline": candidate.evaluation_baseline,
-            "deprecation_date": (
-                candidate.deprecation_date.isoformat()
-                if candidate.deprecation_date is not None
-                else None
-            ),
-        },
+        _model_scope(candidate),
     )
 
 
@@ -173,43 +222,29 @@ def review_agent_scope(
         raise AssetReviewError("Agent review requires an enabled kill switch")
     if candidate.tools and not candidate.permissions:
         raise AssetReviewError("Agent tools require an explicit permission boundary")
-    if candidate.autonomy_level in {
-        AutonomyLevel.A2_PREPARE_FOR_APPROVAL,
-        AutonomyLevel.A3_REVERSIBLE_ACTIONS,
-        AutonomyLevel.A4_HIGH_IMPACT_ACTIONS,
-        AutonomyLevel.A5_HIGH_AUTONOMY,
-    } and not candidate.human_approval_points:
-        raise AssetReviewError(
-            "Agent autonomy requires at least one human approval point"
-        )
+    if (
+        candidate.autonomy_level
+        in {
+            AutonomyLevel.A2_PREPARE_FOR_APPROVAL,
+            AutonomyLevel.A3_REVERSIBLE_ACTIONS,
+            AutonomyLevel.A4_HIGH_IMPACT_ACTIONS,
+            AutonomyLevel.A5_HIGH_AUTONOMY,
+        }
+        and not candidate.human_approval_points
+    ):
+        raise AssetReviewError("Agent autonomy requires at least one human approval point")
     if candidate.autonomy_level in {
         AutonomyLevel.A3_REVERSIBLE_ACTIONS,
         AutonomyLevel.A4_HIGH_IMPACT_ACTIONS,
         AutonomyLevel.A5_HIGH_AUTONOMY,
     } and (candidate.max_cost is None or candidate.max_runtime_seconds is None):
-        raise AssetReviewError(
-            "Action-capable agents require cost and runtime limits"
-        )
+        raise AssetReviewError("Action-capable agents require cost and runtime limits")
 
     return _decision(
         RegistryAssetKind.AGENT,
         context,
         ApprovalArea.SECURITY,
-        {
-            "name": candidate.name,
-            "purpose": candidate.purpose,
-            "owner_id": candidate.owner_id,
-            "agent_version": candidate.agent_version,
-            "deployment_region": candidate.deployment_region,
-            "autonomy_level": candidate.autonomy_level.value,
-            "allowed_models": sorted(candidate.allowed_models),
-            "tools": sorted(candidate.tools),
-            "permissions": sorted(candidate.permissions),
-            "max_cost": candidate.max_cost,
-            "max_runtime_seconds": candidate.max_runtime_seconds,
-            "human_approval_points": sorted(candidate.human_approval_points),
-            "kill_switch_enabled": candidate.kill_switch_enabled,
-        },
+        _agent_scope(candidate),
     )
 
 
@@ -252,21 +287,15 @@ def _validate_review_context(
     if reviewer_id in context.owner_ids:
         raise AssetReviewForbidden("Asset owners cannot approve their own scope")
     if required_area not in context.reviewer_areas:
-        raise AssetReviewForbidden(
-            f"Asset review requires the {required_area.value} approval area"
-        )
+        raise AssetReviewForbidden(f"Asset review requires the {required_area.value} approval area")
     if not reference:
         raise AssetReviewError("Asset review reference is required")
     _require_aware(context.reviewed_at, "reviewed_at")
     _require_aware(context.next_review_at, "next_review_at")
     if context.next_review_at <= context.reviewed_at:
         raise AssetReviewError("Next review must follow the current review")
-    if context.next_review_at > (
-        context.reviewed_at + MAX_REVIEW_INTERVAL[context.risk_tier]
-    ):
-        raise AssetReviewError(
-            f"Review interval exceeds the {context.risk_tier.value} risk policy"
-        )
+    if context.next_review_at > (context.reviewed_at + MAX_REVIEW_INTERVAL[context.risk_tier]):
+        raise AssetReviewError(f"Review interval exceeds the {context.risk_tier.value} risk policy")
 
 
 def _decision(
@@ -276,19 +305,9 @@ def _decision(
     scope: dict[str, Any],
 ) -> AssetReviewDecision:
     """Create a decision bound to a deterministic canonical JSON digest."""
-    try:
-        canonical = json.dumps(
-            scope,
-            ensure_ascii=False,
-            allow_nan=False,
-            separators=(",", ":"),
-            sort_keys=True,
-        )
-    except (TypeError, ValueError) as exc:
-        raise AssetReviewError("Asset scope is not canonically serializable") from exc
     return AssetReviewDecision(
         kind=kind,
-        approved_scope_digest=hashlib.sha256(canonical.encode("utf-8")).hexdigest(),
+        approved_scope_digest=_scope_digest(scope),
         reviewed_by=context.reviewer_id.strip(),
         reviewed_at=context.reviewed_at,
         next_review_at=context.next_review_at,

@@ -135,9 +135,7 @@ class FakeRepository:
             return None
         return context, record, agent
 
-    async def save_agent_kill_switch(
-        self, state: AgentKillSwitchState
-    ) -> AgentKillSwitchState:
+    async def save_agent_kill_switch(self, state: AgentKillSwitchState) -> AgentKillSwitchState:
         self.agents[state.id] = state
         return state
 
@@ -159,9 +157,7 @@ class FakeRepository:
         self.exceptions[record.id] = record
         return record
 
-    async def list_exceptions_for_incident(
-        self, incident_id: str
-    ) -> list[PolicyExceptionRecord]:
+    async def list_exceptions_for_incident(self, incident_id: str) -> list[PolicyExceptionRecord]:
         return [item for item in self.exceptions.values() if item.incident_id == incident_id]
 
 

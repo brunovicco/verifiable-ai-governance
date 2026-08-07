@@ -253,8 +253,6 @@ async def test_dashboard_requires_only_authentication_not_ownership(
 ) -> None:
     await seed_dashboard_fixtures()
 
-    response = await client.get(
-        "/api/v1/dashboard", headers={"X-User-Id": "someone-unrelated"}
-    )
+    response = await client.get("/api/v1/dashboard", headers={"X-User-Id": "someone-unrelated"})
 
     assert response.status_code == 200

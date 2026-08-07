@@ -80,9 +80,7 @@ class MicrosoftGraphCorporateDirectory:
         self._transport = transport
         self._sleep = sleep
         self._jitter = jitter
-        self._token_url = (
-            f"https://login.microsoftonline.com/{self._tenant_id}/oauth2/v2.0/token"
-        )
+        self._token_url = f"https://login.microsoftonline.com/{self._tenant_id}/oauth2/v2.0/token"
 
     async def resolve(
         self,
@@ -126,8 +124,7 @@ class MicrosoftGraphCorporateDirectory:
             object_id=object_id,
             display_name=_optional_string(profile, "displayName"),
             email_or_upn=(
-                _optional_string(profile, "mail")
-                or _optional_string(profile, "userPrincipalName")
+                _optional_string(profile, "mail") or _optional_string(profile, "userPrincipalName")
             ),
             department=_optional_string(profile, "department"),
             user_type=_optional_string(profile, "userType"),
@@ -244,9 +241,7 @@ class MicrosoftGraphCorporateDirectory:
                     if 200 <= response.status_code < 300:
                         return await self._read_json_object(response)
                     status_code = response.status_code
-                    retry_after_hint_seconds = self._numeric_retry_after_seconds(
-                        response
-                    )
+                    retry_after_hint_seconds = self._numeric_retry_after_seconds(response)
                     retry_after_seconds = self._bounded_retry_after_seconds(
                         retry_after_hint_seconds
                     )
@@ -264,18 +259,14 @@ class MicrosoftGraphCorporateDirectory:
                 continue
 
             if not retryable or status_code not in RETRYABLE_GRAPH_STATUS_CODES:
-                raise CorporateDirectoryUnavailable(
-                    retry_after_seconds=retry_after_seconds
-                )
+                raise CorporateDirectoryUnavailable(retry_after_seconds=retry_after_seconds)
             if attempt >= self._max_attempts:
                 self._log_retry_exhausted(
                     operation=operation,
                     status=str(status_code),
                     attempts=attempt,
                 )
-                raise CorporateDirectoryUnavailable(
-                    retry_after_seconds=retry_after_seconds
-                )
+                raise CorporateDirectoryUnavailable(retry_after_seconds=retry_after_seconds)
 
             response_delay_seconds = self._retry_delay(
                 attempt,
@@ -290,9 +281,7 @@ class MicrosoftGraphCorporateDirectory:
                     attempt,
                     retry_after_seconds,
                 )
-                raise CorporateDirectoryUnavailable(
-                    retry_after_seconds=retry_after_seconds
-                )
+                raise CorporateDirectoryUnavailable(retry_after_seconds=retry_after_seconds)
             self._log_retry(
                 operation=operation,
                 status=str(status_code),

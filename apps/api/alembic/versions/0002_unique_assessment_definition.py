@@ -22,8 +22,5 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Remove the assessment definition uniqueness invariant."""
-    op.execute(
-        "ALTER TABLE assessments "
-        "DROP CONSTRAINT IF EXISTS uq_assessment_initiative_type"
-    )
+    op.execute("ALTER TABLE assessments DROP CONSTRAINT IF EXISTS uq_assessment_initiative_type")
     op.execute("DROP INDEX IF EXISTS uq_assessment_initiative_type")

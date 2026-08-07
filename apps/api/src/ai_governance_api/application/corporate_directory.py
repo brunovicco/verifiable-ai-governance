@@ -78,10 +78,7 @@ class ResolveCorporateDirectory:
             raise CorporateDirectoryUnavailable()
 
         profile = await self._directory.resolve(user_assertion, identity)
-        if (
-            profile.tenant_id != identity.tenant_id
-            or profile.object_id != identity.object_id
-        ):
+        if profile.tenant_id != identity.tenant_id or profile.object_id != identity.object_id:
             raise CorporateDirectoryIdentityMismatch(
                 "Directory profile does not match the authenticated principal"
             )

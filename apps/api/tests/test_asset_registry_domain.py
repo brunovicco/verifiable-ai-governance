@@ -190,18 +190,27 @@ def test_asset_review_state_distinguishes_missing_current_and_expired() -> None:
     """Expose review validity independently from persisted lifecycle status."""
     deadline = NOW + timedelta(days=30)
 
-    assert asset_review_state(
-        approved_scope_digest=None,
-        next_review_at=None,
-        now=NOW,
-    ) is AssetReviewState.NOT_REVIEWED
-    assert asset_review_state(
-        approved_scope_digest="a" * 64,
-        next_review_at=deadline,
-        now=NOW,
-    ) is AssetReviewState.CURRENT
-    assert asset_review_state(
-        approved_scope_digest="a" * 64,
-        next_review_at=deadline,
-        now=deadline,
-    ) is AssetReviewState.EXPIRED
+    assert (
+        asset_review_state(
+            approved_scope_digest=None,
+            next_review_at=None,
+            now=NOW,
+        )
+        is AssetReviewState.NOT_REVIEWED
+    )
+    assert (
+        asset_review_state(
+            approved_scope_digest="a" * 64,
+            next_review_at=deadline,
+            now=NOW,
+        )
+        is AssetReviewState.CURRENT
+    )
+    assert (
+        asset_review_state(
+            approved_scope_digest="a" * 64,
+            next_review_at=deadline,
+            now=deadline,
+        )
+        is AssetReviewState.EXPIRED
+    )

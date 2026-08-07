@@ -62,9 +62,7 @@ def test_entra_identity_mode_accepts_tenant_specific_allowlisted_issuer() -> Non
         oidc_identity_mode="entra",
         oidc_allowed_tenant_ids=TENANT_ID.upper(),
         oidc_issuer=f"https://login.microsoftonline.com/{TENANT_ID}/v2.0",
-        oidc_jwks_url=(
-            f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
-        ),
+        oidc_jwks_url=(f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"),
     )
 
     assert settings.oidc_allowed_tenant_id_set == frozenset({TENANT_ID})
@@ -87,8 +85,7 @@ def test_entra_identity_mode_accepts_tenant_specific_allowlisted_issuer() -> Non
             {
                 "oidc_allowed_tenant_ids": TENANT_ID,
                 "oidc_issuer": (
-                    "https://login.microsoftonline.com/"
-                    "22222222-2222-4222-8222-222222222222/v2.0"
+                    "https://login.microsoftonline.com/22222222-2222-4222-8222-222222222222/v2.0"
                 ),
             },
             "tenant must be present",
@@ -102,9 +99,7 @@ def test_entra_identity_mode_rejects_ambiguous_trust_configuration(
     values: dict[str, object] = {
         "oidc_identity_mode": "entra",
         "oidc_issuer": f"https://login.microsoftonline.com/{TENANT_ID}/v2.0",
-        "oidc_jwks_url": (
-            f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
-        ),
+        "oidc_jwks_url": (f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"),
     }
     values.update(overrides)
 
@@ -146,9 +141,7 @@ async def test_current_identity_exposes_local_mapping(client: AsyncClient) -> No
 
 async def test_current_identity_exposes_minimal_directory_provenance() -> None:
     principal = Principal(
-        user_id=(
-            f"{TENANT_ID}:22222222-2222-4222-8222-222222222222"
-        ),
+        user_id=(f"{TENANT_ID}:22222222-2222-4222-8222-222222222222"),
         directory_identity=DirectoryIdentity(
             tenant_id=TENANT_ID,
             object_id="22222222-2222-4222-8222-222222222222",
@@ -167,9 +160,7 @@ async def test_current_identity_exposes_minimal_directory_provenance() -> None:
     assert response.object_id == "22222222-2222-4222-8222-222222222222"
     assert response.account_type is DirectoryAccountType.MEMBER
     assert response.authorization_provenance is not None
-    assert response.authorization_provenance.catalog_id == (
-        "enterprise-entra-authorization"
-    )
+    assert response.authorization_provenance.catalog_id == ("enterprise-entra-authorization")
     assert response.authorization_provenance.catalog_digest == "a" * 64
     assert response.authorization_provenance.group_resolution_source.value == "none"
 
@@ -215,9 +206,7 @@ def test_graph_enrichment_requires_entra_oidc_and_confidential_client() -> None:
         "oidc_identity_mode": "entra",
         "oidc_allowed_tenant_ids": TENANT_ID,
         "oidc_issuer": f"https://login.microsoftonline.com/{TENANT_ID}/v2.0",
-        "oidc_jwks_url": (
-            f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
-        ),
+        "oidc_jwks_url": (f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"),
     }
     with pytest.raises(ValidationError, match="CLIENT_ID must be a UUID"):
         Settings(**entra_values, microsoft_graph_enabled=True)
@@ -235,9 +224,7 @@ def test_graph_secret_is_excluded_from_settings_representation() -> None:
         oidc_identity_mode="entra",
         oidc_allowed_tenant_ids=TENANT_ID,
         oidc_issuer=f"https://login.microsoftonline.com/{TENANT_ID}/v2.0",
-        oidc_jwks_url=(
-            f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
-        ),
+        oidc_jwks_url=(f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"),
         microsoft_graph_enabled=True,
         microsoft_graph_client_id="55555555-5555-4555-8555-555555555555",
         microsoft_graph_client_secret="super-secret-value",
@@ -271,8 +258,6 @@ def test_entra_claim_paths_must_be_explicit(
             oidc_identity_mode="entra",
             oidc_allowed_tenant_ids=TENANT_ID,
             oidc_issuer=f"https://login.microsoftonline.com/{TENANT_ID}/v2.0",
-            oidc_jwks_url=(
-                f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
-            ),
+            oidc_jwks_url=(f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"),
             **claim_override,
         )

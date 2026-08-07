@@ -257,9 +257,7 @@ async def test_allowed_decision_persists_intent_before_external_call_and_provena
 
 
 async def test_local_expired_review_blocks_without_calling_router() -> None:
-    case, reader, router, store, _, transaction = use_case(
-        scope(review_deadline=NOW)
-    )
+    case, reader, router, store, _, transaction = use_case(scope(review_deadline=NOW))
 
     result = await case.execute(
         agent_id="agent-1",

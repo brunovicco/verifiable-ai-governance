@@ -38,9 +38,7 @@ def test_nested_provider_roles_map_only_governance_areas() -> None:
         admin_claim="governance_admin",
     )
 
-    assert principal.approval_areas == frozenset(
-        {ApprovalArea.SECURITY, ApprovalArea.BUSINESS}
-    )
+    assert principal.approval_areas == frozenset({ApprovalArea.SECURITY, ApprovalArea.BUSINESS})
     assert not principal.is_admin
 
 
@@ -103,9 +101,7 @@ def test_member_uses_stable_tenant_and_object_identity() -> None:
     assert principal.directory_identity.object_id == OBJECT_ID
     assert principal.directory_identity.account_type is DirectoryAccountType.MEMBER
     assert principal.approval_areas == frozenset()
-    assert principal.directory_role_values == frozenset(
-        {"Governance.Security.Reviewer"}
-    )
+    assert principal.directory_role_values == frozenset({"Governance.Security.Reviewer"})
     assert principal.is_admin
 
 
@@ -146,9 +142,7 @@ def test_explicit_policy_can_enable_guest_approval_capabilities() -> None:
     )
 
     assert principal.approval_areas == frozenset()
-    assert principal.directory_role_values == frozenset(
-        {"Governance.Privacy.Reviewer"}
-    )
+    assert principal.directory_role_values == frozenset({"Governance.Privacy.Reviewer"})
     assert not principal.is_admin
 
 
@@ -214,9 +208,7 @@ def test_complete_entra_groups_claim_uses_only_canonical_object_ids() -> None:
         {"hasgroups": True},
         {
             "_claim_names": {"groups": "src1"},
-            "_claim_sources": {
-                "src1": {"endpoint": "https://attacker.example.com/groups"}
-            },
+            "_claim_sources": {"src1": {"endpoint": "https://attacker.example.com/groups"}},
         },
     ],
 )

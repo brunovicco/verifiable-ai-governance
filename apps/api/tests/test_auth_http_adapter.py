@@ -188,9 +188,7 @@ async def test_oidc_http_adapter_propagates_corporate_identity_policy(
         oidc_allowed_tenant_ids=TENANT_ID,
         oidc_guest_approvals_enabled=True,
         oidc_issuer=f"https://login.microsoftonline.com/{TENANT_ID}/v2.0",
-        oidc_jwks_url=(
-            f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
-        ),
+        oidc_jwks_url=(f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"),
     )
 
     await auth._oidc_principal(
@@ -270,10 +268,7 @@ async def test_graph_snapshot_supersedes_overage_token_groups() -> None:
 
     assert result is principal
     assert resolver.group_object_ids == frozenset({GROUP_ID})
-    assert (
-        resolver.group_resolution_source
-        is DirectoryGroupResolutionSource.MICROSOFT_GRAPH
-    )
+    assert resolver.group_resolution_source is DirectoryGroupResolutionSource.MICROSOFT_GRAPH
 
 
 @pytest.mark.parametrize(

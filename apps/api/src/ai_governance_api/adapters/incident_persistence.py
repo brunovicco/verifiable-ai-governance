@@ -129,9 +129,7 @@ class SqlAlchemyIncidentRepository:
         )
         if ai_system is None:
             return None
-        exception = await self._session.get(
-            PolicyException, exception_id, populate_existing=True
-        )
+        exception = await self._session.get(PolicyException, exception_id, populate_existing=True)
         if exception is None:
             return None
         return _system_context(ai_system), _to_exception_record(exception)
@@ -153,9 +151,7 @@ class SqlAlchemyIncidentRepository:
         await self._session.flush()
         return _to_exception_record(entity)
 
-    async def list_exceptions_for_incident(
-        self, incident_id: str
-    ) -> list[PolicyExceptionRecord]:
+    async def list_exceptions_for_incident(self, incident_id: str) -> list[PolicyExceptionRecord]:
         """Return exceptions for one incident, newest first."""
         entities = await self._session.scalars(
             select(PolicyException)

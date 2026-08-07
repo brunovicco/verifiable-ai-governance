@@ -70,9 +70,7 @@ def oidc_authenticator(
             else None
         ),
         corporate_roles_claim=(
-            entra_app_roles_claim
-            if identity_mode is OidcIdentityMode.ENTRA
-            else None
+            entra_app_roles_claim if identity_mode is OidcIdentityMode.ENTRA else None
         ),
         corporate_groups_claim=(
             entra_groups_claim if identity_mode is OidcIdentityMode.ENTRA else None

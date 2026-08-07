@@ -38,18 +38,14 @@ def target_principal() -> Principal:
 async def test_emergency_block_denies_all_routes_until_audited_restore(
     client: AsyncClient,
 ) -> None:
-    actor: dict[str, Principal] = {
-        "current": Principal(user_id="incident-admin", is_admin=True)
-    }
+    actor: dict[str, Principal] = {"current": Principal(user_id="incident-admin", is_admin=True)}
     app.dependency_overrides[get_principal] = lambda: actor["current"]
     app.dependency_overrides[get_settings] = lambda: Settings(
         oidc_enabled=True,
         oidc_identity_mode="entra",
         oidc_allowed_tenant_ids=TENANT_ID,
         oidc_issuer=f"https://login.microsoftonline.com/{TENANT_ID}/v2.0",
-        oidc_jwks_url=(
-            f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
-        ),
+        oidc_jwks_url=(f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"),
     )
     try:
         blocked = await client.post(

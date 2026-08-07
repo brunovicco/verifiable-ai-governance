@@ -7,8 +7,7 @@ def test_builder_copies_workspace_local_dependencies_before_web_sources() -> Non
     """Keep non-hoisted workspace packages available to the Next.js builder."""
     dockerfile = (ROOT / "apps/web/Dockerfile").read_text(encoding="utf-8")
     dependency_copy = (
-        "COPY --from=dependencies /workspace/apps/web/node_modules "
-        "./apps/web/node_modules"
+        "COPY --from=dependencies /workspace/apps/web/node_modules ./apps/web/node_modules"
     )
     source_copy = "COPY apps/web ./apps/web"
 
