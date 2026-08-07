@@ -1,10 +1,16 @@
 """Governed model-routing use cases and consumer-owned integration ports."""
 
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Protocol
 from uuid import uuid4
 
+from governance_schemas import SignedRuntimeAuthorization
+
+from ai_governance_api.application.runtime_authorization_issuance import (
+    RuntimeAuthorizationIssuanceError,
+)
 from ai_governance_api.domain.identity import Principal
 from ai_governance_api.domain.model_routing import (
     GovernedRoutingScope,
@@ -50,6 +56,21 @@ class PolicyModelRouterPort(Protocol):
         correlation_id: str,
     ) -> PolicyModelRouterDecision:
         """Return a validated accepted or rejected policy decision."""
+        ...
+
+
+class RuntimeAuthorizationIssuerPort(Protocol):
+    """Issue signed proof of the exact scope Governance authorizes."""
+
+    def issue(
+        self,
+        scope: GovernedRoutingScope,
+        command: ModelRoutingCommand,
+        *,
+        authorization_id: str,
+        issued_at: datetime,
+    ) -> SignedRuntimeAuthorization:
+        """Return one short-lived signed authorization artifact."""
         ...
 
 
@@ -105,6 +126,7 @@ class RequestModelRoutingDecision:
         audit: ModelRoutingAuditPort,
         transaction: ModelRoutingTransactionPort,
         *,
+        authorization_issuer: RuntimeAuthorizationIssuerPort | None = None,
         clock: Clock | None = None,
         id_factory: IdFactory | None = None,
     ) -> None:
@@ -114,6 +136,7 @@ class RequestModelRoutingDecision:
         self._store = store
         self._audit = audit
         self._transaction = transaction
+        self._authorization_issuer = authorization_issuer
         self._clock = clock or (lambda: datetime.now(UTC))
         self._id_factory = id_factory or (lambda: str(uuid4()))
 
@@ -141,6 +164,26 @@ class RequestModelRoutingDecision:
             )
 
         request = build_router_request(scope, command, requested_at=requested_at)
+        if self._authorization_issuer is not None:
+            try:
+                authorization = self._authorization_issuer.issue(
+                    scope,
+                    command,
+                    authorization_id=record.id,
+                    issued_at=requested_at,
+                )
+            except RuntimeAuthorizationIssuanceError:
+                return await self._finalize(
+                    record,
+                    principal=principal,
+                    outcome=RoutingEnforcementOutcome.DEPENDENCY_UNAVAILABLE,
+                    source=RoutingDecisionSource.GOVERNANCE_REGISTRY,
+                    block=RoutingBlock(
+                        RoutingBlockCode.RUNTIME_AUTHORIZATION_UNAVAILABLE,
+                        "Governance could not issue trusted runtime authorization",
+                    ),
+                )
+            request = replace(request, runtime_authorization=authorization)
         try:
             provider_decision = await self._router.decide(
                 request,

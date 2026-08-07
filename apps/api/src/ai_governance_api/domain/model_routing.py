@@ -7,9 +7,17 @@ from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
 
-from governance_schemas import DataClassification, EntityStatus, RiskTier
+from governance_schemas import (
+    AutonomyLevel,
+    DataClassification,
+    EntityStatus,
+    RiskTier,
+    SignedRuntimeAuthorization,
+)
 
 from ai_governance_api.domain.asset_registry import review_is_current
+
+P1_3_SIGNED_RUNTIME_AUTHORIZATION = True
 
 
 class RoutingWorkload(StrEnum):
@@ -60,6 +68,7 @@ class RoutingBlockCode(StrEnum):
     SELECTED_MODEL_GROUP_NOT_APPROVED = "selected_model_group_not_approved"
     ROUTER_REJECTED = "router_rejected"
     ROUTER_UNAVAILABLE = "router_unavailable"
+    RUNTIME_AUTHORIZATION_UNAVAILABLE = "runtime_authorization_unavailable"
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,6 +97,7 @@ class GovernedRoutingModel:
     approved_scope_digest: str | None
     next_review_at: datetime | None
     scope_digest_matches: bool = True
+    model_version: str = "unversioned"
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,6 +122,12 @@ class GovernedRoutingScope:
     agent_max_cost: Decimal | None
     models: tuple[GovernedRoutingModel, ...]
     agent_scope_digest_matches: bool = True
+    agent_autonomy_level: AutonomyLevel = AutonomyLevel.A0_INFORMATION
+    agent_tools: tuple[str, ...] = ()
+    agent_permissions: tuple[str, ...] = ()
+    agent_max_runtime_seconds: int | None = None
+    agent_human_approval_points: tuple[str, ...] = ()
+    agent_kill_switch_enabled: bool = False
 
     @property
     def digest(self) -> str:
@@ -134,6 +150,12 @@ class GovernedRoutingScope:
                 "agent_max_cost": (
                     str(self.agent_max_cost) if self.agent_max_cost is not None else None
                 ),
+                "agent_autonomy_level": self.agent_autonomy_level.value,
+                "agent_tools": sorted(self.agent_tools),
+                "agent_permissions": sorted(self.agent_permissions),
+                "agent_max_runtime_seconds": self.agent_max_runtime_seconds,
+                "agent_human_approval_points": sorted(self.agent_human_approval_points),
+                "agent_kill_switch_enabled": self.agent_kill_switch_enabled,
                 "models": [
                     {
                         "id": model.id,
@@ -143,6 +165,7 @@ class GovernedRoutingScope:
                         "allowed_data_classes": sorted(model.allowed_data_classes),
                         "approved_scope_digest": model.approved_scope_digest,
                         "scope_digest_matches": model.scope_digest_matches,
+                        "model_version": model.model_version,
                         "next_review_at": _datetime_text(model.next_review_at),
                     }
                     for model in sorted(self.models, key=lambda item: item.id)
@@ -181,6 +204,7 @@ class PolicyModelRouterRequest:
     structured_output_required: bool
     max_latency_ms: int
     max_cost_usd: Decimal
+    runtime_authorization: SignedRuntimeAuthorization | None = None
 
 
 @dataclass(frozen=True, slots=True)

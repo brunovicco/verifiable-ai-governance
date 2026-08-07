@@ -87,10 +87,17 @@ class SqlAlchemyModelRoutingScopeReader:
                         approved_scope_digest=model.approved_scope_digest,
                         next_review_at=_optional_utc(model.next_review_at),
                         scope_digest_matches=_model_scope_matches(model),
+                        model_version=model.model_version,
                     )
                     for model in ai_system.models
                 ),
                 agent_scope_digest_matches=_agent_scope_matches(agent),
+                agent_autonomy_level=agent.autonomy_level,
+                agent_tools=tuple(agent.tools),
+                agent_permissions=tuple(agent.permissions),
+                agent_max_runtime_seconds=agent.max_runtime_seconds,
+                agent_human_approval_points=tuple(agent.human_approval_points),
+                agent_kill_switch_enabled=agent.kill_switch_enabled,
             )
 
 
