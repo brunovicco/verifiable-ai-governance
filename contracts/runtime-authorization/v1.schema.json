@@ -54,7 +54,6 @@
       "type": "object"
     },
     "AutonomyLevel": {
-      "description": "Increasing levels of AI system action autonomy.",
       "enum": [
         "a0_information",
         "a1_recommendation",
@@ -67,7 +66,6 @@
       "type": "string"
     },
     "DataClassification": {
-      "description": "Sensitivity classification for data handled by an initiative.",
       "enum": [
         "public",
         "internal",
@@ -78,7 +76,6 @@
       "type": "string"
     },
     "RiskTier": {
-      "description": "Business-facing risk classification.",
       "enum": [
         "low",
         "medium",

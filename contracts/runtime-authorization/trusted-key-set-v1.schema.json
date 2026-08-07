@@ -1,0 +1,82 @@
+{
+  "$id": "https://verifiable-ai-governance.local/contracts/runtime-authorization/trusted-key-set-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "generation": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "keys": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "jwk": {
+            "additionalProperties": false,
+            "properties": {
+              "crv": {
+                "const": "Ed25519"
+              },
+              "kty": {
+                "const": "OKP"
+              },
+              "x": {
+                "maxLength": 43,
+                "minLength": 43,
+                "pattern": "^[A-Za-z0-9_-]{43}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "kty",
+              "crv",
+              "x"
+            ],
+            "type": "object"
+          },
+          "kid": {
+            "maxLength": 200,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+            "type": "string"
+          },
+          "not_before": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "retiring",
+              "revoked"
+            ]
+          },
+          "verify_until": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kid",
+          "status",
+          "not_before",
+          "verify_until",
+          "jwk"
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "generation",
+    "keys"
+  ],
+  "title": "RuntimeAuthorizationTrustedKeySet",
+  "type": "object"
+}
