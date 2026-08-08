@@ -16,6 +16,7 @@ from ai_governance_api.dependencies import (
     get_control_catalog,
     get_control_crosswalk,
     get_directory_authorization_catalog,
+    get_runtime_control_projection,
 )
 from ai_governance_api.errors import ApplicationError, ErrorKind
 from ai_governance_api.models import Base
@@ -29,6 +30,7 @@ from ai_governance_api.routers.incidents import router as incidents_router
 from ai_governance_api.routers.initiatives import router as initiatives_router
 from ai_governance_api.routers.inventory import router as inventory_router
 from ai_governance_api.routers.model_routing import router as model_routing_router
+from ai_governance_api.routers.runtime_control import router as runtime_control_router
 from ai_governance_api.telemetry import (
     TraceContextMiddleware,
     configure_telemetry,
@@ -142,6 +144,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     try:
         yield
     finally:
+        await get_runtime_control_projection().close()
         shutdown_telemetry()
         await engine.dispose()
 
@@ -180,6 +183,7 @@ def create_app() -> FastAPI:
     app.include_router(evidence_router)
     app.include_router(inventory_router)
     app.include_router(model_routing_router)
+    app.include_router(runtime_control_router)
     app.include_router(incidents_router)
     app.include_router(dashboard_router)
 

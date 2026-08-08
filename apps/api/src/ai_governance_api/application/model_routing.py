@@ -28,6 +28,10 @@ from ai_governance_api.domain.model_routing import (
     evaluate_routing_scope,
     finalize_routing_record,
 )
+from ai_governance_api.domain.runtime_control import (
+    RuntimeControlState,
+    RuntimeControlUnavailable,
+)
 from ai_governance_api.errors import ApplicationError, ErrorKind
 
 type Clock = Callable[[], datetime]
@@ -79,6 +83,14 @@ class RuntimeAuthorizationIssuerPort(Protocol):
         issued_at: datetime,
     ) -> SignedRuntimeAuthorization:
         """Return one short-lived signed authorization artifact."""
+        ...
+
+
+class RuntimeControlGatePort(Protocol):
+    """Return trusted emergency runtime state before authorization issuance."""
+
+    async def state_for(self, agent_id: str) -> RuntimeControlState:
+        """Return active/inactive or raise when state cannot be trusted."""
         ...
 
 
@@ -135,6 +147,7 @@ class RequestModelRoutingDecision:
         transaction: ModelRoutingTransactionPort,
         *,
         authorization_issuer: RuntimeAuthorizationIssuerPort | None = None,
+        runtime_control_gate: RuntimeControlGatePort | None = None,
         clock: Clock | None = None,
         id_factory: IdFactory | None = None,
     ) -> None:
@@ -145,6 +158,7 @@ class RequestModelRoutingDecision:
         self._audit = audit
         self._transaction = transaction
         self._authorization_issuer = authorization_issuer
+        self._runtime_control_gate = runtime_control_gate
         self._clock = clock or (lambda: datetime.now(UTC))
         self._id_factory = id_factory or (lambda: str(uuid4()))
 
@@ -169,6 +183,17 @@ class RequestModelRoutingDecision:
                 outcome=RoutingEnforcementOutcome.BLOCKED,
                 source=RoutingDecisionSource.GOVERNANCE_REGISTRY,
                 block=block,
+            )
+
+        control_decision = await self._runtime_control_decision(agent_id)
+        if control_decision is not None:
+            control_outcome, control_block = control_decision
+            return await self._finalize(
+                record,
+                principal=principal,
+                outcome=control_outcome,
+                source=RoutingDecisionSource.GOVERNANCE_REGISTRY,
+                block=control_block,
             )
 
         request = build_router_request(scope, command, requested_at=requested_at)
@@ -221,6 +246,18 @@ class RequestModelRoutingDecision:
                 ),
             )
 
+        if provider_decision.outcome is not RouterDecisionOutcome.REJECTED:
+            control_decision = await self._runtime_control_decision(agent_id)
+            if control_decision is not None:
+                control_outcome, control_block = control_decision
+                return await self._finalize(
+                    record,
+                    principal=principal,
+                    outcome=control_outcome,
+                    source=RoutingDecisionSource.GOVERNANCE_REGISTRY,
+                    block=control_block,
+                    provider_decision=provider_decision,
+                )
         current_scope = await self._scope_reader.get(agent_id)
         block = (
             RoutingBlock(
@@ -252,6 +289,33 @@ class RequestModelRoutingDecision:
             block=block,
             provider_decision=provider_decision,
         )
+
+    async def _runtime_control_decision(
+        self,
+        agent_id: str,
+    ) -> tuple[RoutingEnforcementOutcome, RoutingBlock] | None:
+        """Return a fail-closed control decision before an ALLOWED result can escape."""
+        if self._runtime_control_gate is None:
+            return None
+        try:
+            state = await self._runtime_control_gate.state_for(agent_id)
+        except RuntimeControlUnavailable:
+            return (
+                RoutingEnforcementOutcome.DEPENDENCY_UNAVAILABLE,
+                RoutingBlock(
+                    RoutingBlockCode.RUNTIME_CONTROL_UNAVAILABLE,
+                    "Runtime-control state could not be trusted",
+                ),
+            )
+        if state is RuntimeControlState.ACTIVE:
+            return (
+                RoutingEnforcementOutcome.BLOCKED,
+                RoutingBlock(
+                    RoutingBlockCode.KILL_SWITCH_ENGAGED,
+                    "Agent runtime kill switch is engaged",
+                ),
+            )
+        return None
 
     async def _require_authorized_scope(
         self,

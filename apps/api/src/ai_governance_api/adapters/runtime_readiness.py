@@ -10,10 +10,12 @@ from pathlib import Path
 from alembic.config import Config
 from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
+from redis.asyncio import Redis
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from ai_governance_api.config import get_settings
 from ai_governance_api.database import engine
 
 logger = logging.getLogger(__name__)
@@ -37,18 +39,26 @@ class RuntimeReadinessReport:
 
     database: CheckState
     schema: CheckState
+    runtime_control: CheckState = CheckState.NOT_CHECKED
 
     @property
     def ready(self) -> bool:
         """Return whether every required runtime check succeeded."""
-        return self.database is CheckState.OK and self.schema is CheckState.OK
+        return (
+            self.database is CheckState.OK
+            and self.schema is CheckState.OK
+            and self.runtime_control in {CheckState.OK, CheckState.NOT_CHECKED}
+        )
 
     def public_checks(self) -> dict[str, str]:
-        """Return the stable, non-sensitive HTTP response representation."""
-        return {
+        """Return stable checks, exposing runtime control only when configured."""
+        checks = {
             "database": self.database.value,
             "schema": self.schema.value,
         }
+        if self.runtime_control is not CheckState.NOT_CHECKED:
+            checks["runtime_control"] = self.runtime_control.value
+        return checks
 
 
 def resolve_alembic_config_path(
@@ -133,10 +143,33 @@ async def check_runtime_readiness(
             schema=CheckState.MISMATCH,
         )
 
+    runtime_control = await _check_runtime_control(timeout_seconds=timeout_seconds)
     return RuntimeReadinessReport(
         database=CheckState.OK,
         schema=CheckState.OK,
+        runtime_control=runtime_control,
     )
+
+
+async def _check_runtime_control(*, timeout_seconds: float) -> CheckState:
+    """Probe Redis only when distributed runtime control is enabled."""
+    settings = get_settings()
+    if not settings.runtime_control_enabled:
+        return CheckState.NOT_CHECKED
+    client = Redis.from_url(
+        settings.runtime_control_redis_url,
+        socket_connect_timeout=settings.runtime_control_redis_timeout_seconds,
+        socket_timeout=settings.runtime_control_redis_timeout_seconds,
+    )
+    try:
+        async with asyncio.timeout(timeout_seconds):
+            await client.ping()
+        return CheckState.OK
+    except Exception as exc:
+        _log_readiness_failure("runtime_control", exc)
+        return CheckState.UNAVAILABLE
+    finally:
+        await client.aclose()
 
 
 def _require_existing_config(path: Path) -> Path:

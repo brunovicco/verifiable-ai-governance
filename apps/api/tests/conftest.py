@@ -10,6 +10,7 @@ os.environ["AUDIT_HASH_SALT"] = "test-salt"
 
 import pytest_asyncio
 from ai_governance_api.database import engine
+from ai_governance_api.dependencies import get_runtime_control_projection
 from ai_governance_api.main import app
 from ai_governance_api.models import Base
 from httpx import ASGITransport, AsyncClient
@@ -20,6 +21,9 @@ async def reset_database() -> AsyncIterator[None]:
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
     yield
+    projection = get_runtime_control_projection()
+    await projection.close()
+    get_runtime_control_projection.cache_clear()
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.drop_all)
 

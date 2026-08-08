@@ -2,7 +2,11 @@
 
 from fastapi import APIRouter, status
 
-from ai_governance_api.dependencies import CurrentPrincipal, IncidentServiceDependency
+from ai_governance_api.dependencies import (
+    CurrentPrincipal,
+    IncidentServiceDependency,
+    RuntimeControlServiceDependency,
+)
 from ai_governance_api.incident_schemas import (
     AgentKillSwitchRead,
     ExceptionDecisionRequest,
@@ -125,17 +129,24 @@ async def engage_kill_switch(
     incident_id: str,
     agent_id: str,
     request: KillSwitchRequest,
-    service: IncidentServiceDependency,
+    service: RuntimeControlServiceDependency,
     principal: CurrentPrincipal,
 ) -> AgentKillSwitchRead:
-    """Trip an agent's declared kill switch during incident response."""
-    state = await service.engage_kill_switch(
+    """Trip an agent through the single monotonic Runtime Control write path."""
+    result = await service.activate(
         incident_id=incident_id,
         agent_id=agent_id,
         expected_version=request.expected_version,
+        reason=request.reason or f"Incident response containment: {incident_id}",
         principal=principal,
     )
-    return AgentKillSwitchRead.from_domain(state)
+    return AgentKillSwitchRead(
+        id=result.agent_id,
+        ai_system_id=result.ai_system_id,
+        kill_switch_enabled=result.kill_switch_enabled,
+        kill_switch_engaged=result.kill_switch_engaged,
+        version=result.agent_version,
+    )
 
 
 @router.post(
@@ -146,17 +157,24 @@ async def restore_kill_switch(
     incident_id: str,
     agent_id: str,
     request: KillSwitchRequest,
-    service: IncidentServiceDependency,
+    service: RuntimeControlServiceDependency,
     principal: CurrentPrincipal,
 ) -> AgentKillSwitchRead:
-    """Restore a previously engaged kill switch."""
-    state = await service.restore_kill_switch(
+    """Restore an agent through the single monotonic Runtime Control write path."""
+    result = await service.deactivate(
         incident_id=incident_id,
         agent_id=agent_id,
         expected_version=request.expected_version,
+        reason=request.reason or f"Incident response restore: {incident_id}",
         principal=principal,
     )
-    return AgentKillSwitchRead.from_domain(state)
+    return AgentKillSwitchRead(
+        id=result.agent_id,
+        ai_system_id=result.ai_system_id,
+        kill_switch_enabled=result.kill_switch_enabled,
+        kill_switch_engaged=result.kill_switch_engaged,
+        version=result.agent_version,
+    )
 
 
 @router.post(
