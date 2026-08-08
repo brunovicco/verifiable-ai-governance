@@ -115,6 +115,14 @@ class Settings(BaseSettings):
         le=1024 * 1024,
     )
 
+    runtime_control_enabled: bool = False
+    runtime_control_redis_url: str = Field(default="", repr=False)
+    runtime_control_redis_key_prefix: str = (
+        "verifiable-ai-governance:runtime-control:v1:agent:"
+    )
+    runtime_control_redis_timeout_seconds: float = Field(default=2.0, gt=0, le=10)
+    runtime_control_reconcile_batch_size: int = Field(default=100, ge=1, le=1000)
+
     audit_hash_salt: str = Field(default="local-development-only", repr=False)
     control_catalog_path: str = ""
     control_crosswalk_path: str = ""
@@ -254,6 +262,13 @@ class Settings(BaseSettings):
             self._validate_microsoft_graph()
         if self.policy_model_router_enabled:
             self._validate_policy_model_router(require_tls=not is_local)
+        if self.runtime_control_enabled:
+            self._validate_runtime_control(require_tls=not is_local)
+        if not is_local and self.policy_model_router_enabled and not self.runtime_control_enabled:
+            raise ValueError(
+                "RUNTIME_CONTROL_ENABLED must be true when policy-model-router is enabled "
+                "outside local/test"
+            )
         if not is_local and self.dev_auth_enabled:
             raise ValueError("DEV_AUTH_ENABLED must be false outside local and test environments")
         if not is_local and self.auto_create_schema:
@@ -303,6 +318,20 @@ class Settings(BaseSettings):
             raise ValueError(
                 "POLICY_MODEL_ROUTER_API_KEYS_JSON is required when policy routing is enabled"
             )
+
+    def _validate_runtime_control(self, *, require_tls: bool) -> None:
+        """Require an explicit Redis endpoint, TLS when shared, and a stable namespace."""
+        parsed = urlparse(self.runtime_control_redis_url)
+        if parsed.scheme not in {"redis", "rediss"} or not parsed.hostname:
+            raise ValueError(
+                "RUNTIME_CONTROL_REDIS_URL must be an absolute redis:// or rediss:// URL"
+            )
+        if require_tls and parsed.scheme != "rediss":
+            raise ValueError("RUNTIME_CONTROL_REDIS_URL must use rediss:// outside local/test")
+        if parsed.fragment:
+            raise ValueError("RUNTIME_CONTROL_REDIS_URL must not contain a fragment")
+        if not self.runtime_control_redis_key_prefix.strip():
+            raise ValueError("RUNTIME_CONTROL_REDIS_KEY_PREFIX must not be empty")
 
     def _validate_entra_identity_boundary(self) -> None:
         """Require tenant-specific Entra trust coherent with the tenant allowlist."""

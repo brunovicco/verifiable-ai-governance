@@ -44,6 +44,16 @@ from ai_governance_api.adapters import (
 from ai_governance_api.adapters.runtime_authorization_issuer import (
     build_runtime_authorization_issuer,
 )
+from ai_governance_api.adapters.runtime_control_persistence import (
+    SqlAlchemyRuntimeControlAudit,
+    SqlAlchemyRuntimeControlRepository,
+    SqlAlchemyRuntimeControlStateReader,
+)
+from ai_governance_api.adapters.runtime_control_redis import (
+    InMemoryRuntimeControlStore,
+    UnavailableRuntimeControlStore,
+    build_redis_runtime_control_store,
+)
 from ai_governance_api.application import (
     BlockDirectoryAccess,
     BuildDashboardSnapshot,
@@ -76,8 +86,13 @@ from ai_governance_api.application import (
     SubmitAssessment,
     UploadEvidence,
 )
+from ai_governance_api.application.runtime_control import (
+    RuntimeControlGate,
+    RuntimeControlProjectionPort,
+    RuntimeControlService,
+)
 from ai_governance_api.auth import BEARER_CHALLENGE, BearerCredentials, get_principal
-from ai_governance_api.config import Settings, get_settings
+from ai_governance_api.config import AppEnvironment, Settings, get_settings
 from ai_governance_api.database import SessionFactory, get_db
 from ai_governance_api.domain.directory_authorization import (
     DirectoryAuthorizationCatalog,
@@ -476,10 +491,35 @@ def get_inventory_service(session: DatabaseSession) -> InventoryService:
 
 
 def get_incident_service(session: DatabaseSession) -> IncidentService:
-    """Build the request-scoped incident, kill-switch, and exception service."""
+    """Build the request-scoped incident and exception service."""
     return IncidentService(
         SqlAlchemyIncidentRepository(session),
         SqlAlchemyIncidentAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+@lru_cache
+def get_runtime_control_projection() -> RuntimeControlProjectionPort:
+    """Build the shared runtime projection, using memory only for local/test."""
+    settings = get_settings()
+    if settings.runtime_control_enabled:
+        return build_redis_runtime_control_store(
+            redis_url=settings.runtime_control_redis_url,
+            key_prefix=settings.runtime_control_redis_key_prefix,
+            timeout_seconds=settings.runtime_control_redis_timeout_seconds,
+        )
+    if settings.app_env in {AppEnvironment.LOCAL, AppEnvironment.TEST}:
+        return InMemoryRuntimeControlStore()
+    return UnavailableRuntimeControlStore()
+
+
+def get_runtime_control_service(session: DatabaseSession) -> RuntimeControlService:
+    """Build the single write path for emergency kill-switch transitions."""
+    return RuntimeControlService(
+        SqlAlchemyRuntimeControlRepository(session),
+        get_runtime_control_projection(),
+        SqlAlchemyRuntimeControlAudit(session),
         SqlAlchemyTransaction(session),
     )
 
@@ -492,6 +532,9 @@ def get_build_dashboard_snapshot(session: DatabaseSession) -> BuildDashboardSnap
 InitiativeServiceDependency = Annotated[InitiativeService, Depends(get_initiative_service)]
 InventoryServiceDependency = Annotated[InventoryService, Depends(get_inventory_service)]
 IncidentServiceDependency = Annotated[IncidentService, Depends(get_incident_service)]
+RuntimeControlServiceDependency = Annotated[
+    RuntimeControlService, Depends(get_runtime_control_service)
+]
 BuildDashboardSnapshotDependency = Annotated[
     BuildDashboardSnapshot, Depends(get_build_dashboard_snapshot)
 ]
@@ -525,6 +568,10 @@ def get_request_model_routing_decision(
         SqlAlchemyModelRoutingAudit(session),
         SqlAlchemyTransaction(session),
         authorization_issuer=authorization_issuer,
+        runtime_control_gate=RuntimeControlGate(
+            SqlAlchemyRuntimeControlStateReader(SessionFactory),
+            get_runtime_control_projection(),
+        ),
     )
 
 

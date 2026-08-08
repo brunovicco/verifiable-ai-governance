@@ -18,6 +18,7 @@ from governance_schemas import (
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
     DateTime,
     Enum,
     Float,
@@ -242,6 +243,58 @@ class Agent(ReviewableAssetMixin, VersionedMixin, Base):
     )
 
     ai_system: Mapped[AISystem] = relationship(back_populates="agents")
+
+
+class RuntimeControlTransitionEntry(Base):
+    """Monotonic durable transition projected to runtime enforcement storage."""
+
+    __tablename__ = "runtime_control_transitions"
+    __table_args__ = (
+        CheckConstraint("control_epoch > 0", name="ck_runtime_control_epoch_positive"),
+        CheckConstraint(
+            "revoked_through_agent_version > 0",
+            name="ck_runtime_control_revoked_version_positive",
+        ),
+        CheckConstraint(
+            "previous_state IN ('active', 'inactive')",
+            name="ck_runtime_control_previous_state",
+        ),
+        CheckConstraint(
+            "target_state IN ('active', 'inactive')",
+            name="ck_runtime_control_target_state",
+        ),
+        CheckConstraint(
+            "status IN ('pending', 'applied')",
+            name="ck_runtime_control_status",
+        ),
+        UniqueConstraint(
+            "agent_id",
+            "control_epoch",
+            name="uq_runtime_control_agent_epoch",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    agent_id: Mapped[str] = mapped_column(
+        ForeignKey("agents.id"), nullable=False, index=True
+    )
+    ai_system_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_systems.id"), nullable=False, index=True
+    )
+    control_epoch: Mapped[int] = mapped_column(Integer, nullable=False)
+    previous_state: Mapped[str] = mapped_column(String(20), nullable=False)
+    target_state: Mapped[str] = mapped_column(String(20), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    revoked_through_agent_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    requested_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    requested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
+    applied_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    incident_id: Mapped[str | None] = mapped_column(ForeignKey("incidents.id"))
+    evidence_reference: Mapped[str | None] = mapped_column(String(500))
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
 class ModelRoutingDecisionEntry(Base):

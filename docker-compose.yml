@@ -40,6 +40,11 @@ x-api-environment: &api-environment
   POLICY_MODEL_ROUTER_API_KEYS_JSON: ${POLICY_MODEL_ROUTER_API_KEYS_JSON:-{}}
   POLICY_MODEL_ROUTER_TIMEOUT_SECONDS: ${POLICY_MODEL_ROUTER_TIMEOUT_SECONDS:-2}
   POLICY_MODEL_ROUTER_MAX_RESPONSE_BYTES: ${POLICY_MODEL_ROUTER_MAX_RESPONSE_BYTES:-262144}
+  RUNTIME_CONTROL_ENABLED: ${RUNTIME_CONTROL_ENABLED:-true}
+  RUNTIME_CONTROL_REDIS_URL: ${RUNTIME_CONTROL_REDIS_URL:-redis://runtime-control-redis:6379/0}
+  RUNTIME_CONTROL_REDIS_KEY_PREFIX: ${RUNTIME_CONTROL_REDIS_KEY_PREFIX:-verifiable-ai-governance:runtime-control:v1:agent:}
+  RUNTIME_CONTROL_REDIS_TIMEOUT_SECONDS: ${RUNTIME_CONTROL_REDIS_TIMEOUT_SECONDS:-2}
+  RUNTIME_CONTROL_RECONCILE_BATCH_SIZE: ${RUNTIME_CONTROL_RECONCILE_BATCH_SIZE:-100}
   CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
   CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-true}
   AUDIT_HASH_SALT: ${AUDIT_HASH_SALT:-local-development-only}
@@ -74,6 +79,19 @@ services:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
+      retries: 10
+
+  runtime-control-redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:${RUNTIME_CONTROL_REDIS_PORT:-6380}:6379"
+    volumes:
+      - governance-runtime-control:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
       retries: 10
 
   object-storage:
@@ -119,6 +137,8 @@ services:
       - "${API_PORT:-8000}:8000"
     depends_on:
       postgres:
+        condition: service_healthy
+      runtime-control-redis:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
@@ -169,5 +189,6 @@ services:
 
 volumes:
   governance-postgres:
+  governance-runtime-control:
   governance-evidence:
   governance-clamav:

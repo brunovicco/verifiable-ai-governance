@@ -71,6 +71,8 @@ class RoutingBlockCode(StrEnum):
     ROUTER_REJECTED = "router_rejected"
     ROUTER_UNAVAILABLE = "router_unavailable"
     RUNTIME_AUTHORIZATION_UNAVAILABLE = "runtime_authorization_unavailable"
+    KILL_SWITCH_ENGAGED = "kill_switch_engaged"
+    RUNTIME_CONTROL_UNAVAILABLE = "runtime_control_unavailable"
 
 
 @dataclass(frozen=True, slots=True)
