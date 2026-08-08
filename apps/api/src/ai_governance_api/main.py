@@ -29,6 +29,13 @@ from ai_governance_api.routers.incidents import router as incidents_router
 from ai_governance_api.routers.initiatives import router as initiatives_router
 from ai_governance_api.routers.inventory import router as inventory_router
 from ai_governance_api.routers.model_routing import router as model_routing_router
+from ai_governance_api.telemetry import (
+    TraceContextMiddleware,
+    configure_telemetry,
+    shutdown_telemetry,
+)
+
+P1_5_DISTRIBUTED_RUNTIME_TRACING = True
 
 ERROR_STATUS_CODES = {
     ErrorKind.FORBIDDEN: 403,
@@ -119,12 +126,24 @@ def configure_logging(level: str) -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Create local schemas when explicitly enabled and dispose resources on shutdown."""
-    if app.state.settings.auto_create_schema:
+    """Configure telemetry, local schema bootstrap, and graceful resource shutdown."""
+    settings = app.state.settings
+    configure_telemetry(
+        enabled=settings.otel_enabled,
+        service_name="verifiable-ai-governance",
+        service_version=settings.app_version,
+        environment=settings.app_env.value,
+        endpoint=settings.otel_endpoint,
+        timeout_seconds=settings.otel_timeout_seconds,
+    )
+    if settings.auto_create_schema:
         async with engine.begin() as connection:
             await connection.run_sync(Base.metadata.create_all)
-    yield
-    await engine.dispose()
+    try:
+        yield
+    finally:
+        shutdown_telemetry()
+        await engine.dispose()
 
 
 def create_app() -> FastAPI:
@@ -152,6 +171,7 @@ def create_app() -> FastAPI:
         EvidenceRequestSizeLimitMiddleware,
         max_bytes=settings.evidence_max_bytes + settings.evidence_request_overhead_bytes,
     )
+    app.add_middleware(TraceContextMiddleware)
     app.include_router(health_router)
     app.include_router(authentication_router)
     app.include_router(initiatives_router)

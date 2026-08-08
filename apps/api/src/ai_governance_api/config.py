@@ -56,6 +56,9 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     app_env: AppEnvironment = AppEnvironment.LOCAL
     log_level: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"] = "INFO"
+    otel_enabled: bool = False
+    otel_endpoint: str = "http://otel-collector:4318/v1/traces"
+    otel_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
     database_url: str = (
         "postgresql+asyncpg://governance:governance-local-only@localhost:5432/ai_governance"
     )

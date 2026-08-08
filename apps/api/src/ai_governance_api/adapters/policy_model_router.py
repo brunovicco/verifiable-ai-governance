@@ -29,6 +29,7 @@ from ai_governance_api.domain.model_routing import (
     RouterDecisionOutcome,
     RoutingWorkload,
 )
+from ai_governance_api.telemetry import current_telemetry
 
 _Identifier = Annotated[str, StringConstraints(min_length=1, max_length=200)]
 _Description = Annotated[str, StringConstraints(min_length=1, max_length=2000)]
@@ -159,6 +160,16 @@ class PolicyModelRouterHttpAdapter:
         api_key = self._api_keys.get(request.agent_name)
         if api_key is None:
             raise ModelRouterUnavailable("No routing credential configured for governed agent")
+        telemetry = current_telemetry()
+        telemetry.annotate_current(
+            {
+                "component": "policy-model-router",
+                "operation": "runtime.route",
+                "correlation_id": correlation_id,
+            }
+        )
+        trace_headers: dict[str, str] = {}
+        telemetry.inject(trace_headers)
         try:
             async with (
                 httpx.AsyncClient(
@@ -169,6 +180,7 @@ class PolicyModelRouterHttpAdapter:
                     "POST",
                     self._route_url,
                     headers={
+                        **trace_headers,
                         "Content-Type": "application/json",
                         "X-API-Key": api_key,
                         "X-Correlation-Id": correlation_id,
