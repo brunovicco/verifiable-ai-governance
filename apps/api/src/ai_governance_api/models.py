@@ -276,9 +276,7 @@ class RuntimeControlTransitionEntry(Base):
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    agent_id: Mapped[str] = mapped_column(
-        ForeignKey("agents.id"), nullable=False, index=True
-    )
+    agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"), nullable=False, index=True)
     ai_system_id: Mapped[str] = mapped_column(
         ForeignKey("ai_systems.id"), nullable=False, index=True
     )
@@ -725,9 +723,7 @@ class RuntimeAssuranceEvaluationEntry(Base):
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    agent_id: Mapped[str] = mapped_column(
-        ForeignKey("agents.id"), nullable=False, index=True
-    )
+    agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"), nullable=False, index=True)
     ai_system_id: Mapped[str] = mapped_column(
         ForeignKey("ai_systems.id"), nullable=False, index=True
     )
@@ -738,12 +734,8 @@ class RuntimeAssuranceEvaluationEntry(Base):
     evaluated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, index=True
     )
-    window_started_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
-    window_ended_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    window_started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    window_ended_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     sample_count: Mapped[int] = mapped_column(Integer, nullable=False)
     duration_sample_count: Mapped[int] = mapped_column(Integer, nullable=False)
     failure_count: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -754,9 +746,7 @@ class RuntimeAssuranceEvaluationEntry(Base):
     breach_reasons: Mapped[list[str]] = mapped_column(JSON, nullable=False)
     severity: Mapped[str | None] = mapped_column(String(20))
     source_event_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
-    evidence_digest: Mapped[str] = mapped_column(
-        String(64), nullable=False, index=True
-    )
+    evidence_digest: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     version: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
@@ -977,6 +967,66 @@ class RuntimeAssuranceActuationRequestEntry(Base):
         nullable=False,
     )
     request_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class RuntimeAssuranceActuationDecisionEntry(Base):
+    """Append-only terminal human decision for one governed actuation request."""
+
+    __tablename__ = "runtime_assurance_actuation_decisions"
+    __table_args__ = (
+        Index(
+            "ix_runtime_assurance_actuation_decision_digest",
+            "decision_digest",
+        ),
+        Index(
+            "ix_runtime_assurance_actuation_decision_actor_time",
+            "decided_by",
+            "decided_at",
+        ),
+        UniqueConstraint(
+            "request_id",
+            name="uq_runtime_assurance_actuation_decision_request",
+        ),
+        CheckConstraint(
+            "schema_version = '1.0'",
+            name="ck_runtime_assurance_actuation_decision_schema",
+        ),
+        CheckConstraint(
+            "action = 'engage_kill_switch'",
+            name="ck_runtime_assurance_actuation_decision_action",
+        ),
+        CheckConstraint(
+            "decision IN ('approved', 'rejected')",
+            name="ck_runtime_assurance_actuation_decision_outcome",
+        ),
+        CheckConstraint(
+            "approval_area = 'security'",
+            name="ck_runtime_assurance_actuation_decision_area",
+        ),
+        CheckConstraint(
+            "version = 1",
+            name="ck_runtime_assurance_actuation_decision_version",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    schema_version: Mapped[str] = mapped_column(String(10), nullable=False)
+    request_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_actuation_requests.id"),
+        nullable=False,
+    )
+    request_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    action: Mapped[str] = mapped_column(String(40), nullable=False)
+    decision: Mapped[str] = mapped_column(String(20), nullable=False)
+    approval_area: Mapped[str] = mapped_column(String(40), nullable=False)
+    decided_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    decided_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    decision_digest: Mapped[str] = mapped_column(String(64), nullable=False)
     version: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
