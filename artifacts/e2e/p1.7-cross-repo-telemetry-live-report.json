@@ -1,0 +1,57 @@
+{
+  "agent_id": "dea9d121-2ae2-4982-9f15-3e8bd89f1bd3",
+  "baselines": {
+    "a2a_otel_kit": "0.5.0",
+    "credit_desk_head": "b326971bbe7910bd94bd45c0cafbaa11a03f8610",
+    "governance_head": "ca2998306404af0cf7539893764f69d94230a914",
+    "required_credit_desk_baseline": "b326971bbe7910bd94bd45c0cafbaa11a03f8610"
+  },
+  "events": {
+    "completed": {
+      "audit": {
+        "audit_event_id": "737a2386-4bac-4f91-97ef-1fce7879d62f",
+        "event_hash": "e441b76cf547096dca88cb58a7c9acce15ae6fad1a0d324ff3056ed4d063807d",
+        "predecessor_resolved": true,
+        "previous_hash": "1b4c8a1d36ba1157b8845e3d844ece82146c70ae49e2e151c6545c2531af9507"
+      },
+      "correlation_id": "c7e3b0bc-bb55-486a-a1c3-54411761c71d",
+      "duration_ms": 488.39433300054225,
+      "environment": "p1.7-live-e2e",
+      "error_type": null,
+      "event_id": "9f730983-a725-4e4d-bd2a-9d31adb96d43",
+      "event_name": "decisao_agent.evaluation.completed",
+      "event_outcome": "success",
+      "payload_digest": "55bf3b72b66d8a219e22fa37fac50a7b64d05a1f39b50656d7a4096cf2c84325",
+      "record_version": 1,
+      "request_id": "6fe3b688-e66d-42d6-a383-1653768eb93b",
+      "service": "decisao-agent",
+      "span_id": "43041b3c692745b4",
+      "trace_id": "0ecb8240adf26f3728b43a4bd1b454d3",
+      "version": "0.1.0"
+    },
+    "failed": {
+      "audit": {
+        "audit_event_id": "03f0a283-b2f0-47ab-b6c0-f54d0b099ae9",
+        "event_hash": "4ab22a1ef97d998c7194cfc9db1978100fe77dbb89eebfc1f8ec8636849ced7a",
+        "predecessor_resolved": true,
+        "previous_hash": "e441b76cf547096dca88cb58a7c9acce15ae6fad1a0d324ff3056ed4d063807d"
+      },
+      "correlation_id": "3ef0d22f-5813-4d6f-8588-f0245e99e67e",
+      "duration_ms": 0.09175000013783574,
+      "environment": "p1.7-live-e2e",
+      "error_type": "ValidationError",
+      "event_id": "9ff1ed0b-8b34-47dd-8e43-f3fb4fec5595",
+      "event_name": "decisao_agent.evaluation.failed",
+      "event_outcome": "failure",
+      "payload_digest": "4ab239f96ddfc11cd4a427e855c937552ecab0fb8bac2ce5a1cebec5d4275638",
+      "record_version": 1,
+      "request_id": "8c85a2a3-6789-450b-99fc-35ab01c4bc8f",
+      "service": "decisao-agent",
+      "span_id": "f84c795d8e66d5c5",
+      "trace_id": "fc236605c9e68f5017703f84482e28b0",
+      "version": "0.1.0"
+    }
+  },
+  "result": "passed",
+  "schema_version": "1.0"
+}
