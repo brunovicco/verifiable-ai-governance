@@ -633,6 +633,52 @@ class DirectoryAccessRestrictionEntry(VersionedMixin, Base):
     )
 
 
+class RuntimeTelemetryEventEntry(Base):
+    """Content-free, durable runtime telemetry evidence for one governed Agent."""
+
+    __tablename__ = "runtime_telemetry_events"
+    __table_args__ = (
+        CheckConstraint("source_schema_version = 1", name="ck_runtime_telemetry_source_schema"),
+        CheckConstraint(
+            "event_outcome IN ('started', 'success', 'failure', 'error')",
+            name="ck_runtime_telemetry_outcome",
+        ),
+        CheckConstraint("version > 0", name="ck_runtime_telemetry_version_positive"),
+    )
+
+    event_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"), nullable=False, index=True)
+    ai_system_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_systems.id"), nullable=False, index=True
+    )
+    initiative_id: Mapped[str] = mapped_column(
+        ForeignKey("initiatives.id"), nullable=False, index=True
+    )
+    source_schema_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    observed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
+    ingested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    event_name: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
+    event_outcome: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    service: Mapped[str] = mapped_column(String(256), nullable=False)
+    environment: Mapped[str] = mapped_column(String(256), nullable=False)
+    service_version: Mapped[str] = mapped_column(String(256), nullable=False)
+    trace_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    span_id: Mapped[str | None] = mapped_column(String(16))
+    component: Mapped[str | None] = mapped_column(String(256))
+    operation: Mapped[str | None] = mapped_column(String(256))
+    correlation_id: Mapped[str | None] = mapped_column(String(256), index=True)
+    request_id: Mapped[str | None] = mapped_column(String(256))
+    retry_count: Mapped[int | None] = mapped_column(Integer)
+    duration_ms: Mapped[float | None] = mapped_column(Float)
+    http_method: Mapped[str | None] = mapped_column(String(16))
+    http_status_code: Mapped[int | None] = mapped_column(Integer)
+    error_type: Mapped[str | None] = mapped_column(String(256))
+    payload_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
 class AuditEvent(Base):
     """Append-only event linked into a tamper-evident hash chain."""
 

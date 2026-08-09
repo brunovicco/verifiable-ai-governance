@@ -123,6 +123,10 @@ class Settings(BaseSettings):
     runtime_control_redis_timeout_seconds: float = Field(default=2.0, gt=0, le=10)
     runtime_control_reconcile_batch_size: int = Field(default=100, ge=1, le=1000)
 
+    runtime_telemetry_ingest_enabled: bool = False
+    runtime_telemetry_api_keys_json: str = Field(default="{}", repr=False)
+    runtime_telemetry_list_limit: int = Field(default=100, ge=1, le=1000)
+
     audit_hash_salt: str = Field(default="local-development-only", repr=False)
     control_catalog_path: str = ""
     control_crosswalk_path: str = ""
@@ -233,10 +237,41 @@ class Settings(BaseSettings):
             api_keys[agent_name] = api_key
         return api_keys
 
+    @property
+    def runtime_telemetry_api_key_map(self) -> dict[str, str]:
+        """Return validated per-agent machine credentials for telemetry ingestion."""
+        try:
+            raw = json.loads(self.runtime_telemetry_api_keys_json)
+        except json.JSONDecodeError as exc:
+            raise ValueError("RUNTIME_TELEMETRY_API_KEYS_JSON must be valid JSON") from exc
+        if not isinstance(raw, dict):
+            raise ValueError("RUNTIME_TELEMETRY_API_KEYS_JSON must be a JSON object")
+        api_keys: dict[str, str] = {}
+        for raw_agent_id, api_key in raw.items():
+            if not isinstance(raw_agent_id, str) or not isinstance(api_key, str) or not api_key:
+                raise ValueError(
+                    "RUNTIME_TELEMETRY_API_KEYS_JSON must map Agent UUIDs to non-empty secrets"
+                )
+            try:
+                agent_id = str(UUID(raw_agent_id))
+            except ValueError as exc:
+                raise ValueError(
+                    "RUNTIME_TELEMETRY_API_KEYS_JSON keys must be Agent UUIDs"
+                ) from exc
+            if UUID(agent_id).int == 0:
+                raise ValueError("RUNTIME_TELEMETRY_API_KEYS_JSON keys must be non-nil Agent UUIDs")
+            api_keys[agent_id] = api_key
+        return api_keys
+
     @model_validator(mode="after")
     def validate_authentication(self) -> "Settings":
         """Fail closed when deployment settings weaken authentication or audit."""
         is_local = self.app_env in {AppEnvironment.LOCAL, AppEnvironment.TEST}
+        if self.runtime_telemetry_ingest_enabled and not self.runtime_telemetry_api_key_map:
+            raise ValueError(
+                "RUNTIME_TELEMETRY_API_KEYS_JSON is required when runtime telemetry "
+                "ingestion is enabled"
+            )
         if not is_local and not self.oidc_enabled:
             raise ValueError("OIDC must be enabled outside the local environment")
         if self.oidc_enabled and not self.oidc_issuer:
