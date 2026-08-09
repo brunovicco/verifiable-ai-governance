@@ -48,6 +48,9 @@ from ai_governance_api.adapters.runtime_assurance_persistence import (
     SqlAlchemyRuntimeAssuranceAudit,
     SqlAlchemyRuntimeAssuranceRepository,
 )
+from ai_governance_api.adapters.runtime_assurance_response_persistence import (
+    SqlAlchemyRuntimeAssuranceResponseRepository,
+)
 from ai_governance_api.adapters.runtime_authorization_issuer import (
     build_runtime_authorization_issuer,
 )
@@ -101,6 +104,9 @@ from ai_governance_api.application import (
 from ai_governance_api.application.runtime_assurance import RuntimeAssuranceService
 from ai_governance_api.application.runtime_assurance_incidents import (
     RuntimeAssuranceIncidentPromotionService,
+)
+from ai_governance_api.application.runtime_assurance_responses import (
+    RuntimeAssuranceResponseService,
 )
 from ai_governance_api.application.runtime_control import (
     RuntimeControlGate,
@@ -529,6 +535,23 @@ def get_runtime_assurance_incident_promotion_service(
 RuntimeAssuranceIncidentPromotionServiceDependency = Annotated[
     RuntimeAssuranceIncidentPromotionService,
     Depends(get_runtime_assurance_incident_promotion_service),
+]
+
+
+def get_runtime_assurance_response_service(
+    session: DatabaseSession,
+) -> RuntimeAssuranceResponseService:
+    """Build the advisory Runtime Assurance response recommendation service."""
+    return RuntimeAssuranceResponseService(
+        SqlAlchemyRuntimeAssuranceResponseRepository(session),
+        SqlAlchemyIncidentAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+RuntimeAssuranceResponseServiceDependency = Annotated[
+    RuntimeAssuranceResponseService,
+    Depends(get_runtime_assurance_response_service),
 ]
 
 
