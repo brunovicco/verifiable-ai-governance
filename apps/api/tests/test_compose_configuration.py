@@ -131,3 +131,20 @@ def test_api_policy_model_router_configuration_is_environment_driven() -> None:
     assert environment["POLICY_MODEL_ROUTER_MAX_RESPONSE_BYTES"] == (
         "${POLICY_MODEL_ROUTER_MAX_RESPONSE_BYTES:-262144}"
     )
+
+
+def test_api_runtime_telemetry_ingestion_configuration_is_environment_driven() -> None:
+    """Keep telemetry ingestion opt-in and machine credentials out of defaults."""
+    compose = cast(
+        dict[str, Any],
+        yaml.safe_load((ROOT / "docker-compose.yml").read_text(encoding="utf-8")),
+    )
+
+    environment = compose["x-api-environment"]
+
+    assert environment["RUNTIME_TELEMETRY_INGEST_ENABLED"] == (
+        "${RUNTIME_TELEMETRY_INGEST_ENABLED:-false}"
+    )
+    assert environment["RUNTIME_TELEMETRY_API_KEYS_JSON"] == (
+        "${RUNTIME_TELEMETRY_API_KEYS_JSON:-{}}"
+    )
