@@ -60,6 +60,9 @@ from ai_governance_api.adapters.runtime_assurance_persistence import (
 from ai_governance_api.adapters.runtime_assurance_response_persistence import (
     SqlAlchemyRuntimeAssuranceResponseRepository,
 )
+from ai_governance_api.adapters.runtime_assurance_restore_persistence import (
+    SqlAlchemyRuntimeAssuranceRestoreRepository,
+)
 from ai_governance_api.adapters.runtime_authorization_issuer import (
     build_runtime_authorization_issuer,
 )
@@ -125,6 +128,11 @@ from ai_governance_api.application.runtime_assurance_incidents import (
 )
 from ai_governance_api.application.runtime_assurance_responses import (
     RuntimeAssuranceResponseService,
+)
+from ai_governance_api.application.runtime_assurance_restore import (
+    RuntimeAssuranceRestoreDecisionService,
+    RuntimeAssuranceRestoreExecutionService,
+    RuntimeAssuranceRestoreRequestService,
 )
 from ai_governance_api.application.runtime_control import (
     RuntimeControlGate,
@@ -622,6 +630,59 @@ def get_runtime_assurance_actuation_execution_service(
 RuntimeAssuranceActuationExecutionServiceDependency = Annotated[
     RuntimeAssuranceActuationExecutionService,
     Depends(get_runtime_assurance_actuation_execution_service),
+]
+
+
+
+def get_runtime_assurance_restore_request_service(
+    session: DatabaseSession,
+) -> RuntimeAssuranceRestoreRequestService:
+    """Build governed kill-switch restore request creation."""
+    return RuntimeAssuranceRestoreRequestService(
+        SqlAlchemyRuntimeAssuranceRestoreRepository(session),
+        SqlAlchemyIncidentAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+RuntimeAssuranceRestoreRequestServiceDependency = Annotated[
+    RuntimeAssuranceRestoreRequestService,
+    Depends(get_runtime_assurance_restore_request_service),
+]
+
+
+def get_runtime_assurance_restore_decision_service(
+    session: DatabaseSession,
+) -> RuntimeAssuranceRestoreDecisionService:
+    """Build independent human restore approval/rejection handling."""
+    return RuntimeAssuranceRestoreDecisionService(
+        SqlAlchemyRuntimeAssuranceRestoreRepository(session),
+        SqlAlchemyIncidentAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+RuntimeAssuranceRestoreDecisionServiceDependency = Annotated[
+    RuntimeAssuranceRestoreDecisionService,
+    Depends(get_runtime_assurance_restore_decision_service),
+]
+
+
+def get_runtime_assurance_restore_execution_service(
+    session: DatabaseSession,
+) -> RuntimeAssuranceRestoreExecutionService:
+    """Build approved restore execution through Runtime Control deactivation."""
+    return RuntimeAssuranceRestoreExecutionService(
+        SqlAlchemyRuntimeAssuranceRestoreRepository(session),
+        get_runtime_control_service(session),
+        SqlAlchemyIncidentAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+RuntimeAssuranceRestoreExecutionServiceDependency = Annotated[
+    RuntimeAssuranceRestoreExecutionService,
+    Depends(get_runtime_assurance_restore_execution_service),
 ]
 
 

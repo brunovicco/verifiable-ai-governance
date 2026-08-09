@@ -1117,6 +1117,145 @@ class RuntimeAssuranceActuationExecutionEntry(Base):
     version: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
+class RuntimeAssuranceRestoreRequestEntry(Base):
+    """Immutable restore intent bound to one engage execution and remediation snapshot."""
+
+    __tablename__ = "runtime_assurance_restore_requests"
+    __table_args__ = (
+        Index("ix_ra_restore_req_agent_time", "agent_id", "requested_at"),
+        Index("ix_ra_restore_req_digest", "request_digest"),
+        UniqueConstraint(
+            "source_execution_id",
+            "remediation_digest",
+            name="uq_ra_restore_req_execution_remediation",
+        ),
+        CheckConstraint("schema_version = '1.0'", name="ck_ra_restore_req_schema"),
+        CheckConstraint("action = 'restore_kill_switch'", name="ck_ra_restore_req_action"),
+        CheckConstraint("state = 'pending'", name="ck_ra_restore_req_state"),
+        CheckConstraint(
+            "incident_status IN ('remediating', 'closed')",
+            name="ck_ra_restore_req_incident_status",
+        ),
+        CheckConstraint("incident_version > 0", name="ck_ra_restore_req_incident_version"),
+        CheckConstraint("version = 1", name="ck_ra_restore_req_version"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    schema_version: Mapped[str] = mapped_column(String(10), nullable=False)
+    source_execution_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_actuation_executions.id"), nullable=False
+    )
+    source_execution_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"), nullable=False)
+    ai_system_id: Mapped[str] = mapped_column(ForeignKey("ai_systems.id"), nullable=False)
+    incident_id: Mapped[str] = mapped_column(ForeignKey("incidents.id"), nullable=False)
+    action: Mapped[str] = mapped_column(String(40), nullable=False)
+    state: Mapped[str] = mapped_column(String(20), nullable=False)
+    remediation_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    incident_status: Mapped[str] = mapped_column(String(30), nullable=False)
+    incident_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    requested_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    request_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class RuntimeAssuranceRestoreDecisionEntry(Base):
+    """Append-only terminal human decision for one governed restore request."""
+
+    __tablename__ = "runtime_assurance_restore_decisions"
+    __table_args__ = (
+        Index("ix_ra_restore_dec_digest", "decision_digest"),
+        UniqueConstraint("request_id", name="uq_ra_restore_dec_request"),
+        CheckConstraint("schema_version = '1.0'", name="ck_ra_restore_dec_schema"),
+        CheckConstraint("action = 'restore_kill_switch'", name="ck_ra_restore_dec_action"),
+        CheckConstraint(
+            "decision IN ('approved', 'rejected')",
+            name="ck_ra_restore_dec_outcome",
+        ),
+        CheckConstraint("approval_area = 'security'", name="ck_ra_restore_dec_area"),
+        CheckConstraint("version = 1", name="ck_ra_restore_dec_version"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    schema_version: Mapped[str] = mapped_column(String(10), nullable=False)
+    request_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_restore_requests.id"), nullable=False
+    )
+    request_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_execution_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_actuation_executions.id"), nullable=False
+    )
+    source_execution_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    action: Mapped[str] = mapped_column(String(40), nullable=False)
+    decision: Mapped[str] = mapped_column(String(20), nullable=False)
+    approval_area: Mapped[str] = mapped_column(String(40), nullable=False)
+    decided_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    decided_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    decision_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class RuntimeAssuranceRestoreExecutionEntry(Base):
+    """Immutable receipt for one applied governed kill-switch restoration."""
+
+    __tablename__ = "runtime_assurance_restore_executions"
+    __table_args__ = (
+        Index("ix_ra_restore_exec_digest", "execution_digest"),
+        Index("ix_ra_restore_exec_agent_time", "agent_id", "executed_at"),
+        UniqueConstraint("decision_id", name="uq_ra_restore_exec_decision"),
+        UniqueConstraint("runtime_transition_id", name="uq_ra_restore_exec_transition"),
+        CheckConstraint("schema_version = '1.0'", name="ck_ra_restore_exec_schema"),
+        CheckConstraint("action = 'restore_kill_switch'", name="ck_ra_restore_exec_action"),
+        CheckConstraint(
+            "previous_state = 'active' AND target_state = 'inactive'",
+            name="ck_ra_restore_exec_states",
+        ),
+        CheckConstraint("control_epoch > 0", name="ck_ra_restore_exec_epoch"),
+        CheckConstraint(
+            "revoked_through_agent_version > 0",
+            name="ck_ra_restore_exec_revoked",
+        ),
+        CheckConstraint(
+            "resulting_agent_version = revoked_through_agent_version + 1",
+            name="ck_ra_restore_exec_agent_version",
+        ),
+        CheckConstraint("version = 1", name="ck_ra_restore_exec_version"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    schema_version: Mapped[str] = mapped_column(String(10), nullable=False)
+    decision_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_restore_decisions.id"), nullable=False
+    )
+    decision_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    request_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_restore_requests.id"), nullable=False
+    )
+    request_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_execution_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_actuation_executions.id"), nullable=False
+    )
+    source_execution_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    action: Mapped[str] = mapped_column(String(40), nullable=False)
+    agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"), nullable=False)
+    ai_system_id: Mapped[str] = mapped_column(ForeignKey("ai_systems.id"), nullable=False)
+    incident_id: Mapped[str] = mapped_column(ForeignKey("incidents.id"), nullable=False)
+    runtime_transition_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_control_transitions.id"), nullable=False
+    )
+    control_epoch: Mapped[int] = mapped_column(Integer, nullable=False)
+    previous_state: Mapped[str] = mapped_column(String(20), nullable=False)
+    target_state: Mapped[str] = mapped_column(String(20), nullable=False)
+    revoked_through_agent_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    resulting_agent_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    executed_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    executed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    execution_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
 class RuntimeTelemetryEventEntry(Base):
     """Content-free, durable runtime telemetry evidence for one governed Agent."""
 

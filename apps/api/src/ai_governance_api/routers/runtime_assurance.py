@@ -10,6 +10,9 @@ from ai_governance_api.dependencies import (
     RuntimeAssuranceActuationRequestServiceDependency,
     RuntimeAssuranceIncidentPromotionServiceDependency,
     RuntimeAssuranceResponseServiceDependency,
+    RuntimeAssuranceRestoreDecisionServiceDependency,
+    RuntimeAssuranceRestoreExecutionServiceDependency,
+    RuntimeAssuranceRestoreRequestServiceDependency,
     RuntimeAssuranceServiceDependency,
 )
 from ai_governance_api.runtime_assurance_actuation_decision_schemas import (
@@ -23,6 +26,14 @@ from ai_governance_api.runtime_assurance_actuation_execution_schemas import (
 from ai_governance_api.runtime_assurance_actuation_schemas import (
     RuntimeAssuranceActuationRequestCreate,
     RuntimeAssuranceActuationRequestRead,
+)
+from ai_governance_api.runtime_assurance_restore_schemas import (
+    RuntimeAssuranceRestoreDecisionCreate,
+    RuntimeAssuranceRestoreDecisionRead,
+    RuntimeAssuranceRestoreExecutionCreate,
+    RuntimeAssuranceRestoreExecutionRead,
+    RuntimeAssuranceRestoreRequestCreate,
+    RuntimeAssuranceRestoreRequestRead,
 )
 from ai_governance_api.runtime_assurance_schemas import (
     RuntimeAssuranceEvaluationRead,
@@ -294,3 +305,100 @@ async def get_runtime_assurance_actuation_execution(
         principal=principal,
     )
     return RuntimeAssuranceActuationExecutionRead.from_domain(result)
+
+
+@router.post(
+    "/runtime-assurance-actuation-executions/{execution_id}/restore-request",
+    response_model=RuntimeAssuranceRestoreRequestRead,
+    status_code=status.HTTP_200_OK,
+)
+async def create_runtime_assurance_restore_request(
+    execution_id: str,
+    request: RuntimeAssuranceRestoreRequestCreate,
+    service: RuntimeAssuranceRestoreRequestServiceDependency,
+    principal: CurrentAuthorizedPrincipal,
+) -> RuntimeAssuranceRestoreRequestRead:
+    """Create or replay restore intent from an applied governed engage execution."""
+    del request
+    result = await service.create(source_execution_id=execution_id, principal=principal)
+    return RuntimeAssuranceRestoreRequestRead.from_domain(result)
+
+
+@router.get(
+    "/runtime-assurance-actuation-executions/{execution_id}/restore-request",
+    response_model=RuntimeAssuranceRestoreRequestRead,
+)
+async def get_runtime_assurance_restore_request(
+    execution_id: str,
+    service: RuntimeAssuranceRestoreRequestServiceDependency,
+    principal: CurrentAuthorizedPrincipal,
+) -> RuntimeAssuranceRestoreRequestRead:
+    """Return restore request evidence for the current remediation snapshot."""
+    result = await service.get(source_execution_id=execution_id, principal=principal)
+    return RuntimeAssuranceRestoreRequestRead.from_domain(result)
+
+
+@router.post(
+    "/runtime-assurance-restore-requests/{request_id}/decision",
+    response_model=RuntimeAssuranceRestoreDecisionRead,
+    status_code=status.HTTP_200_OK,
+)
+async def decide_runtime_assurance_restore_request(
+    request_id: str,
+    request: RuntimeAssuranceRestoreDecisionCreate,
+    service: RuntimeAssuranceRestoreDecisionServiceDependency,
+    principal: CurrentAuthorizedPrincipal,
+) -> RuntimeAssuranceRestoreDecisionRead:
+    """Record or replay independent Security approval/rejection for restore."""
+    result = await service.decide(
+        request_id=request_id,
+        decision=request.decision,
+        reason=request.reason,
+        principal=principal,
+    )
+    return RuntimeAssuranceRestoreDecisionRead.from_domain(result)
+
+
+@router.get(
+    "/runtime-assurance-restore-requests/{request_id}/decision",
+    response_model=RuntimeAssuranceRestoreDecisionRead,
+)
+async def get_runtime_assurance_restore_decision(
+    request_id: str,
+    service: RuntimeAssuranceRestoreDecisionServiceDependency,
+    principal: CurrentAuthorizedPrincipal,
+) -> RuntimeAssuranceRestoreDecisionRead:
+    """Return immutable restore decision evidence."""
+    result = await service.get(request_id=request_id, principal=principal)
+    return RuntimeAssuranceRestoreDecisionRead.from_domain(result)
+
+
+@router.post(
+    "/runtime-assurance-restore-decisions/{decision_id}/execution",
+    response_model=RuntimeAssuranceRestoreExecutionRead,
+    status_code=status.HTTP_200_OK,
+)
+async def execute_runtime_assurance_restore_decision(
+    decision_id: str,
+    request: RuntimeAssuranceRestoreExecutionCreate,
+    service: RuntimeAssuranceRestoreExecutionServiceDependency,
+    principal: CurrentAuthorizedPrincipal,
+) -> RuntimeAssuranceRestoreExecutionRead:
+    """Execute or recover one approved kill-switch restoration."""
+    del request
+    result = await service.execute(decision_id=decision_id, principal=principal)
+    return RuntimeAssuranceRestoreExecutionRead.from_domain(result)
+
+
+@router.get(
+    "/runtime-assurance-restore-decisions/{decision_id}/execution",
+    response_model=RuntimeAssuranceRestoreExecutionRead,
+)
+async def get_runtime_assurance_restore_execution(
+    decision_id: str,
+    service: RuntimeAssuranceRestoreExecutionServiceDependency,
+    principal: CurrentAuthorizedPrincipal,
+) -> RuntimeAssuranceRestoreExecutionRead:
+    """Return immutable evidence for an applied kill-switch restoration."""
+    result = await service.get(decision_id=decision_id, principal=principal)
+    return RuntimeAssuranceRestoreExecutionRead.from_domain(result)
