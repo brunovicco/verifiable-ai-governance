@@ -41,6 +41,9 @@ from ai_governance_api.adapters import (
     SqlAlchemyTransaction,
     YamlDirectoryAuthorizationCatalog,
 )
+from ai_governance_api.adapters.runtime_assurance_actuation_persistence import (
+    SqlAlchemyRuntimeAssuranceActuationRequestRepository,
+)
 from ai_governance_api.adapters.runtime_assurance_incident_persistence import (
     SqlAlchemyRuntimeAssuranceIncidentPromotionRepository,
 )
@@ -102,6 +105,9 @@ from ai_governance_api.application import (
     UploadEvidence,
 )
 from ai_governance_api.application.runtime_assurance import RuntimeAssuranceService
+from ai_governance_api.application.runtime_assurance_actuation import (
+    RuntimeAssuranceActuationRequestService,
+)
 from ai_governance_api.application.runtime_assurance_incidents import (
     RuntimeAssuranceIncidentPromotionService,
 )
@@ -552,6 +558,23 @@ def get_runtime_assurance_response_service(
 RuntimeAssuranceResponseServiceDependency = Annotated[
     RuntimeAssuranceResponseService,
     Depends(get_runtime_assurance_response_service),
+]
+
+
+def get_runtime_assurance_actuation_request_service(
+    session: DatabaseSession,
+) -> RuntimeAssuranceActuationRequestService:
+    """Build the governed Runtime Assurance actuation-request service."""
+    return RuntimeAssuranceActuationRequestService(
+        SqlAlchemyRuntimeAssuranceActuationRequestRepository(session),
+        SqlAlchemyIncidentAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+RuntimeAssuranceActuationRequestServiceDependency = Annotated[
+    RuntimeAssuranceActuationRequestService,
+    Depends(get_runtime_assurance_actuation_request_service),
 ]
 
 

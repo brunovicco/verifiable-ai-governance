@@ -4,9 +4,14 @@ from fastapi import APIRouter, status
 
 from ai_governance_api.dependencies import (
     CurrentPrincipal,
+    RuntimeAssuranceActuationRequestServiceDependency,
     RuntimeAssuranceIncidentPromotionServiceDependency,
     RuntimeAssuranceResponseServiceDependency,
     RuntimeAssuranceServiceDependency,
+)
+from ai_governance_api.runtime_assurance_actuation_schemas import (
+    RuntimeAssuranceActuationRequestCreate,
+    RuntimeAssuranceActuationRequestRead,
 )
 from ai_governance_api.runtime_assurance_schemas import (
     RuntimeAssuranceEvaluationRead,
@@ -166,3 +171,40 @@ async def get_runtime_assurance_response_recommendation(
         principal=principal,
     )
     return RuntimeAssuranceResponseRecommendationRead.from_domain(recommendation)
+
+
+@router.post(
+    "/runtime-assurance-response-recommendations/{recommendation_id}/actuation-request",
+    response_model=RuntimeAssuranceActuationRequestRead,
+    status_code=status.HTTP_200_OK,
+)
+async def create_runtime_assurance_actuation_request(
+    recommendation_id: str,
+    request: RuntimeAssuranceActuationRequestCreate,
+    service: RuntimeAssuranceActuationRequestServiceDependency,
+    principal: CurrentPrincipal,
+) -> RuntimeAssuranceActuationRequestRead:
+    """Create or replay one governed pending actuation approval request."""
+    del request
+    result = await service.create(
+        recommendation_id=recommendation_id,
+        principal=principal,
+    )
+    return RuntimeAssuranceActuationRequestRead.from_domain(result)
+
+
+@router.get(
+    "/runtime-assurance-response-recommendations/{recommendation_id}/actuation-request",
+    response_model=RuntimeAssuranceActuationRequestRead,
+)
+async def get_runtime_assurance_actuation_request(
+    recommendation_id: str,
+    service: RuntimeAssuranceActuationRequestServiceDependency,
+    principal: CurrentPrincipal,
+) -> RuntimeAssuranceActuationRequestRead:
+    """Return immutable governed actuation-request genesis evidence."""
+    result = await service.get(
+        recommendation_id=recommendation_id,
+        principal=principal,
+    )
+    return RuntimeAssuranceActuationRequestRead.from_domain(result)

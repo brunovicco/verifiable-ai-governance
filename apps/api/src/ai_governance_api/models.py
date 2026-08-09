@@ -906,6 +906,80 @@ class RuntimeAssuranceResponseRecommendationEntry(Base):
     version: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
+class RuntimeAssuranceActuationRequestEntry(Base):
+    """Append-only genesis evidence for one governed runtime actuation request."""
+
+    __tablename__ = "runtime_assurance_actuation_requests"
+    __table_args__ = (
+        Index(
+            "ix_runtime_assurance_actuation_request_agent_time",
+            "agent_id",
+            "requested_at",
+        ),
+        Index(
+            "ix_runtime_assurance_actuation_request_incident",
+            "incident_id",
+        ),
+        Index(
+            "ix_runtime_assurance_actuation_request_system",
+            "ai_system_id",
+        ),
+        Index(
+            "ix_runtime_assurance_actuation_request_digest",
+            "request_digest",
+        ),
+        UniqueConstraint(
+            "recommendation_id",
+            "action",
+            name="uq_runtime_assurance_actuation_request_recommendation_action",
+        ),
+        CheckConstraint(
+            "schema_version = '1.0'",
+            name="ck_runtime_assurance_actuation_request_schema",
+        ),
+        CheckConstraint(
+            "action = 'engage_kill_switch'",
+            name="ck_runtime_assurance_actuation_request_action",
+        ),
+        CheckConstraint(
+            "state = 'pending'",
+            name="ck_runtime_assurance_actuation_request_state",
+        ),
+        CheckConstraint(
+            "version = 1",
+            name="ck_runtime_assurance_actuation_request_version",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    schema_version: Mapped[str] = mapped_column(String(10), nullable=False)
+    recommendation_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_response_recommendations.id"),
+        nullable=False,
+    )
+    recommendation_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    promotion_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_incident_promotions.id"),
+        nullable=False,
+    )
+    evaluation_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_evaluations.id"),
+        nullable=False,
+    )
+    incident_id: Mapped[str] = mapped_column(ForeignKey("incidents.id"), nullable=False)
+    agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"), nullable=False)
+    ai_system_id: Mapped[str] = mapped_column(ForeignKey("ai_systems.id"), nullable=False)
+    action: Mapped[str] = mapped_column(String(40), nullable=False)
+    state: Mapped[str] = mapped_column(String(20), nullable=False)
+    requested_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    requested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    request_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
 class RuntimeTelemetryEventEntry(Base):
     """Content-free, durable runtime telemetry evidence for one governed Agent."""
 
