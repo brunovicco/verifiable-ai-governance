@@ -23,6 +23,7 @@ from sqlalchemy import (
     Enum,
     Float,
     ForeignKey,
+    Index,
     Integer,
     Numeric,
     String,
@@ -756,6 +757,70 @@ class RuntimeAssuranceEvaluationEntry(Base):
     evidence_digest: Mapped[str] = mapped_column(
         String(64), nullable=False, index=True
     )
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+
+class RuntimeAssuranceIncidentPromotionEntry(Base):
+    """Append-only lineage from a breached assurance evaluation to an incident."""
+
+    __tablename__ = "runtime_assurance_incident_promotions"
+    __table_args__ = (
+        Index(
+            "ix_runtime_assurance_incident_promotion_agent_fingerprint",
+            "agent_id",
+            "breach_fingerprint",
+        ),
+        Index(
+            "ix_runtime_assurance_incident_promotion_system",
+            "ai_system_id",
+        ),
+        Index(
+            "ix_runtime_assurance_incident_promotion_incident",
+            "incident_id",
+        ),
+        UniqueConstraint(
+            "evaluation_id",
+            name="uq_runtime_assurance_incident_promotion_evaluation",
+        ),
+        CheckConstraint(
+            "disposition IN ('created', 'deduplicated', 'severity_escalated')",
+            name="ck_runtime_assurance_incident_promotion_disposition",
+        ),
+        CheckConstraint(
+            "version = 1",
+            name="ck_runtime_assurance_incident_promotion_version",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    evaluation_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_evaluations.id"),
+        nullable=False,
+    )
+    agent_id: Mapped[str] = mapped_column(
+        ForeignKey("agents.id"),
+        nullable=False,
+    )
+    ai_system_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_systems.id"),
+        nullable=False,
+    )
+    incident_id: Mapped[str] = mapped_column(
+        ForeignKey("incidents.id"),
+        nullable=False,
+    )
+    breach_fingerprint: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+    )
+    disposition: Mapped[str] = mapped_column(String(30), nullable=False)
+    promoted_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    promoted_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    evidence_digest: Mapped[str] = mapped_column(String(64), nullable=False)
     version: Mapped[int] = mapped_column(Integer, nullable=False)
 
 

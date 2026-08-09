@@ -41,6 +41,9 @@ from ai_governance_api.adapters import (
     SqlAlchemyTransaction,
     YamlDirectoryAuthorizationCatalog,
 )
+from ai_governance_api.adapters.runtime_assurance_incident_persistence import (
+    SqlAlchemyRuntimeAssuranceIncidentPromotionRepository,
+)
 from ai_governance_api.adapters.runtime_assurance_persistence import (
     SqlAlchemyRuntimeAssuranceAudit,
     SqlAlchemyRuntimeAssuranceRepository,
@@ -96,6 +99,9 @@ from ai_governance_api.application import (
     UploadEvidence,
 )
 from ai_governance_api.application.runtime_assurance import RuntimeAssuranceService
+from ai_governance_api.application.runtime_assurance_incidents import (
+    RuntimeAssuranceIncidentPromotionService,
+)
 from ai_governance_api.application.runtime_control import (
     RuntimeControlGate,
     RuntimeControlProjectionPort,
@@ -505,6 +511,24 @@ def get_runtime_assurance_service(
 RuntimeAssuranceServiceDependency = Annotated[
     RuntimeAssuranceService,
     Depends(get_runtime_assurance_service),
+]
+
+
+def get_runtime_assurance_incident_promotion_service(
+    session: DatabaseSession,
+) -> RuntimeAssuranceIncidentPromotionService:
+    """Build the explicit assurance breach-to-incident promotion service."""
+    return RuntimeAssuranceIncidentPromotionService(
+        SqlAlchemyRuntimeAssuranceIncidentPromotionRepository(session),
+        SqlAlchemyIncidentRepository(session),
+        SqlAlchemyIncidentAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+RuntimeAssuranceIncidentPromotionServiceDependency = Annotated[
+    RuntimeAssuranceIncidentPromotionService,
+    Depends(get_runtime_assurance_incident_promotion_service),
 ]
 
 
