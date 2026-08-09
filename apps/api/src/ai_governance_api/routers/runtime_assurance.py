@@ -3,11 +3,17 @@
 from fastapi import APIRouter, status
 
 from ai_governance_api.dependencies import (
+    CurrentAuthorizedPrincipal,
     CurrentPrincipal,
+    RuntimeAssuranceActuationDecisionServiceDependency,
     RuntimeAssuranceActuationRequestServiceDependency,
     RuntimeAssuranceIncidentPromotionServiceDependency,
     RuntimeAssuranceResponseServiceDependency,
     RuntimeAssuranceServiceDependency,
+)
+from ai_governance_api.runtime_assurance_actuation_decision_schemas import (
+    RuntimeAssuranceActuationDecisionCreate,
+    RuntimeAssuranceActuationDecisionRead,
 )
 from ai_governance_api.runtime_assurance_actuation_schemas import (
     RuntimeAssuranceActuationRequestCreate,
@@ -208,3 +214,41 @@ async def get_runtime_assurance_actuation_request(
         principal=principal,
     )
     return RuntimeAssuranceActuationRequestRead.from_domain(result)
+
+
+@router.post(
+    "/runtime-assurance-actuation-requests/{request_id}/decision",
+    response_model=RuntimeAssuranceActuationDecisionRead,
+    status_code=status.HTTP_200_OK,
+)
+async def decide_runtime_assurance_actuation_request(
+    request_id: str,
+    request: RuntimeAssuranceActuationDecisionCreate,
+    service: RuntimeAssuranceActuationDecisionServiceDependency,
+    principal: CurrentAuthorizedPrincipal,
+) -> RuntimeAssuranceActuationDecisionRead:
+    """Record or replay one independent terminal human actuation decision."""
+    result = await service.decide(
+        request_id=request_id,
+        decision=request.decision,
+        reason=request.reason,
+        principal=principal,
+    )
+    return RuntimeAssuranceActuationDecisionRead.from_domain(result)
+
+
+@router.get(
+    "/runtime-assurance-actuation-requests/{request_id}/decision",
+    response_model=RuntimeAssuranceActuationDecisionRead,
+)
+async def get_runtime_assurance_actuation_decision(
+    request_id: str,
+    service: RuntimeAssuranceActuationDecisionServiceDependency,
+    principal: CurrentAuthorizedPrincipal,
+) -> RuntimeAssuranceActuationDecisionRead:
+    """Return immutable terminal human decision evidence for one actuation request."""
+    result = await service.get(
+        request_id=request_id,
+        principal=principal,
+    )
+    return RuntimeAssuranceActuationDecisionRead.from_domain(result)

@@ -41,6 +41,9 @@ from ai_governance_api.adapters import (
     SqlAlchemyTransaction,
     YamlDirectoryAuthorizationCatalog,
 )
+from ai_governance_api.adapters.runtime_assurance_actuation_decision_persistence import (
+    SqlAlchemyRuntimeAssuranceActuationDecisionRepository,
+)
 from ai_governance_api.adapters.runtime_assurance_actuation_persistence import (
     SqlAlchemyRuntimeAssuranceActuationRequestRepository,
 )
@@ -107,6 +110,9 @@ from ai_governance_api.application import (
 from ai_governance_api.application.runtime_assurance import RuntimeAssuranceService
 from ai_governance_api.application.runtime_assurance_actuation import (
     RuntimeAssuranceActuationRequestService,
+)
+from ai_governance_api.application.runtime_assurance_actuation_decisions import (
+    RuntimeAssuranceActuationDecisionService,
 )
 from ai_governance_api.application.runtime_assurance_incidents import (
     RuntimeAssuranceIncidentPromotionService,
@@ -575,6 +581,23 @@ def get_runtime_assurance_actuation_request_service(
 RuntimeAssuranceActuationRequestServiceDependency = Annotated[
     RuntimeAssuranceActuationRequestService,
     Depends(get_runtime_assurance_actuation_request_service),
+]
+
+
+def get_runtime_assurance_actuation_decision_service(
+    session: DatabaseSession,
+) -> RuntimeAssuranceActuationDecisionService:
+    """Build the independent human Runtime Assurance actuation-decision service."""
+    return RuntimeAssuranceActuationDecisionService(
+        SqlAlchemyRuntimeAssuranceActuationDecisionRepository(session),
+        SqlAlchemyIncidentAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+RuntimeAssuranceActuationDecisionServiceDependency = Annotated[
+    RuntimeAssuranceActuationDecisionService,
+    Depends(get_runtime_assurance_actuation_decision_service),
 ]
 
 
