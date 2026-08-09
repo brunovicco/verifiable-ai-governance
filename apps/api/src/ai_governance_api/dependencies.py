@@ -44,6 +44,9 @@ from ai_governance_api.adapters import (
 from ai_governance_api.adapters.runtime_assurance_actuation_decision_persistence import (
     SqlAlchemyRuntimeAssuranceActuationDecisionRepository,
 )
+from ai_governance_api.adapters.runtime_assurance_actuation_execution_persistence import (
+    SqlAlchemyRuntimeAssuranceActuationExecutionRepository,
+)
 from ai_governance_api.adapters.runtime_assurance_actuation_persistence import (
     SqlAlchemyRuntimeAssuranceActuationRequestRepository,
 )
@@ -113,6 +116,9 @@ from ai_governance_api.application.runtime_assurance_actuation import (
 )
 from ai_governance_api.application.runtime_assurance_actuation_decisions import (
     RuntimeAssuranceActuationDecisionService,
+)
+from ai_governance_api.application.runtime_assurance_actuation_executions import (
+    RuntimeAssuranceActuationExecutionService,
 )
 from ai_governance_api.application.runtime_assurance_incidents import (
     RuntimeAssuranceIncidentPromotionService,
@@ -598,6 +604,24 @@ def get_runtime_assurance_actuation_decision_service(
 RuntimeAssuranceActuationDecisionServiceDependency = Annotated[
     RuntimeAssuranceActuationDecisionService,
     Depends(get_runtime_assurance_actuation_decision_service),
+]
+
+
+def get_runtime_assurance_actuation_execution_service(
+    session: DatabaseSession,
+) -> RuntimeAssuranceActuationExecutionService:
+    """Build the approved governed Runtime Assurance execution service."""
+    return RuntimeAssuranceActuationExecutionService(
+        SqlAlchemyRuntimeAssuranceActuationExecutionRepository(session),
+        get_runtime_control_service(session),
+        SqlAlchemyIncidentAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+RuntimeAssuranceActuationExecutionServiceDependency = Annotated[
+    RuntimeAssuranceActuationExecutionService,
+    Depends(get_runtime_assurance_actuation_execution_service),
 ]
 
 

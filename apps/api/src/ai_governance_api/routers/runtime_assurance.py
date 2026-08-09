@@ -6,6 +6,7 @@ from ai_governance_api.dependencies import (
     CurrentAuthorizedPrincipal,
     CurrentPrincipal,
     RuntimeAssuranceActuationDecisionServiceDependency,
+    RuntimeAssuranceActuationExecutionServiceDependency,
     RuntimeAssuranceActuationRequestServiceDependency,
     RuntimeAssuranceIncidentPromotionServiceDependency,
     RuntimeAssuranceResponseServiceDependency,
@@ -14,6 +15,10 @@ from ai_governance_api.dependencies import (
 from ai_governance_api.runtime_assurance_actuation_decision_schemas import (
     RuntimeAssuranceActuationDecisionCreate,
     RuntimeAssuranceActuationDecisionRead,
+)
+from ai_governance_api.runtime_assurance_actuation_execution_schemas import (
+    RuntimeAssuranceActuationExecutionCreate,
+    RuntimeAssuranceActuationExecutionRead,
 )
 from ai_governance_api.runtime_assurance_actuation_schemas import (
     RuntimeAssuranceActuationRequestCreate,
@@ -252,3 +257,40 @@ async def get_runtime_assurance_actuation_decision(
         principal=principal,
     )
     return RuntimeAssuranceActuationDecisionRead.from_domain(result)
+
+
+@router.post(
+    "/runtime-assurance-actuation-decisions/{decision_id}/execution",
+    response_model=RuntimeAssuranceActuationExecutionRead,
+    status_code=status.HTTP_200_OK,
+)
+async def execute_runtime_assurance_actuation_decision(
+    decision_id: str,
+    request: RuntimeAssuranceActuationExecutionCreate,
+    service: RuntimeAssuranceActuationExecutionServiceDependency,
+    principal: CurrentAuthorizedPrincipal,
+) -> RuntimeAssuranceActuationExecutionRead:
+    """Execute or recover one approved governed Runtime Control action."""
+    del request
+    result = await service.execute(
+        decision_id=decision_id,
+        principal=principal,
+    )
+    return RuntimeAssuranceActuationExecutionRead.from_domain(result)
+
+
+@router.get(
+    "/runtime-assurance-actuation-decisions/{decision_id}/execution",
+    response_model=RuntimeAssuranceActuationExecutionRead,
+)
+async def get_runtime_assurance_actuation_execution(
+    decision_id: str,
+    service: RuntimeAssuranceActuationExecutionServiceDependency,
+    principal: CurrentAuthorizedPrincipal,
+) -> RuntimeAssuranceActuationExecutionRead:
+    """Return immutable evidence for an applied governed Runtime Control action."""
+    result = await service.get(
+        decision_id=decision_id,
+        principal=principal,
+    )
+    return RuntimeAssuranceActuationExecutionRead.from_domain(result)

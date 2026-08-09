@@ -632,7 +632,6 @@ class DirectoryAccessRestrictionEntry(VersionedMixin, Base):
     )
 
 
-
 class RuntimeAssurancePolicyEntry(VersionedMixin, Base):
     """Versioned deterministic runtime-assurance policy for one Agent."""
 
@@ -750,7 +749,6 @@ class RuntimeAssuranceEvaluationEntry(Base):
     version: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
-
 class RuntimeAssuranceIncidentPromotionEntry(Base):
     """Append-only lineage from a breached assurance evaluation to an incident."""
 
@@ -812,7 +810,6 @@ class RuntimeAssuranceIncidentPromotionEntry(Base):
     )
     evidence_digest: Mapped[str] = mapped_column(String(64), nullable=False)
     version: Mapped[int] = mapped_column(Integer, nullable=False)
-
 
 
 class RuntimeAssuranceResponseRecommendationEntry(Base):
@@ -1027,6 +1024,96 @@ class RuntimeAssuranceActuationDecisionEntry(Base):
     )
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     decision_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class RuntimeAssuranceActuationExecutionEntry(Base):
+    """Immutable receipt for one applied governed Runtime Control transition."""
+
+    __tablename__ = "runtime_assurance_actuation_executions"
+    __table_args__ = (
+        Index(
+            "ix_runtime_assurance_actuation_execution_digest",
+            "execution_digest",
+        ),
+        Index(
+            "ix_runtime_assurance_actuation_execution_agent_time",
+            "agent_id",
+            "executed_at",
+        ),
+        Index(
+            "ix_runtime_assurance_actuation_execution_system",
+            "ai_system_id",
+        ),
+        UniqueConstraint(
+            "decision_id",
+            name="uq_runtime_assurance_actuation_execution_decision",
+        ),
+        UniqueConstraint(
+            "runtime_transition_id",
+            name="uq_runtime_assurance_actuation_execution_transition",
+        ),
+        CheckConstraint(
+            "schema_version = '1.0'",
+            name="ck_runtime_assurance_actuation_execution_schema",
+        ),
+        CheckConstraint(
+            "action = 'engage_kill_switch'",
+            name="ck_runtime_assurance_actuation_execution_action",
+        ),
+        CheckConstraint(
+            "previous_state = 'inactive' AND target_state = 'active'",
+            name="ck_runtime_assurance_actuation_execution_states",
+        ),
+        CheckConstraint(
+            "control_epoch > 0",
+            name="ck_runtime_assurance_actuation_execution_epoch",
+        ),
+        CheckConstraint(
+            "revoked_through_agent_version > 0",
+            name="ck_runtime_assurance_actuation_execution_revoked",
+        ),
+        CheckConstraint(
+            "resulting_agent_version = revoked_through_agent_version + 1",
+            name="ck_runtime_assurance_actuation_execution_agent_version",
+        ),
+        CheckConstraint(
+            "version = 1",
+            name="ck_runtime_assurance_actuation_execution_version",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    schema_version: Mapped[str] = mapped_column(String(10), nullable=False)
+    decision_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_actuation_decisions.id"),
+        nullable=False,
+    )
+    decision_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    request_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_actuation_requests.id"),
+        nullable=False,
+    )
+    request_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    action: Mapped[str] = mapped_column(String(40), nullable=False)
+    agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"), nullable=False)
+    ai_system_id: Mapped[str] = mapped_column(ForeignKey("ai_systems.id"), nullable=False)
+    incident_id: Mapped[str] = mapped_column(ForeignKey("incidents.id"), nullable=False)
+    runtime_transition_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_control_transitions.id"),
+        nullable=False,
+    )
+    control_epoch: Mapped[int] = mapped_column(Integer, nullable=False)
+    previous_state: Mapped[str] = mapped_column(String(20), nullable=False)
+    target_state: Mapped[str] = mapped_column(String(20), nullable=False)
+    revoked_through_agent_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    resulting_agent_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    executed_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    executed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    execution_digest: Mapped[str] = mapped_column(String(64), nullable=False)
     version: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
