@@ -633,6 +633,132 @@ class DirectoryAccessRestrictionEntry(VersionedMixin, Base):
     )
 
 
+
+class RuntimeAssurancePolicyEntry(VersionedMixin, Base):
+    """Versioned deterministic runtime-assurance policy for one Agent."""
+
+    __tablename__ = "runtime_assurance_policies"
+    __table_args__ = (
+        CheckConstraint(
+            "lookback_seconds BETWEEN 60 AND 86400",
+            name="ck_runtime_assurance_policy_lookback",
+        ),
+        CheckConstraint(
+            "evaluation_sample_size BETWEEN 1 AND 1000",
+            name="ck_runtime_assurance_policy_sample_size",
+        ),
+        CheckConstraint(
+            "minimum_samples BETWEEN 1 AND evaluation_sample_size",
+            name="ck_runtime_assurance_policy_minimum_samples",
+        ),
+        CheckConstraint(
+            "max_failure_rate >= 0 AND max_failure_rate <= 1",
+            name="ck_runtime_assurance_policy_failure_rate",
+        ),
+        CheckConstraint(
+            "max_p95_duration_ms IS NULL OR max_p95_duration_ms > 0",
+            name="ck_runtime_assurance_policy_p95",
+        ),
+        CheckConstraint(
+            "max_consecutive_failures IS NULL OR "
+            "(max_consecutive_failures >= 1 AND "
+            "max_consecutive_failures <= evaluation_sample_size)",
+            name="ck_runtime_assurance_policy_consecutive",
+        ),
+        CheckConstraint(
+            "breach_severity IN ('low', 'medium', 'high', 'critical')",
+            name="ck_runtime_assurance_policy_severity",
+        ),
+    )
+
+    agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"), primary_key=True)
+    ai_system_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_systems.id"), nullable=False, index=True
+    )
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    lookback_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
+    evaluation_sample_size: Mapped[int] = mapped_column(Integer, nullable=False)
+    minimum_samples: Mapped[int] = mapped_column(Integer, nullable=False)
+    max_failure_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    max_p95_duration_ms: Mapped[float | None] = mapped_column(Float)
+    max_consecutive_failures: Mapped[int | None] = mapped_column(Integer)
+    breach_severity: Mapped[str] = mapped_column(String(20), nullable=False)
+
+
+class RuntimeAssuranceEvaluationEntry(Base):
+    """Append-only deterministic runtime-assurance evaluation evidence."""
+
+    __tablename__ = "runtime_assurance_evaluations"
+    __table_args__ = (
+        CheckConstraint("policy_version > 0", name="ck_runtime_assurance_eval_policy_version"),
+        CheckConstraint("sample_count >= 0", name="ck_runtime_assurance_eval_sample_count"),
+        CheckConstraint(
+            "duration_sample_count >= 0 AND duration_sample_count <= sample_count",
+            name="ck_runtime_assurance_eval_duration_count",
+        ),
+        CheckConstraint(
+            "failure_count >= 0 AND failure_count <= sample_count",
+            name="ck_runtime_assurance_eval_failure_count",
+        ),
+        CheckConstraint(
+            "failure_rate >= 0 AND failure_rate <= 1",
+            name="ck_runtime_assurance_eval_failure_rate",
+        ),
+        CheckConstraint(
+            "p95_duration_ms IS NULL OR p95_duration_ms >= 0",
+            name="ck_runtime_assurance_eval_p95",
+        ),
+        CheckConstraint(
+            "max_consecutive_failures >= 0 AND max_consecutive_failures <= sample_count",
+            name="ck_runtime_assurance_eval_consecutive",
+        ),
+        CheckConstraint(
+            "outcome IN ('insufficient_data', 'healthy', 'breached')",
+            name="ck_runtime_assurance_eval_outcome",
+        ),
+        CheckConstraint(
+            "severity IS NULL OR severity IN ('low', 'medium', 'high', 'critical')",
+            name="ck_runtime_assurance_eval_severity",
+        ),
+        CheckConstraint("version = 1", name="ck_runtime_assurance_eval_version"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    agent_id: Mapped[str] = mapped_column(
+        ForeignKey("agents.id"), nullable=False, index=True
+    )
+    ai_system_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_systems.id"), nullable=False, index=True
+    )
+    initiative_id: Mapped[str] = mapped_column(
+        ForeignKey("initiatives.id"), nullable=False, index=True
+    )
+    policy_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    evaluated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
+    window_started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    window_ended_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    sample_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    duration_sample_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    failure_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    failure_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    p95_duration_ms: Mapped[float | None] = mapped_column(Float)
+    max_consecutive_failures: Mapped[int] = mapped_column(Integer, nullable=False)
+    outcome: Mapped[str] = mapped_column(String(30), nullable=False, index=True)
+    breach_reasons: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    severity: Mapped[str | None] = mapped_column(String(20))
+    source_event_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    evidence_digest: Mapped[str] = mapped_column(
+        String(64), nullable=False, index=True
+    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
 class RuntimeTelemetryEventEntry(Base):
     """Content-free, durable runtime telemetry evidence for one governed Agent."""
 

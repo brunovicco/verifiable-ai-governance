@@ -41,6 +41,10 @@ from ai_governance_api.adapters import (
     SqlAlchemyTransaction,
     YamlDirectoryAuthorizationCatalog,
 )
+from ai_governance_api.adapters.runtime_assurance_persistence import (
+    SqlAlchemyRuntimeAssuranceAudit,
+    SqlAlchemyRuntimeAssuranceRepository,
+)
 from ai_governance_api.adapters.runtime_authorization_issuer import (
     build_runtime_authorization_issuer,
 )
@@ -91,6 +95,7 @@ from ai_governance_api.application import (
     SubmitAssessment,
     UploadEvidence,
 )
+from ai_governance_api.application.runtime_assurance import RuntimeAssuranceService
 from ai_governance_api.application.runtime_control import (
     RuntimeControlGate,
     RuntimeControlProjectionPort,
@@ -483,6 +488,23 @@ async def get_authorized_principal(
 CurrentAuthorizedPrincipal = Annotated[
     Principal,
     Depends(get_authorized_principal),
+]
+
+
+def get_runtime_assurance_service(
+    session: DatabaseSession,
+) -> RuntimeAssuranceService:
+    """Build the request-scoped deterministic Runtime Assurance service."""
+    return RuntimeAssuranceService(
+        SqlAlchemyRuntimeAssuranceRepository(session),
+        SqlAlchemyRuntimeAssuranceAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+RuntimeAssuranceServiceDependency = Annotated[
+    RuntimeAssuranceService,
+    Depends(get_runtime_assurance_service),
 ]
 
 
