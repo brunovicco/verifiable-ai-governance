@@ -152,7 +152,7 @@ async def test_adapter_sends_minimized_request_and_parses_accepted_decision() ->
                 ],
                 "policy_id": "router-policy",
                 "policy_version": "2026.08",
-                "policy_digest": POLICY_DIGEST,
+                "policy_digest": f"sha256:{POLICY_DIGEST}",
                 "service_version": "1.0.0",
                 "environment": "test",
             },
@@ -192,7 +192,7 @@ async def test_adapter_preserves_auditable_hard_rejection() -> None:
                     "required_value": "public",
                     "policy_id": "router-policy",
                     "policy_version": "2026.08",
-                    "policy_digest": POLICY_DIGEST,
+                    "policy_digest": f"sha256:{POLICY_DIGEST}",
                     "service_version": "1.0.0",
                     "environment": "test",
                 },
@@ -207,6 +207,7 @@ async def test_adapter_preserves_auditable_hard_rejection() -> None:
     assert decision.outcome is RouterDecisionOutcome.REJECTED
     assert decision.rejected_model_group == "fast-small"
     assert decision.reason_code == "data_classification_not_authorized"
+    assert decision.policy_digest == POLICY_DIGEST
 
 
 async def test_adapter_rejects_unbound_or_oversized_responses() -> None:
@@ -224,7 +225,7 @@ async def test_adapter_rejects_unbound_or_oversized_responses() -> None:
                 "rejected_candidates": [],
                 "policy_id": "router-policy",
                 "policy_version": "2026.08",
-                "policy_digest": POLICY_DIGEST,
+                "policy_digest": f"sha256:{POLICY_DIGEST}",
                 "service_version": "1.0.0",
                 "environment": "test",
             },

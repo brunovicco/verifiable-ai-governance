@@ -12,6 +12,7 @@ from governance_schemas import (
 from pydantic import (
     AfterValidator,
     BaseModel,
+    BeforeValidator,
     ConfigDict,
     Field,
     StringConstraints,
@@ -42,7 +43,20 @@ _ReasonCode = Annotated[
     str,
     StringConstraints(min_length=1, max_length=100, pattern=r"^[a-z0-9][a-z0-9_]*$"),
 ]
-_Digest = Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
+
+
+def _normalize_sha256_digest(value: object) -> object:
+    """Normalize Router sha256:<hex> provenance into the internal canonical digest."""
+    if isinstance(value, str) and value.startswith("sha256:"):
+        return value.removeprefix("sha256:")
+    return value
+
+
+_Digest = Annotated[
+    str,
+    BeforeValidator(_normalize_sha256_digest),
+    StringConstraints(pattern=r"^[0-9a-f]{64}$"),
+]
 
 
 def _require_utc(value: datetime) -> datetime:
