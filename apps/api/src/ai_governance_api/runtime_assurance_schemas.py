@@ -16,6 +16,11 @@ from ai_governance_api.domain.runtime_assurance_incidents import (
     RuntimeAssuranceIncidentDisposition,
     RuntimeAssuranceIncidentPromotionResult,
 )
+from ai_governance_api.domain.runtime_assurance_responses import (
+    RuntimeAssuranceResponseAction,
+    RuntimeAssuranceResponseRationale,
+    RuntimeAssuranceResponseRecommendation,
+)
 
 
 class RuntimeAssurancePolicyUpsertRequest(BaseModel):
@@ -180,4 +185,70 @@ class RuntimeAssuranceIncidentPromotionRead(BaseModel):
             incident_status=incident.status,
             incident_severity=incident.severity,
             incident_version=incident.version,
+        )
+
+
+class RuntimeAssuranceResponseRecommendationRequest(BaseModel):
+    """Explicit empty command that rejects arbitrary runtime actuator fields."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class RuntimeAssuranceResponseRecommendationRead(BaseModel):
+    """Serialized immutable advisory response evidence."""
+
+    id: str
+    promotion_id: str
+    evaluation_id: str
+    agent_id: str
+    ai_system_id: str
+    incident_id: str
+    breach_fingerprint: str
+    source_evidence_digest: str
+    policy_id: str
+    policy_version: str
+    policy_digest: str
+    incident_status: IncidentStatus
+    incident_severity: RiskTier
+    incident_version: int
+    kill_switch_enabled: bool
+    kill_switch_engaged: bool
+    actions: list[RuntimeAssuranceResponseAction]
+    rationale_codes: list[RuntimeAssuranceResponseRationale]
+    advisory_only: bool
+    generated_by: str
+    generated_at: datetime
+    recommendation_digest: str
+    version: int
+
+    @classmethod
+    def from_domain(
+        cls,
+        recommendation: RuntimeAssuranceResponseRecommendation,
+    ) -> "RuntimeAssuranceResponseRecommendationRead":
+        """Map pure advisory evidence into its minimized transport contract."""
+        return cls(
+            id=recommendation.id,
+            promotion_id=recommendation.promotion_id,
+            evaluation_id=recommendation.evaluation_id,
+            agent_id=recommendation.agent_id,
+            ai_system_id=recommendation.ai_system_id,
+            incident_id=recommendation.incident_id,
+            breach_fingerprint=recommendation.breach_fingerprint,
+            source_evidence_digest=recommendation.source_evidence_digest,
+            policy_id=recommendation.policy_id,
+            policy_version=recommendation.policy_version,
+            policy_digest=recommendation.policy_digest,
+            incident_status=recommendation.incident_status,
+            incident_severity=recommendation.incident_severity,
+            incident_version=recommendation.incident_version,
+            kill_switch_enabled=recommendation.kill_switch_enabled,
+            kill_switch_engaged=recommendation.kill_switch_engaged,
+            actions=list(recommendation.actions),
+            rationale_codes=list(recommendation.rationale_codes),
+            advisory_only=recommendation.advisory_only,
+            generated_by=recommendation.generated_by,
+            generated_at=recommendation.generated_at,
+            recommendation_digest=recommendation.recommendation_digest,
+            version=recommendation.version,
         )

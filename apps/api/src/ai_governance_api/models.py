@@ -824,6 +824,88 @@ class RuntimeAssuranceIncidentPromotionEntry(Base):
     version: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
+
+class RuntimeAssuranceResponseRecommendationEntry(Base):
+    """Append-only advisory response recommendation for one incident promotion."""
+
+    __tablename__ = "runtime_assurance_response_recommendations"
+    __table_args__ = (
+        Index(
+            "ix_runtime_assurance_response_incident",
+            "incident_id",
+        ),
+        Index(
+            "ix_runtime_assurance_response_agent_time",
+            "agent_id",
+            "generated_at",
+        ),
+        Index(
+            "ix_runtime_assurance_response_digest",
+            "recommendation_digest",
+        ),
+        UniqueConstraint(
+            "promotion_id",
+            name="uq_runtime_assurance_response_recommendation_promotion",
+        ),
+        CheckConstraint(
+            "incident_status IN ('open', 'contained', 'remediating')",
+            name="ck_runtime_assurance_response_incident_status",
+        ),
+        CheckConstraint(
+            "incident_severity IN ('low', 'medium', 'high', 'critical')",
+            name="ck_runtime_assurance_response_incident_severity",
+        ),
+        CheckConstraint(
+            "incident_version > 0",
+            name="ck_runtime_assurance_response_incident_version",
+        ),
+        CheckConstraint(
+            "advisory_only = true",
+            name="ck_runtime_assurance_response_advisory_only",
+        ),
+        CheckConstraint(
+            "version = 1",
+            name="ck_runtime_assurance_response_version",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    promotion_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_incident_promotions.id"),
+        nullable=False,
+    )
+    evaluation_id: Mapped[str] = mapped_column(
+        ForeignKey("runtime_assurance_evaluations.id"),
+        nullable=False,
+    )
+    agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"), nullable=False)
+    ai_system_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_systems.id"),
+        nullable=False,
+    )
+    incident_id: Mapped[str] = mapped_column(ForeignKey("incidents.id"), nullable=False)
+    breach_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_evidence_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    policy_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    policy_version: Mapped[str] = mapped_column(String(50), nullable=False)
+    policy_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    incident_status: Mapped[str] = mapped_column(String(30), nullable=False)
+    incident_severity: Mapped[str] = mapped_column(String(20), nullable=False)
+    incident_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    kill_switch_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    kill_switch_engaged: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    actions: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    rationale_codes: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    advisory_only: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    generated_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    recommendation_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
 class RuntimeTelemetryEventEntry(Base):
     """Content-free, durable runtime telemetry evidence for one governed Agent."""
 

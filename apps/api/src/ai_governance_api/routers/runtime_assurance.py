@@ -5,6 +5,7 @@ from fastapi import APIRouter, status
 from ai_governance_api.dependencies import (
     CurrentPrincipal,
     RuntimeAssuranceIncidentPromotionServiceDependency,
+    RuntimeAssuranceResponseServiceDependency,
     RuntimeAssuranceServiceDependency,
 )
 from ai_governance_api.runtime_assurance_schemas import (
@@ -13,6 +14,8 @@ from ai_governance_api.runtime_assurance_schemas import (
     RuntimeAssuranceIncidentPromotionRequest,
     RuntimeAssurancePolicyRead,
     RuntimeAssurancePolicyUpsertRequest,
+    RuntimeAssuranceResponseRecommendationRead,
+    RuntimeAssuranceResponseRecommendationRequest,
 )
 
 router = APIRouter(prefix="/api/v1", tags=["runtime-assurance"])
@@ -126,3 +129,40 @@ async def get_runtime_assurance_incident_promotion(
         principal=principal,
     )
     return RuntimeAssuranceIncidentPromotionRead.from_domain(result)
+
+
+@router.post(
+    "/runtime-assurance-incident-promotions/{promotion_id}/response-recommendations",
+    response_model=RuntimeAssuranceResponseRecommendationRead,
+    status_code=status.HTTP_200_OK,
+)
+async def generate_runtime_assurance_response_recommendation(
+    promotion_id: str,
+    request: RuntimeAssuranceResponseRecommendationRequest,
+    service: RuntimeAssuranceResponseServiceDependency,
+    principal: CurrentPrincipal,
+) -> RuntimeAssuranceResponseRecommendationRead:
+    """Generate or replay deterministic advisory runtime-response evidence."""
+    del request
+    recommendation = await service.generate(
+        promotion_id=promotion_id,
+        principal=principal,
+    )
+    return RuntimeAssuranceResponseRecommendationRead.from_domain(recommendation)
+
+
+@router.get(
+    "/runtime-assurance-incident-promotions/{promotion_id}/response-recommendations",
+    response_model=RuntimeAssuranceResponseRecommendationRead,
+)
+async def get_runtime_assurance_response_recommendation(
+    promotion_id: str,
+    service: RuntimeAssuranceResponseServiceDependency,
+    principal: CurrentPrincipal,
+) -> RuntimeAssuranceResponseRecommendationRead:
+    """Return persisted deterministic advisory response evidence."""
+    recommendation = await service.get(
+        promotion_id=promotion_id,
+        principal=principal,
+    )
+    return RuntimeAssuranceResponseRecommendationRead.from_domain(recommendation)
