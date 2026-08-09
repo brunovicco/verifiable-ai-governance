@@ -1,0 +1,176 @@
+{
+  "assurance_evaluation": {
+    "agent_id": "dea9d121-2ae2-4982-9f15-3e8bd89f1bd3",
+    "ai_system_id": "237d5569-44f4-421f-9f42-c881d9df7e78",
+    "breach_reasons": [
+      "failure_rate_exceeded"
+    ],
+    "evidence_digest": "908fe154e35b48f5d0c8b85cdc087671f0eb49fae11df76338830f28c6eb3f8f",
+    "failure_count": 1,
+    "failure_rate": 0.5,
+    "id": "104a555b-33de-4030-ab78-36be9712b1c3",
+    "outcome": "breached",
+    "policy_version": 6,
+    "sample_count": 2,
+    "severity": "critical",
+    "source_event_ids": [
+      "e8319016-9e3f-42e9-85d6-4104b27a15d0",
+      "12731f36-60c7-44ce-b95a-0b242c2bef11"
+    ],
+    "version": 1
+  },
+  "assurance_policy": {
+    "breach_severity": "critical",
+    "evaluation_sample_size": 2,
+    "max_failure_rate": 0.0,
+    "minimum_samples": 2,
+    "version": 6
+  },
+  "audit": {
+    "assurance_evaluation": {
+      "action": "runtime_assurance.evaluated",
+      "audit_event_id": "ad280172-2417-4e50-bf9b-1ad1f7088b69",
+      "entity_id": "104a555b-33de-4030-ab78-36be9712b1c3",
+      "entity_type": "runtime_assurance_evaluation",
+      "entity_version": 1,
+      "event_hash": "1a3961b60260c57d6a5e99263e67de3068b197980637b40bd9367c95730480db",
+      "predecessor_resolved": true,
+      "previous_hash": "b3245184537c521125e1caded5441f6bfe6cc020369748b0a4edf2443c0b3f9b"
+    },
+    "incident_promotion": {
+      "action": "runtime_assurance.incident_promoted",
+      "audit_event_id": "73bc6d94-fdb7-44c6-96de-6b657216d664",
+      "entity_id": "1653fbf0-bfe1-471e-8fad-0b93aab260ef",
+      "entity_type": "runtime_assurance_incident_promotion",
+      "entity_version": 1,
+      "event_hash": "89dee58f29e9633a4d655b8e2cbabe4d8b54037fc69977cb23b6d3b7b21cbfc9",
+      "predecessor_resolved": true,
+      "previous_hash": "1a3961b60260c57d6a5e99263e67de3068b197980637b40bd9367c95730480db"
+    },
+    "response_recommendation": {
+      "action": "runtime_assurance.response_recommended",
+      "audit_event_id": "f27ee2fa-d293-4494-873d-ed5c3b05935b",
+      "entity_id": "d1d0be9d-f72d-42b0-81ba-9ad38b2f6378",
+      "entity_type": "runtime_assurance_response_recommendation",
+      "entity_version": 1,
+      "event_hash": "355235f8948a78fb0f688c18b7a11b89a07405408cd67136e941c659d8a20486",
+      "predecessor_resolved": true,
+      "previous_hash": "89dee58f29e9633a4d655b8e2cbabe4d8b54037fc69977cb23b6d3b7b21cbfc9"
+    }
+  },
+  "baselines": {
+    "a2a_otel_kit_runtime_version": "0.5.0",
+    "credit_desk_head": "b326971bbe7910bd94bd45c0cafbaa11a03f8610",
+    "governance_head": "d69d827d6bfa47ea1f11743accd9c33df4c223e8",
+    "required_governance_baseline": "d69d827d6bfa47ea1f11743accd9c33df4c223e8"
+  },
+  "incident_promotion": {
+    "agent_id": "dea9d121-2ae2-4982-9f15-3e8bd89f1bd3",
+    "ai_system_id": "237d5569-44f4-421f-9f42-c881d9df7e78",
+    "breach_fingerprint": "6d4f01f1b84da8bfa6ba639f30677ec239bf81de3a133036a543701a47858c74",
+    "disposition": "deduplicated",
+    "evaluation_id": "104a555b-33de-4030-ab78-36be9712b1c3",
+    "evidence_digest": "908fe154e35b48f5d0c8b85cdc087671f0eb49fae11df76338830f28c6eb3f8f",
+    "incident_id": "f4d9c8ce-a648-467e-bbcf-26b0b765b1f1",
+    "incident_severity": "critical",
+    "incident_status": "open",
+    "incident_version": 1,
+    "promotion_id": "1653fbf0-bfe1-471e-8fad-0b93aab260ef"
+  },
+  "producer": {
+    "failure": {
+      "context_id": "9c0425bf-0b49-4888-87ac-25143687ca2a",
+      "state": "failed",
+      "task_id": "b15eec2b-ea58-4024-9092-52d30f4bb18a"
+    },
+    "success": {
+      "context_id": "04a062e1-fb7a-44b7-83c6-30963999cf47",
+      "state": "completed",
+      "task_id": "4a44a1b6-d04b-4658-b542-6ae9755239b7"
+    }
+  },
+  "response_recommendation": {
+    "actions": [
+      "investigate_failures",
+      "prepare_containment",
+      "consider_kill_switch"
+    ],
+    "advisory_only": true,
+    "agent_id": "dea9d121-2ae2-4982-9f15-3e8bd89f1bd3",
+    "ai_system_id": "237d5569-44f4-421f-9f42-c881d9df7e78",
+    "breach_fingerprint": "6d4f01f1b84da8bfa6ba639f30677ec239bf81de3a133036a543701a47858c74",
+    "evaluation_id": "104a555b-33de-4030-ab78-36be9712b1c3",
+    "id": "d1d0be9d-f72d-42b0-81ba-9ad38b2f6378",
+    "incident_id": "f4d9c8ce-a648-467e-bbcf-26b0b765b1f1",
+    "incident_severity": "critical",
+    "incident_status": "open",
+    "incident_version": 1,
+    "kill_switch_enabled": true,
+    "kill_switch_engaged": false,
+    "policy_digest": "9fae32b46334a43dea365f081563c93a367b61874d1843752fa3417e32ad8ac0",
+    "policy_id": "runtime-assurance-response",
+    "policy_version": "1.0",
+    "promotion_id": "1653fbf0-bfe1-471e-8fad-0b93aab260ef",
+    "rationale_codes": [
+      "failure_rate_exceeded",
+      "elevated_severity",
+      "critical_kill_switch_available"
+    ],
+    "recommendation_digest": "2a2ccc509333adb7f08c48d30f5583d059d2ebc67a5b4c4a73b9568f7d02ce4c",
+    "source_evidence_digest": "908fe154e35b48f5d0c8b85cdc087671f0eb49fae11df76338830f28c6eb3f8f",
+    "version": 1
+  },
+  "result": "passed",
+  "schema_version": "1.0",
+  "telemetry": {
+    "completed": {
+      "audit": {
+        "audit_event_id": "678271d5-f7bc-44f4-a015-c897d8564078",
+        "event_hash": "53c8a8a91191d2c6c30661fc22283eddda8bad358881ac8003f68e19d611efbc",
+        "predecessor_resolved": true,
+        "previous_hash": "ba7ad08fefdd5717170ac7783f14535fdc7547f8d0659401b0388a79b57a8ba8"
+      },
+      "correlation_id": "04a062e1-fb7a-44b7-83c6-30963999cf47",
+      "duration_ms": 719.097958997736,
+      "environment": "p1.7-live-e2e",
+      "error_type": null,
+      "event_id": "e8319016-9e3f-42e9-85d6-4104b27a15d0",
+      "event_name": "decisao_agent.evaluation.completed",
+      "event_outcome": "success",
+      "payload_digest": "4bafc3560cf706c35b76f2da018873abb1fcd764ea373df91d155d8898d77f49",
+      "record_version": 1,
+      "request_id": "4a44a1b6-d04b-4658-b542-6ae9755239b7",
+      "service": "decisao-agent",
+      "span_id": "3befdb44121c7083",
+      "trace_id": "36f7b8744ed68f982dc8c784243acbd0",
+      "version": "0.1.0"
+    },
+    "failed": {
+      "audit": {
+        "audit_event_id": "61c07bce-2633-4763-9a01-b2a081f7d361",
+        "event_hash": "b3245184537c521125e1caded5441f6bfe6cc020369748b0a4edf2443c0b3f9b",
+        "predecessor_resolved": true,
+        "previous_hash": "53c8a8a91191d2c6c30661fc22283eddda8bad358881ac8003f68e19d611efbc"
+      },
+      "correlation_id": "9c0425bf-0b49-4888-87ac-25143687ca2a",
+      "duration_ms": 0.11495800208649598,
+      "environment": "p1.7-live-e2e",
+      "error_type": "ValidationError",
+      "event_id": "12731f36-60c7-44ce-b95a-0b242c2bef11",
+      "event_name": "decisao_agent.evaluation.failed",
+      "event_outcome": "failure",
+      "payload_digest": "4bb8d04fb886ad250b6ed48d625db013428aadb788b220c9d84e9f334f2b5ecd",
+      "record_version": 1,
+      "request_id": "b15eec2b-ea58-4024-9092-52d30f4bb18a",
+      "service": "decisao-agent",
+      "span_id": "3ebf86f8610d17a3",
+      "trace_id": "719dcafc467ae37c389999f86724ef78",
+      "version": "0.1.0"
+    }
+  },
+  "zero_actuation": {
+    "agent_unchanged": true,
+    "incident_unchanged": true,
+    "runtime_control_transition_count_unchanged": true
+  }
+}

@@ -165,7 +165,14 @@ def _parse_probe(stdout: str) -> dict[str, dict[str, str]]:
         context_id = item.get("context_id")
         task_id = item.get("task_id")
         state = item.get("state")
-        if not all(isinstance(value, str) and value for value in (context_id, task_id, state)):
+        if (
+            not isinstance(context_id, str)
+            or not context_id
+            or not isinstance(task_id, str)
+            or not task_id
+            or not isinstance(state, str)
+            or not state
+        ):
             raise VerificationError(f"Credit Desk probe {name} identifiers are invalid")
         result[name] = {
             "context_id": context_id,
@@ -598,7 +605,7 @@ def run_scenario(args: argparse.Namespace) -> dict[str, object]:
 
     audit = asyncio.run(_verify_audit_events([success, failure], agent_id=agent_id))
     governance_head = _git_head(Path(__file__).resolve().parents[1])
-    report = {
+    report: dict[str, object] = {
         "schema_version": "1.0",
         "result": "passed",
         "agent_id": agent_id,
