@@ -1,0 +1,130 @@
+"""HTTP schemas for governed runtime-assurance policies and evidence."""
+
+from datetime import datetime
+
+from governance_schemas import RiskTier
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from ai_governance_api.domain.runtime_assurance import (
+    RuntimeAssuranceBreachReason,
+    RuntimeAssuranceEvaluation,
+    RuntimeAssuranceOutcome,
+    RuntimeAssurancePolicy,
+)
+
+
+class RuntimeAssurancePolicyUpsertRequest(BaseModel):
+    """Closed policy contract for one governed Agent."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    enabled: bool
+    lookback_seconds: int = Field(ge=60, le=86_400)
+    evaluation_sample_size: int = Field(ge=1, le=1000)
+    minimum_samples: int = Field(ge=1, le=1000)
+    max_failure_rate: float = Field(ge=0, le=1)
+    max_p95_duration_ms: float | None = Field(default=None, gt=0, le=3_600_000)
+    max_consecutive_failures: int | None = Field(default=None, ge=1, le=1000)
+    breach_severity: RiskTier
+    expected_version: int | None = Field(default=None, ge=1)
+
+    @model_validator(mode="after")
+    def _validate_sample_bounds(self) -> "RuntimeAssurancePolicyUpsertRequest":
+        if self.minimum_samples > self.evaluation_sample_size:
+            raise ValueError("minimum_samples cannot exceed evaluation_sample_size")
+        if (
+            self.max_consecutive_failures is not None
+            and self.max_consecutive_failures > self.evaluation_sample_size
+        ):
+            raise ValueError("max_consecutive_failures cannot exceed evaluation_sample_size")
+        return self
+
+
+class RuntimeAssurancePolicyRead(BaseModel):
+    """Serialized current runtime-assurance policy."""
+
+    agent_id: str
+    ai_system_id: str
+    enabled: bool
+    lookback_seconds: int
+    evaluation_sample_size: int
+    minimum_samples: int
+    max_failure_rate: float
+    max_p95_duration_ms: float | None
+    max_consecutive_failures: int | None
+    breach_severity: RiskTier
+    version: int
+    created_at: datetime
+    updated_at: datetime
+
+    @classmethod
+    def from_domain(cls, policy: RuntimeAssurancePolicy) -> "RuntimeAssurancePolicyRead":
+        """Map the pure policy record into its public transport contract."""
+        return cls(
+            agent_id=policy.agent_id,
+            ai_system_id=policy.ai_system_id,
+            enabled=policy.enabled,
+            lookback_seconds=policy.lookback_seconds,
+            evaluation_sample_size=policy.evaluation_sample_size,
+            minimum_samples=policy.minimum_samples,
+            max_failure_rate=policy.max_failure_rate,
+            max_p95_duration_ms=policy.max_p95_duration_ms,
+            max_consecutive_failures=policy.max_consecutive_failures,
+            breach_severity=policy.breach_severity,
+            version=policy.version,
+            created_at=policy.created_at,
+            updated_at=policy.updated_at,
+        )
+
+
+class RuntimeAssuranceEvaluationRead(BaseModel):
+    """Serialized append-only deterministic assurance evidence."""
+
+    id: str
+    agent_id: str
+    ai_system_id: str
+    initiative_id: str
+    policy_version: int
+    evaluated_at: datetime
+    window_started_at: datetime
+    window_ended_at: datetime
+    sample_count: int
+    duration_sample_count: int
+    failure_count: int
+    failure_rate: float
+    p95_duration_ms: float | None
+    max_consecutive_failures: int
+    outcome: RuntimeAssuranceOutcome
+    breach_reasons: list[RuntimeAssuranceBreachReason]
+    severity: RiskTier | None
+    source_event_ids: list[str]
+    evidence_digest: str
+    version: int
+
+    @classmethod
+    def from_domain(
+        cls, evaluation: RuntimeAssuranceEvaluation
+    ) -> "RuntimeAssuranceEvaluationRead":
+        """Map pure deterministic assurance evidence into its public transport contract."""
+        return cls(
+            id=evaluation.id,
+            agent_id=evaluation.agent_id,
+            ai_system_id=evaluation.ai_system_id,
+            initiative_id=evaluation.initiative_id,
+            policy_version=evaluation.policy_version,
+            evaluated_at=evaluation.evaluated_at,
+            window_started_at=evaluation.window_started_at,
+            window_ended_at=evaluation.window_ended_at,
+            sample_count=evaluation.sample_count,
+            duration_sample_count=evaluation.duration_sample_count,
+            failure_count=evaluation.failure_count,
+            failure_rate=evaluation.failure_rate,
+            p95_duration_ms=evaluation.p95_duration_ms,
+            max_consecutive_failures=evaluation.max_consecutive_failures,
+            outcome=evaluation.outcome,
+            breach_reasons=list(evaluation.breach_reasons),
+            severity=evaluation.severity,
+            source_event_ids=list(evaluation.source_event_ids),
+            evidence_digest=evaluation.evidence_digest,
+            version=evaluation.version,
+        )
