@@ -5,11 +5,16 @@ from datetime import datetime
 from governance_schemas import RiskTier
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from ai_governance_api.domain.incidents import IncidentStatus
 from ai_governance_api.domain.runtime_assurance import (
     RuntimeAssuranceBreachReason,
     RuntimeAssuranceEvaluation,
     RuntimeAssuranceOutcome,
     RuntimeAssurancePolicy,
+)
+from ai_governance_api.domain.runtime_assurance_incidents import (
+    RuntimeAssuranceIncidentDisposition,
+    RuntimeAssuranceIncidentPromotionResult,
 )
 
 
@@ -127,4 +132,52 @@ class RuntimeAssuranceEvaluationRead(BaseModel):
             source_event_ids=list(evaluation.source_event_ids),
             evidence_digest=evaluation.evidence_digest,
             version=evaluation.version,
+        )
+
+
+class RuntimeAssuranceIncidentPromotionRequest(BaseModel):
+    """Explicit empty command that rejects arbitrary actuator fields."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class RuntimeAssuranceIncidentPromotionRead(BaseModel):
+    """Content-minimized evaluation-to-incident linkage and incident state."""
+
+    promotion_id: str
+    evaluation_id: str
+    agent_id: str
+    ai_system_id: str
+    incident_id: str
+    breach_fingerprint: str
+    disposition: RuntimeAssuranceIncidentDisposition
+    promoted_by: str
+    promoted_at: datetime
+    evidence_digest: str
+    incident_status: IncidentStatus
+    incident_severity: RiskTier
+    incident_version: int
+
+    @classmethod
+    def from_domain(
+        cls,
+        result: RuntimeAssuranceIncidentPromotionResult,
+    ) -> "RuntimeAssuranceIncidentPromotionRead":
+        """Map pure promotion evidence into a minimized transport contract."""
+        promotion = result.promotion
+        incident = result.incident
+        return cls(
+            promotion_id=promotion.id,
+            evaluation_id=promotion.evaluation_id,
+            agent_id=promotion.agent_id,
+            ai_system_id=promotion.ai_system_id,
+            incident_id=promotion.incident_id,
+            breach_fingerprint=promotion.breach_fingerprint,
+            disposition=promotion.disposition,
+            promoted_by=promotion.promoted_by,
+            promoted_at=promotion.promoted_at,
+            evidence_digest=promotion.evidence_digest,
+            incident_status=incident.status,
+            incident_severity=incident.severity,
+            incident_version=incident.version,
         )

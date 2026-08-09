@@ -4,10 +4,13 @@ from fastapi import APIRouter, status
 
 from ai_governance_api.dependencies import (
     CurrentPrincipal,
+    RuntimeAssuranceIncidentPromotionServiceDependency,
     RuntimeAssuranceServiceDependency,
 )
 from ai_governance_api.runtime_assurance_schemas import (
     RuntimeAssuranceEvaluationRead,
+    RuntimeAssuranceIncidentPromotionRead,
+    RuntimeAssuranceIncidentPromotionRequest,
     RuntimeAssurancePolicyRead,
     RuntimeAssurancePolicyUpsertRequest,
 )
@@ -86,3 +89,40 @@ async def list_runtime_assurance_evaluations(
         principal=principal,
     )
     return [RuntimeAssuranceEvaluationRead.from_domain(evaluation) for evaluation in evaluations]
+
+
+@router.post(
+    "/runtime-assurance-evaluations/{evaluation_id}/incident-promotion",
+    response_model=RuntimeAssuranceIncidentPromotionRead,
+    status_code=status.HTTP_200_OK,
+)
+async def promote_runtime_assurance_incident(
+    evaluation_id: str,
+    request: RuntimeAssuranceIncidentPromotionRequest,
+    service: RuntimeAssuranceIncidentPromotionServiceDependency,
+    principal: CurrentPrincipal,
+) -> RuntimeAssuranceIncidentPromotionRead:
+    """Explicitly promote breached assurance evidence into incident lifecycle."""
+    del request
+    result = await service.promote(
+        evaluation_id=evaluation_id,
+        principal=principal,
+    )
+    return RuntimeAssuranceIncidentPromotionRead.from_domain(result)
+
+
+@router.get(
+    "/runtime-assurance-evaluations/{evaluation_id}/incident-promotion",
+    response_model=RuntimeAssuranceIncidentPromotionRead,
+)
+async def get_runtime_assurance_incident_promotion(
+    evaluation_id: str,
+    service: RuntimeAssuranceIncidentPromotionServiceDependency,
+    principal: CurrentPrincipal,
+) -> RuntimeAssuranceIncidentPromotionRead:
+    """Return persisted promotion lineage and current linked incident state."""
+    result = await service.get_promotion(
+        evaluation_id=evaluation_id,
+        principal=principal,
+    )
+    return RuntimeAssuranceIncidentPromotionRead.from_domain(result)
