@@ -31,6 +31,7 @@ from ai_governance_api.routers.initiatives import router as initiatives_router
 from ai_governance_api.routers.inventory import router as inventory_router
 from ai_governance_api.routers.model_routing import router as model_routing_router
 from ai_governance_api.routers.runtime_control import router as runtime_control_router
+from ai_governance_api.routers.runtime_telemetry import router as runtime_telemetry_router
 from ai_governance_api.telemetry import (
     TraceContextMiddleware,
     configure_telemetry,
@@ -184,6 +185,7 @@ def create_app() -> FastAPI:
     app.include_router(inventory_router)
     app.include_router(model_routing_router)
     app.include_router(runtime_control_router)
+    app.include_router(runtime_telemetry_router)
     app.include_router(incidents_router)
     app.include_router(dashboard_router)
 

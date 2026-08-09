@@ -54,6 +54,11 @@ from ai_governance_api.adapters.runtime_control_redis import (
     UnavailableRuntimeControlStore,
     build_redis_runtime_control_store,
 )
+from ai_governance_api.adapters.runtime_telemetry_persistence import (
+    SqlAlchemyRuntimeTelemetryAudit,
+    SqlAlchemyRuntimeTelemetryScopeReader,
+    SqlAlchemyRuntimeTelemetryStore,
+)
 from ai_governance_api.application import (
     BlockDirectoryAccess,
     BuildDashboardSnapshot,
@@ -90,6 +95,10 @@ from ai_governance_api.application.runtime_control import (
     RuntimeControlGate,
     RuntimeControlProjectionPort,
     RuntimeControlService,
+)
+from ai_governance_api.application.runtime_telemetry import (
+    IngestRuntimeTelemetry,
+    ListRuntimeTelemetryEvents,
 )
 from ai_governance_api.auth import BEARER_CHALLENGE, BearerCredentials, get_principal
 from ai_governance_api.config import AppEnvironment, Settings, get_settings
@@ -592,6 +601,38 @@ RequestModelRoutingDecisionDependency = Annotated[
 ListModelRoutingDecisionsDependency = Annotated[
     ListModelRoutingDecisions,
     Depends(get_list_model_routing_decisions),
+]
+
+
+def get_ingest_runtime_telemetry(session: DatabaseSession) -> IngestRuntimeTelemetry:
+    """Build the request-scoped sanitized runtime telemetry ingestion use case."""
+    return IngestRuntimeTelemetry(
+        SqlAlchemyRuntimeTelemetryScopeReader(SessionFactory),
+        SqlAlchemyRuntimeTelemetryStore(session),
+        SqlAlchemyRuntimeTelemetryAudit(session),
+        SqlAlchemyTransaction(session),
+    )
+
+
+def get_list_runtime_telemetry_events(
+    session: DatabaseSession,
+    settings: SettingsDependency,
+) -> ListRuntimeTelemetryEvents:
+    """Build the bounded runtime telemetry query."""
+    return ListRuntimeTelemetryEvents(
+        SqlAlchemyRuntimeTelemetryScopeReader(SessionFactory),
+        SqlAlchemyRuntimeTelemetryStore(session),
+        limit=settings.runtime_telemetry_list_limit,
+    )
+
+
+IngestRuntimeTelemetryDependency = Annotated[
+    IngestRuntimeTelemetry,
+    Depends(get_ingest_runtime_telemetry),
+]
+ListRuntimeTelemetryEventsDependency = Annotated[
+    ListRuntimeTelemetryEvents,
+    Depends(get_list_runtime_telemetry_events),
 ]
 
 
