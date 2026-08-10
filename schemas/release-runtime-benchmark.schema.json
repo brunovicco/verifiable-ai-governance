@@ -1,0 +1,75 @@
+{
+  "$id": "https://github.com/brunovicco/verifiable-ai-governance/schemas/release-runtime-benchmark.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "benchmark_implementation_commit": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "bundle_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "canonicalization": {
+      "const": "json-sort-keys-compact-v1"
+    },
+    "environment": {
+      "type": "object"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "kind": {
+      "const": "verifiable-ai-governance/release-runtime-benchmark"
+    },
+    "policy": {
+      "type": "object"
+    },
+    "raw_measurements": {
+      "type": "object"
+    },
+    "release_version": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "runtime_equivalence": {
+      "type": "object"
+    },
+    "scenarios": {
+      "minProperties": 1,
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "upstream_roots": {
+      "type": "object"
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "canonicalization",
+    "release_version",
+    "generated_at",
+    "benchmark_implementation_commit",
+    "upstream_roots",
+    "runtime_equivalence",
+    "environment",
+    "policy",
+    "raw_measurements",
+    "scenarios",
+    "verdict",
+    "bundle_digest"
+  ],
+  "title": "Release Runtime Benchmark Evidence",
+  "type": "object"
+}

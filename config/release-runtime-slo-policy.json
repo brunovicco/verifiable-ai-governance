@@ -1,0 +1,43 @@
+{
+  "description": "Reference release-candidate SLOs for sequential local benchmark evidence. These thresholds are not production capacity claims.",
+  "kind": "verifiable-ai-governance/release-runtime-slo-policy",
+  "profile": "local-reference-v1",
+  "scenarios": {
+    "governance_ready": {
+      "max_error_rate": 0.0,
+      "max_p95_ms": 250.0,
+      "max_p99_ms": 500.0,
+      "min_observed_rate_per_second": 4.0,
+      "minimum_samples": 50
+    },
+    "governed_routing_allowed": {
+      "max_error_rate": 0.0,
+      "max_p95_ms": 750.0,
+      "max_p99_ms": 1500.0,
+      "min_observed_rate_per_second": 1.0,
+      "minimum_samples": 50
+    },
+    "runtime_assurance_evaluation": {
+      "max_error_rate": 0.0,
+      "max_p95_ms": 1500.0,
+      "max_p99_ms": 3000.0,
+      "min_observed_rate_per_second": 0.5,
+      "minimum_samples": 10
+    },
+    "runtime_control_state_read": {
+      "max_error_rate": 0.0,
+      "max_p95_ms": 150.0,
+      "max_p99_ms": 300.0,
+      "min_observed_rate_per_second": 5.0,
+      "minimum_samples": 50
+    },
+    "runtime_telemetry_query": {
+      "max_error_rate": 0.0,
+      "max_p95_ms": 500.0,
+      "max_p99_ms": 1000.0,
+      "min_observed_rate_per_second": 2.0,
+      "minimum_samples": 50
+    }
+  },
+  "schema_version": "1.0"
+}
