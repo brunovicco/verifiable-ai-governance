@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brunovicco/verifiable-ai-governance/schemas/release-evidence-manifest.schema.json",
+  "title": "Verifiable AI Governance Release Evidence Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "canonicalization",
+    "release",
+    "components",
+    "governance_provenance",
+    "database",
+    "evidence",
+    "compatibility",
+    "manifest_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "verifiable-ai-governance/release-evidence-manifest"},
+    "canonicalization": {"const": "json-sort-keys-compact-v1"},
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "source_date"],
+      "properties": {
+        "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?$"},
+        "source_date": {"type": "string", "minLength": 1}
+      }
+    },
+    "components": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["governance", "policy_model_router", "multi_agent_credit_desk", "a2a_otel_kit"],
+      "properties": {
+        "governance": {"$ref": "#/$defs/component"},
+        "policy_model_router": {"$ref": "#/$defs/component"},
+        "multi_agent_credit_desk": {"$ref": "#/$defs/component"},
+        "a2a_otel_kit": {"$ref": "#/$defs/component"}
+      }
+    },
+    "governance_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy_engine", "control_catalog", "control_crosswalk"],
+      "properties": {
+        "policy_engine": {"$ref": "#/$defs/fileEvidence"},
+        "control_catalog": {"$ref": "#/$defs/fileEvidence"},
+        "control_crosswalk": {"$ref": "#/$defs/fileEvidence"}
+      }
+    },
+    "database": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alembic_head", "migration_count", "head_file", "head_file_sha256"],
+      "properties": {
+        "alembic_head": {"type": "string", "minLength": 1},
+        "migration_count": {"type": "integer", "minimum": 1},
+        "head_file": {"type": "string", "minLength": 1},
+        "head_file_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["p1_7_runtime_telemetry", "p1_8_runtime_assurance", "p1_9_governed_actuation"],
+      "properties": {
+        "p1_7_runtime_telemetry": {"$ref": "#/$defs/evidence"},
+        "p1_8_runtime_assurance": {"$ref": "#/$defs/evidence"},
+        "p1_9_governed_actuation": {"$ref": "#/$defs/evidence"}
+      }
+    },
+    "compatibility": {"type": "object"},
+    "manifest_digest": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "fileEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size_bytes"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size_bytes": {"type": "integer", "minimum": 1}
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "commit_timestamp", "project_name", "project_version", "requires_python", "lockfile", "integration_dependencies"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "commit_timestamp": {"type": "string", "minLength": 1},
+        "project_name": {"type": "string", "minLength": 1},
+        "project_version": {"type": "string", "minLength": 1},
+        "requires_python": {"type": "string", "minLength": 1},
+        "lockfile": {"$ref": "#/$defs/fileEvidence"},
+        "integration_dependencies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["a2a_otel_kit"],
+          "properties": {"a2a_otel_kit": {"type": ["string", "null"]}}
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size_bytes", "schema_version", "result", "baselines"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size_bytes": {"type": "integer", "minimum": 1},
+        "schema_version": {"type": ["string", "null"]},
+        "result": {"type": ["string", "null"]},
+        "baselines": {"type": "object", "additionalProperties": {"type": "string"}}
+      }
+    }
+  }
+}
