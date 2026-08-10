@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brunovicco/verifiable-ai-governance/schemas/release-build-provenance.schema.json",
+  "title": "Verifiable AI Governance Release Build Provenance",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "attestation",
+    "build_recipe",
+    "canonicalization",
+    "kind",
+    "provenance_digest",
+    "release_version",
+    "schema_version",
+    "source_bindings",
+    "source_date",
+    "subjects",
+    "upstream_roots"
+  ],
+  "properties": {
+    "attestation": {"type": "object"},
+    "build_recipe": {"type": "object"},
+    "canonicalization": {"const": "json-sort-keys-compact-v1"},
+    "kind": {"const": "verifiable-ai-governance/release-build-provenance"},
+    "provenance_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "release_version": {"type": "string", "minLength": 1},
+    "schema_version": {"const": "1.0"},
+    "source_bindings": {"type": "object"},
+    "source_date": {"type": "string", "minLength": 1},
+    "subjects": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["media_type", "path", "role", "sha256", "size_bytes"],
+        "properties": {
+          "media_type": {"type": "string"},
+          "path": {"type": "string", "minLength": 1},
+          "role": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "size_bytes": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "upstream_roots": {"type": "object"}
+  }
+}

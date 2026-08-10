@@ -1,0 +1,120 @@
+name: Release provenance attestation
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: Frozen release version from P2.0a
+        required: true
+        default: 0.2.0-rc1
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout provenance tooling
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Read frozen source bindings
+        id: roots
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(
+              Path("artifacts/release/release-manifest.json").read_text(encoding="utf-8")
+          )
+          components = manifest["components"]
+          print(f"governance={components['governance']['commit']}")
+          print(f"router={components['policy_model_router']['commit']}")
+          print(f"credit={components['multi_agent_credit_desk']['commit']}")
+          print(f"otel={components['a2a_otel_kit']['commit']}")
+          print(f"release_version={manifest['release']['version']}")
+          PY
+
+      - name: Validate requested release version
+        shell: bash
+        run: |
+          test "${{ inputs.release_version }}" = "${{ steps.roots.outputs.release_version }}"
+
+      - name: Checkout frozen Governance source
+        uses: actions/checkout@v7
+        with:
+          repository: brunovicco/verifiable-ai-governance
+          ref: ${{ steps.roots.outputs.governance }}
+          path: .release-sources/governance
+          persist-credentials: false
+
+      - name: Checkout frozen Policy Model Router source
+        uses: actions/checkout@v7
+        with:
+          repository: brunovicco/policy-model-router
+          ref: ${{ steps.roots.outputs.router }}
+          path: .release-sources/policy-model-router
+          persist-credentials: false
+
+      - name: Checkout frozen Credit Desk source
+        uses: actions/checkout@v7
+        with:
+          repository: brunovicco/multi-agent-credit-desk
+          ref: ${{ steps.roots.outputs.credit }}
+          path: .release-sources/multi-agent-credit-desk
+          persist-credentials: false
+
+      - name: Checkout frozen A2A OTel source
+        uses: actions/checkout@v7
+        with:
+          repository: brunovicco/a2a-otel-kit
+          ref: ${{ steps.roots.outputs.otel }}
+          path: .release-sources/a2a-otel-kit
+          persist-credentials: false
+
+      - name: Verify committed deterministic provenance subjects
+        run: |
+          python -m scripts.verify_release_build_provenance \
+            --governance-source-repo .release-sources/governance \
+            --policy-model-router-repo .release-sources/policy-model-router \
+            --credit-desk-repo .release-sources/multi-agent-credit-desk \
+            --a2a-otel-kit-repo .release-sources/a2a-otel-kit
+
+      - name: Upload provenance bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-provenance-${{ inputs.release_version }}
+          path: artifacts/release/provenance
+          if-no-files-found: error
+
+      - name: Generate GitHub build provenance attestations
+        id: attest
+        uses: actions/attest@v4
+        with:
+          subject-checksums: artifacts/release/provenance/release-subjects.sha256
+
+      - name: Upload Sigstore attestation bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-attestation-bundle-${{ inputs.release_version }}
+          path: ${{ steps.attest.outputs.bundle-path }}
+          if-no-files-found: error
+
+      - name: Verify GitHub attestations
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          while read -r digest path; do
+            test -n "$digest"
+            gh attestation verify "$path" -R "$GITHUB_REPOSITORY"
+          done < artifacts/release/provenance/release-subjects.sha256

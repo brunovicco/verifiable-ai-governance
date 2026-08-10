@@ -1,0 +1,129 @@
+{
+  "attestation": {
+    "action": "actions/attest@v4",
+    "predicate_type": "https://slsa.dev/provenance/v1",
+    "provider": "github-artifact-attestations",
+    "signing_identity": "github-actions-oidc-sigstore",
+    "subject_mode": "checksums",
+    "workflow_path": ".github/workflows/release-provenance.yml"
+  },
+  "build_recipe": {
+    "bundle": {
+      "media_type": "application/gzip",
+      "path": "artifacts/release/provenance/build-recipe-0.2.0-rc1.tar.gz",
+      "role": "build_recipe_bundle",
+      "sha256": "94287af0659087787d0a7dd0fb3d79533cf3331b37bf99314a776e99858dac85",
+      "size_bytes": 9077
+    },
+    "files": [
+      {
+        "path": ".github/workflows/release-provenance.yml",
+        "sha256": "8cab02006f6f201b281155bb7fcaf8f096d3bb22eb0b2aa50dc8bd2c90d4ccb6",
+        "size_bytes": 4090
+      },
+      {
+        "path": "schemas/release-build-provenance.schema.json",
+        "sha256": "16bba4b4d99a088b35c1083b0fc393f586523be82120794926ccb6ef2136ae2a",
+        "size_bytes": 1640
+      },
+      {
+        "path": "scripts/release_build_provenance.py",
+        "sha256": "b6e8593b2ee222e1017ec4e4288754c1b26b38e55ec7d08673e087ff2740ff46",
+        "size_bytes": 13483
+      },
+      {
+        "path": "scripts/generate_release_build_provenance.py",
+        "sha256": "ee770549950e9e5c936b955b9e6d7d829067976a4f6d91d569f480dcf00ab06b",
+        "size_bytes": 10458
+      },
+      {
+        "path": "scripts/verify_release_build_provenance.py",
+        "sha256": "1d36ece8be8a887923f374909bc6519ea5b3646dcb4e6d84a5770ec0a809f0dd",
+        "size_bytes": 11291
+      }
+    ]
+  },
+  "canonicalization": "json-sort-keys-compact-v1",
+  "kind": "verifiable-ai-governance/release-build-provenance",
+  "provenance_digest": "b3ef18e39a6e54eb40001c142c70b8dc0f9d02a3f2191a369cbf592bd2c8da85",
+  "release_version": "0.2.0-rc1",
+  "schema_version": "1.0",
+  "source_bindings": {
+    "a2a_otel_kit": {
+      "commit": "a096766fd075868704276777d847c740a17ba821",
+      "lockfile_sha256": "52dc56a86d48d614d9c309898cb64232dc22597fc37f87dd427dd294fcd89c2a",
+      "repository": "brunovicco/a2a-otel-kit"
+    },
+    "governance": {
+      "commit": "74133daddc7b4a087ed8a7129dfa41d0ce50fecd",
+      "lockfile_sha256": "5b81d5e73760c51dd68c311f3c7e4c73dff99092aee22b6a139b6961b1c5d35a",
+      "repository": "brunovicco/verifiable-ai-governance"
+    },
+    "multi_agent_credit_desk": {
+      "commit": "b326971bbe7910bd94bd45c0cafbaa11a03f8610",
+      "lockfile_sha256": "3d8d976b4e4d3485cb27681b028d0feed0c314a32f62943a4aea810c53c988ef",
+      "repository": "brunovicco/multi-agent-credit-desk"
+    },
+    "policy_model_router": {
+      "commit": "0344f7410fa68fbd8a61fb5d949f5d4dcf0c9166",
+      "lockfile_sha256": "6faa033bfd0807c6ea6ed98930dfba708f173c5d8a044ba9504350fdf475a69f",
+      "repository": "brunovicco/policy-model-router"
+    }
+  },
+  "source_date": "2026-08-09T23:13:31-03:00",
+  "subjects": [
+    {
+      "media_type": "application/gzip",
+      "path": "artifacts/release/provenance/build-recipe-0.2.0-rc1.tar.gz",
+      "role": "build_recipe_bundle",
+      "sha256": "94287af0659087787d0a7dd0fb3d79533cf3331b37bf99314a776e99858dac85",
+      "size_bytes": 9077
+    },
+    {
+      "media_type": "application/gzip",
+      "path": "artifacts/release/provenance/release-evidence-0.2.0-rc1.tar.gz",
+      "role": "release_evidence_bundle",
+      "sha256": "87b11dd01dff76d98657d2c6324c80c7ef53c9ec54331283294924f477104078",
+      "size_bytes": 235305
+    },
+    {
+      "media_type": "application/gzip",
+      "path": "artifacts/release/provenance/sources/a2a_otel_kit-a096766fd075.tar.gz",
+      "role": "source_archive:a2a_otel_kit",
+      "sha256": "209fbffc6fda4debd3118bcbd10dc8ecf8627ba18c06e953122e7c6907e7d430",
+      "size_bytes": 6251457
+    },
+    {
+      "media_type": "application/gzip",
+      "path": "artifacts/release/provenance/sources/governance-74133daddc7b.tar.gz",
+      "role": "source_archive:governance",
+      "sha256": "7e57f896878b99bcf902d83d1838dd168425fc0b3836bb7e37aa604a6b94fa1d",
+      "size_bytes": 1563072
+    },
+    {
+      "media_type": "application/gzip",
+      "path": "artifacts/release/provenance/sources/multi_agent_credit_desk-b326971bbe79.tar.gz",
+      "role": "source_archive:multi_agent_credit_desk",
+      "sha256": "0f70a6fc4fb4b9d3aac08cbd5d06ce38e5a68aa7e405a82677d79ce8f5ca3bc6",
+      "size_bytes": 254437
+    },
+    {
+      "media_type": "application/gzip",
+      "path": "artifacts/release/provenance/sources/policy_model_router-0344f7410fa6.tar.gz",
+      "role": "source_archive:policy_model_router",
+      "sha256": "dc069230f454333271b060c2725b04cd2af8f1272e5499c37d194dfc50800f99",
+      "size_bytes": 221885
+    }
+  ],
+  "upstream_roots": {
+    "release_manifest": {
+      "digest": "ba55a969f86bd032c8f1babeb61e8831c58dd364ecbf29a6a5afcbda51f4c9bc",
+      "path": "artifacts/release/release-manifest.json"
+    },
+    "security_evidence": {
+      "digest": "021d8ae90d0a7bda4b717aa65c87518eadd60b37d15e3ccd406cb37f046d7db9",
+      "path": "artifacts/release/security/security-evidence-bundle.json",
+      "policy_digest": "3dc91c8db39076a67ee27d1b1b34792f31590ea65edf647db306669708e13bf9"
+    }
+  }
+}
