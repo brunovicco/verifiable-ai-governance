@@ -1,0 +1,1873 @@
+{
+  "artifacts": [
+    {
+      "media_type": "application/json",
+      "path": "artifacts/release/security/vulnerabilities/governance_api-trivy.json",
+      "role": "container_audit:governance_api",
+      "sha256": "d0cedcc8b9ab6c1b2d02b77b28b97a4f71a5fc7c34b1f97c5c47b2213a8f63f6",
+      "size_bytes": 971990
+    },
+    {
+      "media_type": "application/json",
+      "path": "artifacts/release/security/vulnerabilities/governance_web-trivy.json",
+      "role": "container_audit:governance_web",
+      "sha256": "8398c722f2b16193bcf5c55203ba97c1b6b282cc20fa0f711d4113f0b1eb46f4",
+      "size_bytes": 50094
+    },
+    {
+      "media_type": "application/vnd.cyclonedx+json",
+      "path": "artifacts/release/security/sbom/governance_api-image.cdx.json",
+      "role": "container_sbom:governance_api",
+      "sha256": "647786bf6bfe2764b39af3d36e5d7fd6ca8fa889765f351f71b5f49c551fe606",
+      "size_bytes": 277624
+    },
+    {
+      "media_type": "application/vnd.cyclonedx+json",
+      "path": "artifacts/release/security/sbom/governance_web-image.cdx.json",
+      "role": "container_sbom:governance_web",
+      "sha256": "6b38e382b330d96074b4d811b572079d87d28547eaaa895287ff4ad5b69c7bb5",
+      "size_bytes": 62008
+    },
+    {
+      "media_type": "application/json",
+      "path": "artifacts/release/security/vulnerabilities/governance-web-npm-audit.json",
+      "role": "npm_audit:governance_web",
+      "sha256": "3546234337fadef7c7373fb96fcec99eb90d4a21ebbed41bed90bcdc1dac9732",
+      "size_bytes": 364
+    },
+    {
+      "media_type": "application/vnd.cyclonedx+json",
+      "path": "artifacts/release/security/sbom/governance-web-npm.cdx.json",
+      "role": "npm_sbom:governance_web",
+      "sha256": "8c250b1d432c0d01315ca69249aa22d4b3575bc3a1bdf0b30b3181cd14037972",
+      "size_bytes": 521933
+    },
+    {
+      "media_type": "application/json",
+      "path": "artifacts/release/security/vulnerabilities/a2a_otel_kit-pip-audit.json",
+      "role": "python_audit:a2a_otel_kit",
+      "sha256": "1debaf0f26fe41e347ae166b680602a55710057aff1ec86f2ca785dbd7de8765",
+      "size_bytes": 5263
+    },
+    {
+      "media_type": "application/json",
+      "path": "artifacts/release/security/vulnerabilities/governance-pip-audit.json",
+      "role": "python_audit:governance",
+      "sha256": "43ec918fe38ec64d42c35e59ff18f62674b6d9068fef7d760071436d91cf973e",
+      "size_bytes": 3900
+    },
+    {
+      "media_type": "application/json",
+      "path": "artifacts/release/security/vulnerabilities/multi_agent_credit_desk-pip-audit.json",
+      "role": "python_audit:multi_agent_credit_desk",
+      "sha256": "c882dbacd0d0af64cbfc18f602698ab876ce91a316cad9579d99daeff27370df",
+      "size_bytes": 5154
+    },
+    {
+      "media_type": "application/json",
+      "path": "artifacts/release/security/vulnerabilities/policy_model_router-pip-audit.json",
+      "role": "python_audit:policy_model_router",
+      "sha256": "86f2618c638bbfbb7b478a309f34e42c8d1fa538593f4634c060787bd3f0ae1e",
+      "size_bytes": 4345
+    },
+    {
+      "media_type": "text/plain",
+      "path": "artifacts/release/security/inputs/a2a_otel_kit-requirements.txt",
+      "role": "python_requirements:a2a_otel_kit",
+      "sha256": "298f91c47f8d98139de840e8d7b1ab9fbb96bf0aba35428dd499f953d89a80ae",
+      "size_bytes": 5684
+    },
+    {
+      "media_type": "text/plain",
+      "path": "artifacts/release/security/inputs/governance-requirements.txt",
+      "role": "python_requirements:governance",
+      "sha256": "893fedd476fadd0e6fdd518ac7f5b0671724c344fbf4ab2d152fb960cb8d3b2b",
+      "size_bytes": 4340
+    },
+    {
+      "media_type": "text/plain",
+      "path": "artifacts/release/security/inputs/multi_agent_credit_desk-requirements.txt",
+      "role": "python_requirements:multi_agent_credit_desk",
+      "sha256": "0f43795e43a18f74e289436e06b5133c48fbaa66d5d5958fb4c6b1e01ef94b7e",
+      "size_bytes": 5797
+    },
+    {
+      "media_type": "text/plain",
+      "path": "artifacts/release/security/inputs/policy_model_router-requirements.txt",
+      "role": "python_requirements:policy_model_router",
+      "sha256": "acf9e9df9860b7d44a249128a508ebe721f3f76b3c53a3f6f510c15310628153",
+      "size_bytes": 4572
+    },
+    {
+      "media_type": "application/vnd.cyclonedx+json",
+      "path": "artifacts/release/security/sbom/a2a_otel_kit-python.cdx.json",
+      "role": "python_sbom:a2a_otel_kit",
+      "sha256": "2dd3ad09538f879fb50af54b801ddf0a09f401abe82aa597a078e2bfa7fd2fd3",
+      "size_bytes": 15782
+    },
+    {
+      "media_type": "application/vnd.cyclonedx+json",
+      "path": "artifacts/release/security/sbom/governance-python.cdx.json",
+      "role": "python_sbom:governance",
+      "sha256": "bc60b50b1e1c645688530bfe8e8e72eb3bff08224ba5ad96660f911de637a247",
+      "size_bytes": 11745
+    },
+    {
+      "media_type": "application/vnd.cyclonedx+json",
+      "path": "artifacts/release/security/sbom/multi_agent_credit_desk-python.cdx.json",
+      "role": "python_sbom:multi_agent_credit_desk",
+      "sha256": "7c4584b5338d205af2d4e54e67bb26bb67b8eb7609d49749ddcb4d993c09d11a",
+      "size_bytes": 15421
+    },
+    {
+      "media_type": "application/vnd.cyclonedx+json",
+      "path": "artifacts/release/security/sbom/policy_model_router-python.cdx.json",
+      "role": "python_sbom:policy_model_router",
+      "sha256": "83d8be975b33fffd9399cf339958dd3fb373a12df42fee7e8f41a9414a1a8e80",
+      "size_bytes": 12994
+    }
+  ],
+  "bundle_digest": "021d8ae90d0a7bda4b717aa65c87518eadd60b37d15e3ccd406cb37f046d7db9",
+  "canonicalization": "json-sort-keys-compact-v1",
+  "generated_at": "2026-08-10T11:40:44.407982Z",
+  "images": {
+    "governance_api": {
+      "image_id": "sha256:a53c21edd6f31a2e96eed36f2202d5802fadffbc139414ddc5f528cc629e46d3",
+      "source_commit": "74133daddc7b4a087ed8a7129dfa41d0ce50fecd"
+    },
+    "governance_web": {
+      "image_id": "sha256:39528ff2f1f189e8bb22dca3c034d9d86512639901fc85891ab1a685b5aa1bd7",
+      "source_commit": "74133daddc7b4a087ed8a7129dfa41d0ce50fecd"
+    }
+  },
+  "kind": "verifiable-ai-governance/release-security-evidence",
+  "policy_digest": "3dc91c8db39076a67ee27d1b1b34792f31590ea65edf647db306669708e13bf9",
+  "release_manifest_digest": "ba55a969f86bd032c8f1babeb61e8831c58dd364ecbf29a6a5afcbda51f4c9bc",
+  "release_version": "0.2.0-rc1",
+  "schema_version": "1.0",
+  "source_bindings": {
+    "a2a_otel_kit": {
+      "commit": "a096766fd075868704276777d847c740a17ba821",
+      "lockfile_sha256": "52dc56a86d48d614d9c309898cb64232dc22597fc37f87dd427dd294fcd89c2a",
+      "repository": "brunovicco/a2a-otel-kit"
+    },
+    "governance": {
+      "commit": "74133daddc7b4a087ed8a7129dfa41d0ce50fecd",
+      "lockfile_sha256": "5b81d5e73760c51dd68c311f3c7e4c73dff99092aee22b6a139b6961b1c5d35a",
+      "repository": "brunovicco/verifiable-ai-governance"
+    },
+    "multi_agent_credit_desk": {
+      "commit": "b326971bbe7910bd94bd45c0cafbaa11a03f8610",
+      "lockfile_sha256": "3d8d976b4e4d3485cb27681b028d0feed0c314a32f62943a4aea810c53c988ef",
+      "repository": "brunovicco/multi-agent-credit-desk"
+    },
+    "policy_model_router": {
+      "commit": "0344f7410fa68fbd8a61fb5d949f5d4dcf0c9166",
+      "lockfile_sha256": "6faa033bfd0807c6ea6ed98930dfba708f173c5d8a044ba9504350fdf475a69f",
+      "repository": "brunovicco/policy-model-router"
+    }
+  },
+  "summaries": {
+    "container:governance_api": {
+      "blocking_count": 0,
+      "component": "governance_api",
+      "finding_count": 181,
+      "findings": [
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-7458",
+          "installed_version": "3.40.1-2+deb12u2",
+          "package": "libsqlite3-0",
+          "severity": "CRITICAL",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-13221",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "CRITICAL",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-42496",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "CRITICAL",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-57433",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "CRITICAL",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-8376",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "CRITICAL",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2023-45853",
+          "installed_version": "1:1.2.13.dfsg-1",
+          "package": "zlib1g",
+          "severity": "CRITICAL",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53615",
+          "installed_version": "1:2.38.1-5+deb12u3",
+          "package": "bsdutils",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-41992",
+          "installed_version": "1.12-1",
+          "package": "gzip",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-54369",
+          "installed_version": "2.3.1-3",
+          "package": "libacl1",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53615",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libblkid1",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53615",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libmount1",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-69720",
+          "installed_version": "6.4-4",
+          "package": "libncursesw6",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53615",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libsmartcols1",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-69720",
+          "installed_version": "6.4-4",
+          "package": "libtinfo6",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53615",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libuuid1",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53615",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "mount",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-69720",
+          "installed_version": "6.4-4",
+          "package": "ncurses-base",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-69720",
+          "installed_version": "6.4-4",
+          "package": "ncurses-bin",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-42497",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-48962",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-57432",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-9538",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53615",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53615",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux-extra",
+          "severity": "HIGH",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2011-3374",
+          "installed_version": "2.6.1",
+          "package": "apt",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "TEMP-0841856-B18BAF",
+          "installed_version": "5.2.15-2+b13",
+          "package": "bash",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2022-0563",
+          "installed_version": "1:2.38.1-5+deb12u3",
+          "package": "bsdutils",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-14104",
+          "installed_version": "1:2.38.1-5+deb12u3",
+          "package": "bsdutils",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2016-2781",
+          "installed_version": "9.1-1",
+          "package": "coreutils",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2017-18018",
+          "installed_version": "9.1-1",
+          "package": "coreutils",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-5278",
+          "installed_version": "9.1-1",
+          "package": "coreutils",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-56391",
+          "installed_version": "9.1-1",
+          "package": "coreutils",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-56392",
+          "installed_version": "9.1-1",
+          "package": "coreutils",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53910",
+          "installed_version": "1:3.8-4",
+          "package": "diffutils",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2022-27943",
+          "installed_version": "12.2.0-14+deb12u1",
+          "package": "gcc-12-base",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2022-3219",
+          "installed_version": "2.2.40-1.1+deb12u2",
+          "package": "gpgv",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-57062",
+          "installed_version": "2.2.40-1.1+deb12u2",
+          "package": "gpgv",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2011-3374",
+          "installed_version": "2.6.1",
+          "package": "libapt-pkg6.0",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2022-0563",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libblkid1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-14104",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libblkid1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2010-4756",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2018-20796",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2019-1010022",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2019-1010023",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2019-1010024",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2019-1010025",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2019-9192",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2010-4756",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2018-20796",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2019-1010022",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2019-1010023",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2019-1010024",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2019-1010025",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2019-9192",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2022-27943",
+          "installed_version": "12.2.0-14+deb12u1",
+          "package": "libgcc-s1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2018-6829",
+          "installed_version": "1.10.1-3+deb12u1",
+          "package": "libgcrypt20",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2024-2236",
+          "installed_version": "1.10.1-3+deb12u1",
+          "package": "libgcrypt20",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2011-3389",
+          "installed_version": "3.7.9-2+deb12u7",
+          "package": "libgnutls30",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2022-0563",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libmount1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-14104",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libmount1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-6141",
+          "installed_version": "6.4-4",
+          "package": "libncursesw6",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2022-0563",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libsmartcols1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-14104",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libsmartcols1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2021-45346",
+          "installed_version": "3.40.1-2+deb12u2",
+          "package": "libsqlite3-0",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-29088",
+          "installed_version": "3.40.1-2+deb12u2",
+          "package": "libsqlite3-0",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-70873",
+          "installed_version": "3.40.1-2+deb12u2",
+          "package": "libsqlite3-0",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-27587",
+          "installed_version": "3.0.20-1~deb12u2",
+          "package": "libssl3",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-42767",
+          "installed_version": "3.0.20-1~deb12u2",
+          "package": "libssl3",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2022-27943",
+          "installed_version": "12.2.0-14+deb12u1",
+          "package": "libstdc++6",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2013-4392",
+          "installed_version": "252.39-1~deb12u2",
+          "package": "libsystemd0",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2023-31437",
+          "installed_version": "252.39-1~deb12u2",
+          "package": "libsystemd0",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2023-31438",
+          "installed_version": "252.39-1~deb12u2",
+          "package": "libsystemd0",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2023-31439",
+          "installed_version": "252.39-1~deb12u2",
+          "package": "libsystemd0",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-40228",
+          "installed_version": "252.39-1~deb12u2",
+          "package": "libsystemd0",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-13151",
+          "installed_version": "4.19.0-2+deb12u1",
+          "package": "libtasn1-6",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-6141",
+          "installed_version": "6.4-4",
+          "package": "libtinfo6",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2013-4392",
+          "installed_version": "252.39-1~deb12u2",
+          "package": "libudev1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2023-31437",
+          "installed_version": "252.39-1~deb12u2",
+          "package": "libudev1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2023-31438",
+          "installed_version": "252.39-1~deb12u2",
+          "package": "libudev1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2023-31439",
+          "installed_version": "252.39-1~deb12u2",
+          "package": "libudev1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-40228",
+          "installed_version": "252.39-1~deb12u2",
+          "package": "libudev1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2022-0563",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libuuid1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-14104",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libuuid1",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2007-5686",
+          "installed_version": "1:4.13+dfsg1-1+deb12u2",
+          "package": "login",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2024-56433",
+          "installed_version": "1:4.13+dfsg1-1+deb12u2",
+          "package": "login",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "TEMP-0628843-DBAD28",
+          "installed_version": "1:4.13+dfsg1-1+deb12u2",
+          "package": "login",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2022-0563",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "mount",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-14104",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "mount",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-6141",
+          "installed_version": "6.4-4",
+          "package": "ncurses-base",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-6141",
+          "installed_version": "6.4-4",
+          "package": "ncurses-bin",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-27587",
+          "installed_version": "3.0.20-1~deb12u2",
+          "package": "openssl",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-42767",
+          "installed_version": "3.0.20-1~deb12u2",
+          "package": "openssl",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2007-5686",
+          "installed_version": "1:4.13+dfsg1-1+deb12u2",
+          "package": "passwd",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2024-56433",
+          "installed_version": "1:4.13+dfsg1-1+deb12u2",
+          "package": "passwd",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "TEMP-0628843-DBAD28",
+          "installed_version": "1:4.13+dfsg1-1+deb12u2",
+          "package": "passwd",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2011-4116",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2023-31486",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "TEMP-0517018-A83CE6",
+          "installed_version": "3.06-4",
+          "package": "sysvinit-utils",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2005-2541",
+          "installed_version": "1.34+dfsg-1.2+deb12u1",
+          "package": "tar",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "TEMP-0290435-0B57B5",
+          "installed_version": "1.34+dfsg-1.2+deb12u1",
+          "package": "tar",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2022-0563",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-14104",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2022-0563",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux-extra",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-14104",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux-extra",
+          "severity": "LOW",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-13595",
+          "installed_version": "1:2.38.1-5+deb12u3",
+          "package": "bsdutils",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-27456",
+          "installed_version": "1:2.38.1-5+deb12u3",
+          "package": "bsdutils",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-3184",
+          "installed_version": "1:2.38.1-5+deb12u3",
+          "package": "bsdutils",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-30258",
+          "installed_version": "2.2.40-1.1+deb12u2",
+          "package": "gpgv",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-68972",
+          "installed_version": "2.2.40-1.1+deb12u2",
+          "package": "gpgv",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-41991",
+          "installed_version": "1.12-1",
+          "package": "gzip",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-54370",
+          "installed_version": "2.3.1-3",
+          "package": "libacl1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-54371",
+          "installed_version": "1:2.5.1-4",
+          "package": "libattr1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-13595",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libblkid1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-27456",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libblkid1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-3184",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libblkid1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-42250",
+          "installed_version": "1.0.8-5+b1",
+          "package": "libbz2-1.0",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-5435",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-5450",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-5928",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-6238",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-5435",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-5450",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-5928",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-6238",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-13595",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libmount1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-27456",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libmount1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-3184",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libmount1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2023-50495",
+          "installed_version": "6.4-4",
+          "package": "libncursesw6",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-13757",
+          "installed_version": "0.24.1-2",
+          "package": "libp11-kit0",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-18938",
+          "installed_version": "0.24.1-2",
+          "package": "libp11-kit0",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2024-10041",
+          "installed_version": "1.5.2-6+deb12u2",
+          "package": "libpam-modules",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-54411",
+          "installed_version": "1.5.2-6+deb12u2",
+          "package": "libpam-modules",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2024-10041",
+          "installed_version": "1.5.2-6+deb12u2",
+          "package": "libpam-modules-bin",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-54411",
+          "installed_version": "1.5.2-6+deb12u2",
+          "package": "libpam-modules-bin",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2024-10041",
+          "installed_version": "1.5.2-6+deb12u2",
+          "package": "libpam-runtime",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-54411",
+          "installed_version": "1.5.2-6+deb12u2",
+          "package": "libpam-runtime",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2024-10041",
+          "installed_version": "1.5.2-6+deb12u2",
+          "package": "libpam0g",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-54411",
+          "installed_version": "1.5.2-6+deb12u2",
+          "package": "libpam0g",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-13595",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libsmartcols1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-27456",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libsmartcols1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-3184",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libsmartcols1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-7709",
+          "installed_version": "3.40.1-2+deb12u2",
+          "package": "libsqlite3-0",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-11822",
+          "installed_version": "3.40.1-2+deb12u2",
+          "package": "libsqlite3-0",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-11824",
+          "installed_version": "3.40.1-2+deb12u2",
+          "package": "libsqlite3-0",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-50812",
+          "installed_version": "3.40.1-2+deb12u2",
+          "package": "libsqlite3-0",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-50813",
+          "installed_version": "3.40.1-2+deb12u2",
+          "package": "libsqlite3-0",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2023-50495",
+          "installed_version": "6.4-4",
+          "package": "libtinfo6",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-13595",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libuuid1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-27456",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libuuid1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-3184",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libuuid1",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-13595",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "mount",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-27456",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "mount",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-3184",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "mount",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2023-50495",
+          "installed_version": "6.4-4",
+          "package": "ncurses-base",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2023-50495",
+          "installed_version": "6.4-4",
+          "package": "ncurses-bin",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2025-15649",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-12087",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-48959",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-48961",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-7010",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-18477",
+          "installed_version": "1.34+dfsg-1.2+deb12u1",
+          "package": "tar",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-18508",
+          "installed_version": "1.34+dfsg-1.2+deb12u1",
+          "package": "tar",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-5704",
+          "installed_version": "1.34+dfsg-1.2+deb12u1",
+          "package": "tar",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-13595",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-27456",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-3184",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-13595",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux-extra",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-27456",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux-extra",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-3184",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux-extra",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-27171",
+          "installed_version": "1:1.2.13.dfsg-1",
+          "package": "zlib1g",
+          "severity": "MEDIUM",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53613",
+          "installed_version": "1:2.38.1-5+deb12u3",
+          "package": "bsdutils",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "20250419~deb12u1",
+          "id": "DLA-4726-1",
+          "installed_version": "20230311+deb12u1",
+          "package": "ca-certificates",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53613",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libblkid1",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53613",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libmount1",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53613",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libsmartcols1",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53613",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "libuuid1",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53613",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "mount",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-15534",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-7017",
+          "installed_version": "5.36.0-7+deb12u3",
+          "package": "perl-base",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53613",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-53613",
+          "installed_version": "2.38.1-5+deb12u3",
+          "package": "util-linux-extra",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+        }
+      ],
+      "high_critical_unfixed_count": 24,
+      "scanner": "trivy",
+      "verdict": "pass"
+    },
+    "container:governance_web": {
+      "blocking_count": 0,
+      "component": "governance_web",
+      "finding_count": 0,
+      "findings": [],
+      "high_critical_unfixed_count": 0,
+      "scanner": "trivy",
+      "verdict": "pass"
+    },
+    "npm:governance_web": {
+      "blocking_count": 0,
+      "component": "governance_web",
+      "finding_count": 0,
+      "findings": [],
+      "scanner": "npm-audit",
+      "verdict": "pass"
+    },
+    "python:a2a_otel_kit": {
+      "blocking_count": 0,
+      "component": "a2a_otel_kit",
+      "excepted_count": 0,
+      "finding_count": 0,
+      "findings": [],
+      "scanner": "pip-audit",
+      "verdict": "pass"
+    },
+    "python:governance": {
+      "blocking_count": 0,
+      "component": "governance",
+      "excepted_count": 0,
+      "finding_count": 0,
+      "findings": [],
+      "scanner": "pip-audit",
+      "verdict": "pass"
+    },
+    "python:multi_agent_credit_desk": {
+      "blocking_count": 0,
+      "component": "multi_agent_credit_desk",
+      "excepted_count": 0,
+      "finding_count": 0,
+      "findings": [],
+      "scanner": "pip-audit",
+      "verdict": "pass"
+    },
+    "python:policy_model_router": {
+      "blocking_count": 0,
+      "component": "policy_model_router",
+      "excepted_count": 0,
+      "finding_count": 0,
+      "findings": [],
+      "scanner": "pip-audit",
+      "verdict": "pass"
+    }
+  },
+  "tools": {
+    "docker": "Docker version 29.4.2, build 055a478ea9",
+    "node": "v23.10.0",
+    "npm": "10.2.5",
+    "pip_audit": "pip-audit 2.10.1",
+    "trivy": "Version: 0.73.0",
+    "uv": "uv 0.11.2 (02036a8ba 2026-03-26 aarch64-apple-darwin)"
+  },
+  "verdict": "pass"
+}
