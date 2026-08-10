@@ -8,15 +8,15 @@ from pathlib import Path
 import httpx
 import pytest
 
-from scripts.run_release_runtime_benchmark import (
-    _assurance_evaluation,
-)
 from scripts.release_runtime_benchmark import (
     RuntimeBenchmarkError,
     evaluate_slo,
     policy_digest,
     self_digest,
     summarize_samples,
+)
+from scripts.run_release_runtime_benchmark import (
+    _assurance_evaluation,
 )
 
 
