@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brunovicco/verifiable-ai-governance/schemas/release-security-evidence.schema.json",
+  "title": "Release Security Evidence Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "canonicalization",
+    "generated_at",
+    "release_version",
+    "release_manifest_digest",
+    "policy_digest",
+    "source_bindings",
+    "tools",
+    "images",
+    "artifacts",
+    "summaries",
+    "verdict",
+    "bundle_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "verifiable-ai-governance/release-security-evidence"},
+    "canonicalization": {"const": "json-sort-keys-compact-v1"},
+    "generated_at": {"type": "string", "minLength": 20},
+    "release_version": {"type": "string", "minLength": 1},
+    "release_manifest_digest": {"$ref": "#/$defs/sha256"},
+    "policy_digest": {"$ref": "#/$defs/sha256"},
+    "source_bindings": {
+      "type": "object",
+      "minProperties": 4,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["repository", "commit", "lockfile_sha256"],
+        "properties": {
+          "repository": {"type": "string", "minLength": 3},
+          "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+          "lockfile_sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "tools": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "images": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_commit", "image_id"],
+        "properties": {
+          "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+          "image_id": {"type": "string", "minLength": 8}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 18,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "role", "media_type", "sha256", "size_bytes"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "role": {"type": "string", "minLength": 1},
+          "media_type": {"type": "string", "minLength": 1},
+          "sha256": {"$ref": "#/$defs/sha256"},
+          "size_bytes": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "summaries": {"type": "object"},
+    "verdict": {"enum": ["pass", "fail"]},
+    "bundle_digest": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "python": {
+    "block_all_known_vulnerabilities": true,
+    "exceptions": []
+  },
+  "npm": {
+    "block_severities": ["high", "critical"]
+  },
+  "container": {
+    "block_severities": ["HIGH", "CRITICAL"],
+    "require_fix_available": true
+  }
+}
