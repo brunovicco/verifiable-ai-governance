@@ -1,0 +1,198 @@
+{
+  "benchmark_implementation_commit": "cdc0633b83f233360045d1588fb0479a52acbf53",
+  "bundle_digest": "48bee7f10f7b5e16f12969dd5fe7fc92ea90c48b1fb989f8a03a44c4fc2d4b98",
+  "canonicalization": "json-sort-keys-compact-v1",
+  "environment": {
+    "benchmark_mode": "sequential",
+    "logical_cpu_count": 8,
+    "machine": "arm64",
+    "python_version": "3.13.12",
+    "remote_llm_inference": false,
+    "system": "Darwin",
+    "system_release": "25.5.0"
+  },
+  "generated_at": "2026-08-10T23:05:49.375184Z",
+  "kind": "verifiable-ai-governance/release-runtime-benchmark",
+  "policy": {
+    "digest": "72f6fc7dc6303f4fd1b78dadfd6befcec8f909aa750542a6d283697802a03efb",
+    "path": "config/release-runtime-slo-policy.json",
+    "profile": "local-reference-v1"
+  },
+  "raw_measurements": {
+    "path": "artifacts/release/benchmark/runtime-benchmark-raw.json",
+    "sha256": "12c3f84bf6187358c79b41df7888485462ca677a219549a86b2cbfb41ebac9cd",
+    "size_bytes": 25662
+  },
+  "release_version": "0.2.0-rc1",
+  "runtime_equivalence": {
+    "benchmark_commit": "cdc0633b83f233360045d1588fb0479a52acbf53",
+    "changed_path_count": 55,
+    "release_commit": "74133daddc7b4a087ed8a7129dfa41d0ce50fecd",
+    "runtime_changed_paths": [],
+    "runtime_equivalent": true
+  },
+  "scenarios": {
+    "governance_ready": {
+      "slo": {
+        "checks": {
+          "max_error_rate": true,
+          "max_p95_ms": true,
+          "max_p99_ms": true,
+          "min_observed_rate_per_second": true,
+          "minimum_samples": true
+        },
+        "thresholds": {
+          "max_error_rate": 0.0,
+          "max_p95_ms": 250.0,
+          "max_p99_ms": 500.0,
+          "min_observed_rate_per_second": 4.0,
+          "minimum_samples": 50
+        },
+        "verdict": "pass"
+      },
+      "summary": {
+        "error_count": 0,
+        "error_rate": 0.0,
+        "max_ms": 61.684791,
+        "mean_ms": 14.58133916,
+        "min_ms": 10.803417,
+        "observed_rate_per_second": 68.580806538211,
+        "p50_ms": 12.120167,
+        "p95_ms": 24.540917,
+        "p99_ms": 61.684791,
+        "sample_count": 50
+      }
+    },
+    "governed_routing_allowed": {
+      "slo": {
+        "checks": {
+          "max_error_rate": true,
+          "max_p95_ms": true,
+          "max_p99_ms": true,
+          "min_observed_rate_per_second": true,
+          "minimum_samples": true
+        },
+        "thresholds": {
+          "max_error_rate": 0.0,
+          "max_p95_ms": 750.0,
+          "max_p99_ms": 1500.0,
+          "min_observed_rate_per_second": 1.0,
+          "minimum_samples": 50
+        },
+        "verdict": "pass"
+      },
+      "summary": {
+        "error_count": 0,
+        "error_rate": 0.0,
+        "max_ms": 66.3155,
+        "mean_ms": 46.704556540000006,
+        "min_ms": 42.477042,
+        "observed_rate_per_second": 21.411187132106743,
+        "p50_ms": 45.284917,
+        "p95_ms": 61.252125,
+        "p99_ms": 66.3155,
+        "sample_count": 50
+      }
+    },
+    "runtime_assurance_evaluation": {
+      "slo": {
+        "checks": {
+          "max_error_rate": true,
+          "max_p95_ms": true,
+          "max_p99_ms": true,
+          "min_observed_rate_per_second": true,
+          "minimum_samples": true
+        },
+        "thresholds": {
+          "max_error_rate": 0.0,
+          "max_p95_ms": 1500.0,
+          "max_p99_ms": 3000.0,
+          "min_observed_rate_per_second": 0.5,
+          "minimum_samples": 10
+        },
+        "verdict": "pass"
+      },
+      "summary": {
+        "error_count": 0,
+        "error_rate": 0.0,
+        "max_ms": 17.917666,
+        "mean_ms": 6.08907285,
+        "min_ms": 4.230208,
+        "observed_rate_per_second": 164.22861487032463,
+        "p50_ms": 5.133417,
+        "p95_ms": 7.852792,
+        "p99_ms": 17.917666,
+        "sample_count": 20
+      }
+    },
+    "runtime_control_state_read": {
+      "slo": {
+        "checks": {
+          "max_error_rate": true,
+          "max_p95_ms": true,
+          "max_p99_ms": true,
+          "min_observed_rate_per_second": true,
+          "minimum_samples": true
+        },
+        "thresholds": {
+          "max_error_rate": 0.0,
+          "max_p95_ms": 150.0,
+          "max_p99_ms": 300.0,
+          "min_observed_rate_per_second": 5.0,
+          "minimum_samples": 50
+        },
+        "verdict": "pass"
+      },
+      "summary": {
+        "error_count": 0,
+        "error_rate": 0.0,
+        "max_ms": 40.446958,
+        "mean_ms": 5.7447791,
+        "min_ms": 2.867542,
+        "observed_rate_per_second": 174.07109700701983,
+        "p50_ms": 4.301542,
+        "p95_ms": 12.3795,
+        "p99_ms": 40.446958,
+        "sample_count": 50
+      }
+    },
+    "runtime_telemetry_query": {
+      "slo": {
+        "checks": {
+          "max_error_rate": true,
+          "max_p95_ms": true,
+          "max_p99_ms": true,
+          "min_observed_rate_per_second": true,
+          "minimum_samples": true
+        },
+        "thresholds": {
+          "max_error_rate": 0.0,
+          "max_p95_ms": 500.0,
+          "max_p99_ms": 1000.0,
+          "min_observed_rate_per_second": 2.0,
+          "minimum_samples": 50
+        },
+        "verdict": "pass"
+      },
+      "summary": {
+        "error_count": 0,
+        "error_rate": 0.0,
+        "max_ms": 7.038459,
+        "mean_ms": 4.35365336,
+        "min_ms": 3.506167,
+        "observed_rate_per_second": 229.69214985917023,
+        "p50_ms": 4.23925,
+        "p95_ms": 6.207458,
+        "p99_ms": 7.038459,
+        "sample_count": 50
+      }
+    }
+  },
+  "schema_version": "1.0",
+  "upstream_roots": {
+    "build_provenance_digest": "b3ef18e39a6e54eb40001c142c70b8dc0f9d02a3f2191a369cbf592bd2c8da85",
+    "release_manifest_digest": "ba55a969f86bd032c8f1babeb61e8831c58dd364ecbf29a6a5afcbda51f4c9bc",
+    "security_bundle_digest": "021d8ae90d0a7bda4b717aa65c87518eadd60b37d15e3ccd406cb37f046d7db9"
+  },
+  "verdict": "pass"
+}
