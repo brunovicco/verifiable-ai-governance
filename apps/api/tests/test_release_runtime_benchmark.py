@@ -5,8 +5,12 @@ import json
 import subprocess
 from pathlib import Path
 
+import httpx
 import pytest
 
+from scripts.run_release_runtime_benchmark import (
+    _assurance_evaluation,
+)
 from scripts.release_runtime_benchmark import (
     RuntimeBenchmarkError,
     evaluate_slo,
@@ -156,3 +160,32 @@ def test_git_runtime_equivalence_helper_rejects_runtime_change(tmp_path: Path) -
     )
     with pytest.raises(RuntimeBenchmarkError, match="changed release runtime paths"):
         runtime_equivalence(tmp_path, release, git_head(tmp_path))
+
+
+def test_assurance_evaluation_requires_created_status() -> None:
+    agent_id = "agent-test-001"
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.method == "POST"
+        assert request.url.path == (f"/api/v1/agents/{agent_id}/runtime-assurance-evaluations")
+        return httpx.Response(
+            201,
+            json={
+                "agent_id": agent_id,
+                "evidence_digest": "a" * 64,
+            },
+        )
+
+    with httpx.Client(
+        transport=httpx.MockTransport(handler),
+        base_url="http://governance.test",
+    ) as client:
+        ok, status_code = _assurance_evaluation(
+            client,
+            governance_url="http://governance.test",
+            agent_id=agent_id,
+            user_id="demo.requester",
+        )
+
+    assert status_code == 201
+    assert ok is True

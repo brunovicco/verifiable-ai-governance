@@ -144,7 +144,7 @@ def _assurance_evaluation(
     except json.JSONDecodeError:
         return False, response.status_code
     ok = (
-        response.status_code == 200
+        response.status_code == 201
         and isinstance(payload, dict)
         and payload.get("agent_id") == agent_id
         and isinstance(payload.get("evidence_digest"), str)
