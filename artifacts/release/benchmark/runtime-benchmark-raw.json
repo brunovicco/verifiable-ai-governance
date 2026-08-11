@@ -1,305 +1,305 @@
 {
-  "benchmark_implementation_commit": "cdc0633b83f233360045d1588fb0479a52acbf53",
-  "generated_at": "2026-08-10T23:05:49.375184Z",
+  "benchmark_implementation_commit": "eb73c0115c2cfc0319fff1f0e4dba0a55ab3c1f7",
+  "generated_at": "2026-08-11T13:50:45.329655Z",
   "kind": "verifiable-ai-governance/release-runtime-benchmark-raw",
   "scenarios": {
     "governance_ready": [
       {
-        "duration_ms": 13.933541,
+        "duration_ms": 13.095584,
         "ok": true,
         "sequence": 1,
         "status_code": 200
       },
       {
-        "duration_ms": 13.655834,
+        "duration_ms": 17.915417,
         "ok": true,
         "sequence": 2,
         "status_code": 200
       },
       {
-        "duration_ms": 11.951125,
+        "duration_ms": 24.532042,
         "ok": true,
         "sequence": 3,
         "status_code": 200
       },
       {
-        "duration_ms": 11.9445,
+        "duration_ms": 19.338708,
         "ok": true,
         "sequence": 4,
         "status_code": 200
       },
       {
-        "duration_ms": 12.8,
+        "duration_ms": 13.612333,
         "ok": true,
         "sequence": 5,
         "status_code": 200
       },
       {
-        "duration_ms": 13.504709,
+        "duration_ms": 13.692334,
         "ok": true,
         "sequence": 6,
         "status_code": 200
       },
       {
-        "duration_ms": 12.927666,
+        "duration_ms": 11.809042,
         "ok": true,
         "sequence": 7,
         "status_code": 200
       },
       {
-        "duration_ms": 11.468958,
+        "duration_ms": 12.089375,
         "ok": true,
         "sequence": 8,
         "status_code": 200
       },
       {
-        "duration_ms": 11.586458,
+        "duration_ms": 11.923291,
         "ok": true,
         "sequence": 9,
         "status_code": 200
       },
       {
-        "duration_ms": 12.043542,
+        "duration_ms": 11.282083,
         "ok": true,
         "sequence": 10,
         "status_code": 200
       },
       {
-        "duration_ms": 10.864583,
+        "duration_ms": 11.116708,
         "ok": true,
         "sequence": 11,
         "status_code": 200
       },
       {
-        "duration_ms": 11.822625,
+        "duration_ms": 11.471958,
         "ok": true,
         "sequence": 12,
         "status_code": 200
       },
       {
-        "duration_ms": 11.993625,
+        "duration_ms": 11.980458,
         "ok": true,
         "sequence": 13,
         "status_code": 200
       },
       {
-        "duration_ms": 12.545541,
+        "duration_ms": 12.321959,
         "ok": true,
         "sequence": 14,
         "status_code": 200
       },
       {
-        "duration_ms": 11.588791,
+        "duration_ms": 11.880542,
         "ok": true,
         "sequence": 15,
         "status_code": 200
       },
       {
-        "duration_ms": 13.808291,
+        "duration_ms": 11.428,
         "ok": true,
         "sequence": 16,
         "status_code": 200
       },
       {
-        "duration_ms": 11.552041,
+        "duration_ms": 10.895916,
         "ok": true,
         "sequence": 17,
         "status_code": 200
       },
       {
-        "duration_ms": 13.476583,
+        "duration_ms": 11.614958,
         "ok": true,
         "sequence": 18,
         "status_code": 200
       },
       {
-        "duration_ms": 13.253334,
+        "duration_ms": 16.925083,
         "ok": true,
         "sequence": 19,
         "status_code": 200
       },
       {
-        "duration_ms": 11.983833,
+        "duration_ms": 12.175125,
         "ok": true,
         "sequence": 20,
         "status_code": 200
       },
       {
-        "duration_ms": 12.672708,
+        "duration_ms": 11.498458,
         "ok": true,
         "sequence": 21,
         "status_code": 200
       },
       {
-        "duration_ms": 11.481917,
+        "duration_ms": 11.916916,
         "ok": true,
         "sequence": 22,
         "status_code": 200
       },
       {
-        "duration_ms": 17.857542,
+        "duration_ms": 12.919125,
         "ok": true,
         "sequence": 23,
         "status_code": 200
       },
       {
-        "duration_ms": 16.620375,
+        "duration_ms": 12.641167,
         "ok": true,
         "sequence": 24,
         "status_code": 200
       },
       {
-        "duration_ms": 61.684791,
+        "duration_ms": 12.248042,
         "ok": true,
         "sequence": 25,
         "status_code": 200
       },
       {
-        "duration_ms": 48.436625,
+        "duration_ms": 11.786708,
         "ok": true,
         "sequence": 26,
         "status_code": 200
       },
       {
-        "duration_ms": 24.540917,
+        "duration_ms": 12.698416,
         "ok": true,
         "sequence": 27,
         "status_code": 200
       },
       {
-        "duration_ms": 16.801958,
+        "duration_ms": 11.767958,
         "ok": true,
         "sequence": 28,
         "status_code": 200
       },
       {
-        "duration_ms": 16.317375,
+        "duration_ms": 13.961458,
         "ok": true,
         "sequence": 29,
         "status_code": 200
       },
       {
-        "duration_ms": 12.494125,
+        "duration_ms": 12.604792,
         "ok": true,
         "sequence": 30,
         "status_code": 200
       },
       {
-        "duration_ms": 13.898583,
+        "duration_ms": 10.896708,
         "ok": true,
         "sequence": 31,
         "status_code": 200
       },
       {
-        "duration_ms": 13.173583,
+        "duration_ms": 11.165375,
         "ok": true,
         "sequence": 32,
         "status_code": 200
       },
       {
-        "duration_ms": 13.018292,
+        "duration_ms": 11.182625,
         "ok": true,
         "sequence": 33,
         "status_code": 200
       },
       {
-        "duration_ms": 11.326625,
+        "duration_ms": 13.153583,
         "ok": true,
         "sequence": 34,
         "status_code": 200
       },
       {
-        "duration_ms": 10.803417,
+        "duration_ms": 11.2395,
         "ok": true,
         "sequence": 35,
         "status_code": 200
       },
       {
-        "duration_ms": 11.265209,
+        "duration_ms": 12.29175,
         "ok": true,
         "sequence": 36,
         "status_code": 200
       },
       {
-        "duration_ms": 11.351334,
+        "duration_ms": 12.39275,
         "ok": true,
         "sequence": 37,
         "status_code": 200
       },
       {
-        "duration_ms": 10.959334,
+        "duration_ms": 15.821417,
         "ok": true,
         "sequence": 38,
         "status_code": 200
       },
       {
-        "duration_ms": 12.2915,
+        "duration_ms": 11.722167,
         "ok": true,
         "sequence": 39,
         "status_code": 200
       },
       {
-        "duration_ms": 12.714667,
+        "duration_ms": 11.509041,
         "ok": true,
         "sequence": 40,
         "status_code": 200
       },
       {
-        "duration_ms": 11.064708,
+        "duration_ms": 12.447875,
         "ok": true,
         "sequence": 41,
         "status_code": 200
       },
       {
-        "duration_ms": 12.089792,
+        "duration_ms": 11.559375,
         "ok": true,
         "sequence": 42,
         "status_code": 200
       },
       {
-        "duration_ms": 12.120167,
+        "duration_ms": 11.651458,
         "ok": true,
         "sequence": 43,
         "status_code": 200
       },
       {
-        "duration_ms": 12.107709,
+        "duration_ms": 14.89225,
         "ok": true,
         "sequence": 44,
         "status_code": 200
       },
       {
-        "duration_ms": 11.785666,
+        "duration_ms": 20.023458,
         "ok": true,
         "sequence": 45,
         "status_code": 200
       },
       {
-        "duration_ms": 11.327167,
+        "duration_ms": 11.637292,
         "ok": true,
         "sequence": 46,
         "status_code": 200
       },
       {
-        "duration_ms": 12.755334,
+        "duration_ms": 13.199542,
         "ok": true,
         "sequence": 47,
         "status_code": 200
       },
       {
-        "duration_ms": 11.563625,
+        "duration_ms": 14.047875,
         "ok": true,
         "sequence": 48,
         "status_code": 200
       },
       {
-        "duration_ms": 14.109375,
+        "duration_ms": 14.374208,
         "ok": true,
         "sequence": 49,
         "status_code": 200
       },
       {
-        "duration_ms": 11.726958,
+        "duration_ms": 13.294292,
         "ok": true,
         "sequence": 50,
         "status_code": 200
@@ -307,301 +307,301 @@
     ],
     "governed_routing_allowed": [
       {
-        "duration_ms": 66.3155,
+        "duration_ms": 50.765541,
         "ok": true,
         "sequence": 1,
         "status_code": 200
       },
       {
-        "duration_ms": 51.222875,
+        "duration_ms": 47.922958,
         "ok": true,
         "sequence": 2,
         "status_code": 200
       },
       {
-        "duration_ms": 51.910875,
+        "duration_ms": 45.412458,
         "ok": true,
         "sequence": 3,
         "status_code": 200
       },
       {
-        "duration_ms": 47.964833,
+        "duration_ms": 45.217958,
         "ok": true,
         "sequence": 4,
         "status_code": 200
       },
       {
-        "duration_ms": 47.432666,
+        "duration_ms": 48.162334,
         "ok": true,
         "sequence": 5,
         "status_code": 200
       },
       {
-        "duration_ms": 61.252125,
+        "duration_ms": 48.685375,
         "ok": true,
         "sequence": 6,
         "status_code": 200
       },
       {
-        "duration_ms": 51.285041,
+        "duration_ms": 48.628333,
         "ok": true,
         "sequence": 7,
         "status_code": 200
       },
       {
-        "duration_ms": 45.804958,
+        "duration_ms": 43.081333,
         "ok": true,
         "sequence": 8,
         "status_code": 200
       },
       {
-        "duration_ms": 47.506625,
+        "duration_ms": 47.436375,
         "ok": true,
         "sequence": 9,
         "status_code": 200
       },
       {
-        "duration_ms": 46.29275,
+        "duration_ms": 45.224166,
         "ok": true,
         "sequence": 10,
         "status_code": 200
       },
       {
-        "duration_ms": 45.738666,
+        "duration_ms": 47.460625,
         "ok": true,
         "sequence": 11,
         "status_code": 200
       },
       {
-        "duration_ms": 45.050167,
+        "duration_ms": 45.662375,
         "ok": true,
         "sequence": 12,
         "status_code": 200
       },
       {
-        "duration_ms": 45.284917,
+        "duration_ms": 53.435208,
         "ok": true,
         "sequence": 13,
         "status_code": 200
       },
       {
-        "duration_ms": 44.829291,
+        "duration_ms": 46.582291,
         "ok": true,
         "sequence": 14,
         "status_code": 200
       },
       {
-        "duration_ms": 53.889458,
+        "duration_ms": 51.449875,
         "ok": true,
         "sequence": 15,
         "status_code": 200
       },
       {
-        "duration_ms": 48.089875,
+        "duration_ms": 50.539166,
         "ok": true,
         "sequence": 16,
         "status_code": 200
       },
       {
-        "duration_ms": 64.094417,
+        "duration_ms": 50.95525,
         "ok": true,
         "sequence": 17,
         "status_code": 200
       },
       {
-        "duration_ms": 44.450583,
+        "duration_ms": 40.933625,
         "ok": true,
         "sequence": 18,
         "status_code": 200
       },
       {
-        "duration_ms": 49.935333,
+        "duration_ms": 39.911834,
         "ok": true,
         "sequence": 19,
         "status_code": 200
       },
       {
-        "duration_ms": 48.68925,
+        "duration_ms": 43.130208,
         "ok": true,
         "sequence": 20,
         "status_code": 200
       },
       {
-        "duration_ms": 44.079417,
+        "duration_ms": 43.284417,
         "ok": true,
         "sequence": 21,
         "status_code": 200
       },
       {
-        "duration_ms": 43.488083,
+        "duration_ms": 42.367292,
         "ok": true,
         "sequence": 22,
         "status_code": 200
       },
       {
-        "duration_ms": 43.144458,
+        "duration_ms": 46.335833,
         "ok": true,
         "sequence": 23,
         "status_code": 200
       },
       {
-        "duration_ms": 46.180458,
+        "duration_ms": 44.1755,
         "ok": true,
         "sequence": 24,
         "status_code": 200
       },
       {
-        "duration_ms": 43.19075,
+        "duration_ms": 45.139834,
         "ok": true,
         "sequence": 25,
         "status_code": 200
       },
       {
-        "duration_ms": 42.698542,
+        "duration_ms": 48.95475,
         "ok": true,
         "sequence": 26,
         "status_code": 200
       },
       {
-        "duration_ms": 43.079292,
+        "duration_ms": 41.510291,
         "ok": true,
         "sequence": 27,
         "status_code": 200
       },
       {
-        "duration_ms": 43.560042,
+        "duration_ms": 46.321375,
         "ok": true,
         "sequence": 28,
         "status_code": 200
       },
       {
-        "duration_ms": 42.948166,
+        "duration_ms": 43.124875,
         "ok": true,
         "sequence": 29,
         "status_code": 200
       },
       {
-        "duration_ms": 43.299166,
+        "duration_ms": 46.85125,
         "ok": true,
         "sequence": 30,
         "status_code": 200
       },
       {
-        "duration_ms": 46.331584,
+        "duration_ms": 44.690375,
         "ok": true,
         "sequence": 31,
         "status_code": 200
       },
       {
-        "duration_ms": 43.8805,
+        "duration_ms": 43.430459,
         "ok": true,
         "sequence": 32,
         "status_code": 200
       },
       {
-        "duration_ms": 42.477042,
+        "duration_ms": 45.865583,
         "ok": true,
         "sequence": 33,
         "status_code": 200
       },
       {
-        "duration_ms": 43.266958,
+        "duration_ms": 49.32575,
         "ok": true,
         "sequence": 34,
         "status_code": 200
       },
       {
-        "duration_ms": 48.899458,
+        "duration_ms": 43.199833,
         "ok": true,
         "sequence": 35,
         "status_code": 200
       },
       {
-        "duration_ms": 44.001083,
+        "duration_ms": 44.220167,
         "ok": true,
         "sequence": 36,
         "status_code": 200
       },
       {
-        "duration_ms": 43.197084,
+        "duration_ms": 53.082375,
         "ok": true,
         "sequence": 37,
         "status_code": 200
       },
       {
-        "duration_ms": 46.8065,
+        "duration_ms": 45.60725,
         "ok": true,
         "sequence": 38,
         "status_code": 200
       },
       {
-        "duration_ms": 45.90525,
+        "duration_ms": 44.052708,
         "ok": true,
         "sequence": 39,
         "status_code": 200
       },
       {
-        "duration_ms": 44.117333,
+        "duration_ms": 45.417292,
         "ok": true,
         "sequence": 40,
         "status_code": 200
       },
       {
-        "duration_ms": 43.403166,
+        "duration_ms": 45.680875,
         "ok": true,
         "sequence": 41,
         "status_code": 200
       },
       {
-        "duration_ms": 45.924166,
+        "duration_ms": 42.699167,
         "ok": true,
         "sequence": 42,
         "status_code": 200
       },
       {
-        "duration_ms": 45.656375,
+        "duration_ms": 42.248125,
         "ok": true,
         "sequence": 43,
         "status_code": 200
       },
       {
-        "duration_ms": 43.338042,
+        "duration_ms": 48.45475,
         "ok": true,
         "sequence": 44,
         "status_code": 200
       },
       {
-        "duration_ms": 45.625208,
+        "duration_ms": 43.298084,
         "ok": true,
         "sequence": 45,
         "status_code": 200
       },
       {
-        "duration_ms": 42.570208,
+        "duration_ms": 42.329459,
         "ok": true,
         "sequence": 46,
         "status_code": 200
       },
       {
-        "duration_ms": 42.53075,
+        "duration_ms": 44.035958,
         "ok": true,
         "sequence": 47,
         "status_code": 200
       },
       {
-        "duration_ms": 44.763083,
+        "duration_ms": 41.442208,
         "ok": true,
         "sequence": 48,
         "status_code": 200
       },
       {
-        "duration_ms": 46.593541,
+        "duration_ms": 43.539417,
         "ok": true,
         "sequence": 49,
         "status_code": 200
       },
       {
-        "duration_ms": 43.231917,
+        "duration_ms": 42.471333,
         "ok": true,
         "sequence": 50,
         "status_code": 200
@@ -609,121 +609,121 @@
     ],
     "runtime_assurance_evaluation": [
       {
-        "duration_ms": 5.672584,
+        "duration_ms": 5.649291,
         "ok": true,
         "sequence": 1,
         "status_code": 201
       },
       {
-        "duration_ms": 4.942458,
+        "duration_ms": 5.355417,
         "ok": true,
         "sequence": 2,
         "status_code": 201
       },
       {
-        "duration_ms": 6.353459,
+        "duration_ms": 5.181166,
         "ok": true,
         "sequence": 3,
         "status_code": 201
       },
       {
-        "duration_ms": 17.917666,
+        "duration_ms": 5.213458,
         "ok": true,
         "sequence": 4,
         "status_code": 201
       },
       {
-        "duration_ms": 7.852792,
+        "duration_ms": 5.266584,
         "ok": true,
         "sequence": 5,
         "status_code": 201
       },
       {
-        "duration_ms": 6.940375,
+        "duration_ms": 5.063041,
         "ok": true,
         "sequence": 6,
         "status_code": 201
       },
       {
-        "duration_ms": 5.411791,
+        "duration_ms": 4.891208,
         "ok": true,
         "sequence": 7,
         "status_code": 201
       },
       {
-        "duration_ms": 6.467542,
+        "duration_ms": 5.393125,
         "ok": true,
         "sequence": 8,
         "status_code": 201
       },
       {
-        "duration_ms": 4.737958,
+        "duration_ms": 4.825208,
         "ok": true,
         "sequence": 9,
         "status_code": 201
       },
       {
-        "duration_ms": 6.365375,
+        "duration_ms": 5.095375,
         "ok": true,
         "sequence": 10,
         "status_code": 201
       },
       {
-        "duration_ms": 4.83625,
+        "duration_ms": 4.571208,
         "ok": true,
         "sequence": 11,
         "status_code": 201
       },
       {
-        "duration_ms": 4.970208,
+        "duration_ms": 4.411959,
         "ok": true,
         "sequence": 12,
         "status_code": 201
       },
       {
-        "duration_ms": 4.230208,
+        "duration_ms": 5.060958,
         "ok": true,
         "sequence": 13,
         "status_code": 201
       },
       {
-        "duration_ms": 5.133417,
+        "duration_ms": 5.603333,
         "ok": true,
         "sequence": 14,
         "status_code": 201
       },
       {
-        "duration_ms": 6.242042,
+        "duration_ms": 4.941042,
         "ok": true,
         "sequence": 15,
         "status_code": 201
       },
       {
-        "duration_ms": 5.2605,
+        "duration_ms": 4.448875,
         "ok": true,
         "sequence": 16,
         "status_code": 201
       },
       {
-        "duration_ms": 4.793416,
+        "duration_ms": 5.0625,
         "ok": true,
         "sequence": 17,
         "status_code": 201
       },
       {
-        "duration_ms": 4.691333,
+        "duration_ms": 5.313375,
         "ok": true,
         "sequence": 18,
         "status_code": 201
       },
       {
-        "duration_ms": 4.610042,
+        "duration_ms": 5.061333,
         "ok": true,
         "sequence": 19,
         "status_code": 201
       },
       {
-        "duration_ms": 4.352041,
+        "duration_ms": 4.773084,
         "ok": true,
         "sequence": 20,
         "status_code": 201
@@ -731,553 +731,553 @@
     ],
     "runtime_control_state_read": [
       {
-        "duration_ms": 7.281416,
+        "duration_ms": 6.404334,
         "ok": true,
         "sequence": 1
       },
       {
-        "duration_ms": 8.004875,
+        "duration_ms": 6.377083,
         "ok": true,
         "sequence": 2
       },
       {
-        "duration_ms": 8.288083,
+        "duration_ms": 6.153667,
         "ok": true,
         "sequence": 3
       },
       {
-        "duration_ms": 6.39625,
+        "duration_ms": 6.654833,
         "ok": true,
         "sequence": 4
       },
       {
-        "duration_ms": 5.424333,
+        "duration_ms": 9.5045,
         "ok": true,
         "sequence": 5
       },
       {
-        "duration_ms": 6.631083,
+        "duration_ms": 4.49375,
         "ok": true,
         "sequence": 6
       },
       {
-        "duration_ms": 6.114333,
+        "duration_ms": 4.533875,
         "ok": true,
         "sequence": 7
       },
       {
-        "duration_ms": 4.301542,
+        "duration_ms": 3.706291,
         "ok": true,
         "sequence": 8
       },
       {
-        "duration_ms": 3.865875,
+        "duration_ms": 4.176709,
         "ok": true,
         "sequence": 9
       },
       {
-        "duration_ms": 4.405083,
+        "duration_ms": 4.149375,
         "ok": true,
         "sequence": 10
       },
       {
-        "duration_ms": 3.108875,
+        "duration_ms": 3.889125,
         "ok": true,
         "sequence": 11
       },
       {
-        "duration_ms": 3.0695,
+        "duration_ms": 4.75275,
         "ok": true,
         "sequence": 12
       },
       {
-        "duration_ms": 3.131125,
+        "duration_ms": 4.8145,
         "ok": true,
         "sequence": 13
       },
       {
-        "duration_ms": 4.924833,
+        "duration_ms": 6.329791,
         "ok": true,
         "sequence": 14
       },
       {
-        "duration_ms": 4.357958,
+        "duration_ms": 5.036959,
         "ok": true,
         "sequence": 15
       },
       {
-        "duration_ms": 3.189458,
+        "duration_ms": 5.212709,
         "ok": true,
         "sequence": 16
       },
       {
-        "duration_ms": 3.102875,
+        "duration_ms": 4.185791,
         "ok": true,
         "sequence": 17
       },
       {
-        "duration_ms": 3.324375,
+        "duration_ms": 5.756459,
         "ok": true,
         "sequence": 18
       },
       {
-        "duration_ms": 3.192333,
+        "duration_ms": 3.894625,
         "ok": true,
         "sequence": 19
       },
       {
-        "duration_ms": 3.168167,
+        "duration_ms": 3.209667,
         "ok": true,
         "sequence": 20
       },
       {
-        "duration_ms": 3.50475,
+        "duration_ms": 4.200667,
         "ok": true,
         "sequence": 21
       },
       {
-        "duration_ms": 3.551958,
+        "duration_ms": 3.133667,
         "ok": true,
         "sequence": 22
       },
       {
-        "duration_ms": 3.357541,
+        "duration_ms": 3.656166,
         "ok": true,
         "sequence": 23
       },
       {
-        "duration_ms": 3.554042,
+        "duration_ms": 3.255625,
         "ok": true,
         "sequence": 24
       },
       {
-        "duration_ms": 4.013208,
+        "duration_ms": 3.029833,
         "ok": true,
         "sequence": 25
       },
       {
-        "duration_ms": 3.341208,
+        "duration_ms": 4.881292,
         "ok": true,
         "sequence": 26
       },
       {
-        "duration_ms": 2.867542,
+        "duration_ms": 4.399959,
         "ok": true,
         "sequence": 27
       },
       {
-        "duration_ms": 3.386167,
+        "duration_ms": 5.30325,
         "ok": true,
         "sequence": 28
       },
       {
-        "duration_ms": 3.235,
+        "duration_ms": 3.782583,
         "ok": true,
         "sequence": 29
       },
       {
-        "duration_ms": 4.250917,
+        "duration_ms": 4.469916,
         "ok": true,
         "sequence": 30
       },
       {
-        "duration_ms": 3.3735,
+        "duration_ms": 3.748708,
         "ok": true,
         "sequence": 31
       },
       {
-        "duration_ms": 3.3575,
+        "duration_ms": 3.849584,
         "ok": true,
         "sequence": 32
       },
       {
-        "duration_ms": 3.880709,
+        "duration_ms": 4.484834,
         "ok": true,
         "sequence": 33
       },
       {
-        "duration_ms": 4.715917,
+        "duration_ms": 4.220208,
         "ok": true,
         "sequence": 34
       },
       {
-        "duration_ms": 3.648083,
+        "duration_ms": 4.193,
         "ok": true,
         "sequence": 35
       },
       {
-        "duration_ms": 4.809708,
+        "duration_ms": 4.077167,
         "ok": true,
         "sequence": 36
       },
       {
-        "duration_ms": 4.623417,
+        "duration_ms": 3.111417,
         "ok": true,
         "sequence": 37
       },
       {
-        "duration_ms": 3.468833,
+        "duration_ms": 3.461083,
         "ok": true,
         "sequence": 38
       },
       {
-        "duration_ms": 4.618208,
+        "duration_ms": 4.64925,
         "ok": true,
         "sequence": 39
       },
       {
-        "duration_ms": 4.757708,
+        "duration_ms": 4.379583,
         "ok": true,
         "sequence": 40
       },
       {
-        "duration_ms": 4.699417,
+        "duration_ms": 4.599708,
         "ok": true,
         "sequence": 41
       },
       {
-        "duration_ms": 6.15525,
+        "duration_ms": 4.137292,
         "ok": true,
         "sequence": 42
       },
       {
-        "duration_ms": 5.515917,
+        "duration_ms": 3.263,
         "ok": true,
         "sequence": 43
       },
       {
-        "duration_ms": 6.926708,
+        "duration_ms": 3.165084,
         "ok": true,
         "sequence": 44
       },
       {
-        "duration_ms": 6.349708,
+        "duration_ms": 4.847667,
         "ok": true,
         "sequence": 45
       },
       {
-        "duration_ms": 10.792875,
+        "duration_ms": 3.125,
         "ok": true,
         "sequence": 46
       },
       {
-        "duration_ms": 12.3795,
+        "duration_ms": 3.539958,
         "ok": true,
         "sequence": 47
       },
       {
-        "duration_ms": 7.516792,
+        "duration_ms": 3.920292,
         "ok": true,
         "sequence": 48
       },
       {
-        "duration_ms": 40.446958,
+        "duration_ms": 4.37175,
         "ok": true,
         "sequence": 49
       },
       {
-        "duration_ms": 14.857542,
+        "duration_ms": 4.987333,
         "ok": true,
         "sequence": 50
       }
     ],
     "runtime_telemetry_query": [
       {
-        "duration_ms": 5.794292,
+        "duration_ms": 16.242333,
         "ok": true,
         "sequence": 1,
         "status_code": 200
       },
       {
-        "duration_ms": 4.524209,
+        "duration_ms": 6.590917,
         "ok": true,
         "sequence": 2,
         "status_code": 200
       },
       {
-        "duration_ms": 4.127042,
+        "duration_ms": 13.120333,
         "ok": true,
         "sequence": 3,
         "status_code": 200
       },
       {
-        "duration_ms": 4.784583,
+        "duration_ms": 11.107625,
         "ok": true,
         "sequence": 4,
         "status_code": 200
       },
       {
-        "duration_ms": 4.230125,
+        "duration_ms": 4.7475,
         "ok": true,
         "sequence": 5,
         "status_code": 200
       },
       {
-        "duration_ms": 4.298708,
+        "duration_ms": 4.990542,
         "ok": true,
         "sequence": 6,
         "status_code": 200
       },
       {
-        "duration_ms": 4.422208,
+        "duration_ms": 5.226666,
         "ok": true,
         "sequence": 7,
         "status_code": 200
       },
       {
-        "duration_ms": 4.24325,
+        "duration_ms": 4.192667,
         "ok": true,
         "sequence": 8,
         "status_code": 200
       },
       {
-        "duration_ms": 4.275334,
+        "duration_ms": 4.0305,
         "ok": true,
         "sequence": 9,
         "status_code": 200
       },
       {
-        "duration_ms": 6.207458,
+        "duration_ms": 4.339125,
         "ok": true,
         "sequence": 10,
         "status_code": 200
       },
       {
-        "duration_ms": 4.557542,
+        "duration_ms": 3.692042,
         "ok": true,
         "sequence": 11,
         "status_code": 200
       },
       {
-        "duration_ms": 7.038459,
+        "duration_ms": 3.917875,
         "ok": true,
         "sequence": 12,
         "status_code": 200
       },
       {
-        "duration_ms": 6.749,
+        "duration_ms": 3.68,
         "ok": true,
         "sequence": 13,
         "status_code": 200
       },
       {
-        "duration_ms": 5.0125,
+        "duration_ms": 4.164667,
         "ok": true,
         "sequence": 14,
         "status_code": 200
       },
       {
-        "duration_ms": 4.066833,
+        "duration_ms": 3.684041,
         "ok": true,
         "sequence": 15,
         "status_code": 200
       },
       {
-        "duration_ms": 3.598084,
+        "duration_ms": 4.209792,
         "ok": true,
         "sequence": 16,
         "status_code": 200
       },
       {
-        "duration_ms": 3.780083,
+        "duration_ms": 4.532542,
         "ok": true,
         "sequence": 17,
         "status_code": 200
       },
       {
-        "duration_ms": 3.917916,
+        "duration_ms": 3.88275,
         "ok": true,
         "sequence": 18,
         "status_code": 200
       },
       {
-        "duration_ms": 3.76775,
+        "duration_ms": 3.558667,
         "ok": true,
         "sequence": 19,
         "status_code": 200
       },
       {
-        "duration_ms": 3.587375,
+        "duration_ms": 3.509333,
         "ok": true,
         "sequence": 20,
         "status_code": 200
       },
       {
-        "duration_ms": 4.51,
+        "duration_ms": 3.8935,
         "ok": true,
         "sequence": 21,
         "status_code": 200
       },
       {
-        "duration_ms": 3.885291,
+        "duration_ms": 4.222625,
         "ok": true,
         "sequence": 22,
         "status_code": 200
       },
       {
-        "duration_ms": 3.634417,
+        "duration_ms": 4.123916,
         "ok": true,
         "sequence": 23,
         "status_code": 200
       },
       {
-        "duration_ms": 4.078875,
+        "duration_ms": 4.134291,
         "ok": true,
         "sequence": 24,
         "status_code": 200
       },
       {
-        "duration_ms": 3.50725,
+        "duration_ms": 3.910958,
         "ok": true,
         "sequence": 25,
         "status_code": 200
       },
       {
-        "duration_ms": 3.541209,
+        "duration_ms": 3.276375,
         "ok": true,
         "sequence": 26,
         "status_code": 200
       },
       {
-        "duration_ms": 4.350958,
+        "duration_ms": 3.353916,
         "ok": true,
         "sequence": 27,
         "status_code": 200
       },
       {
-        "duration_ms": 3.818542,
+        "duration_ms": 3.336,
         "ok": true,
         "sequence": 28,
         "status_code": 200
       },
       {
-        "duration_ms": 4.22475,
+        "duration_ms": 3.567417,
         "ok": true,
         "sequence": 29,
         "status_code": 200
       },
       {
-        "duration_ms": 4.754834,
+        "duration_ms": 3.433084,
         "ok": true,
         "sequence": 30,
         "status_code": 200
       },
       {
-        "duration_ms": 4.662,
+        "duration_ms": 4.388791,
         "ok": true,
         "sequence": 31,
         "status_code": 200
       },
       {
-        "duration_ms": 4.532917,
+        "duration_ms": 4.275666,
         "ok": true,
         "sequence": 32,
         "status_code": 200
       },
       {
-        "duration_ms": 4.5165,
+        "duration_ms": 3.968875,
         "ok": true,
         "sequence": 33,
         "status_code": 200
       },
       {
-        "duration_ms": 4.23925,
+        "duration_ms": 3.434291,
         "ok": true,
         "sequence": 34,
         "status_code": 200
       },
       {
-        "duration_ms": 4.278166,
+        "duration_ms": 3.394666,
         "ok": true,
         "sequence": 35,
         "status_code": 200
       },
       {
-        "duration_ms": 3.960792,
+        "duration_ms": 3.371792,
         "ok": true,
         "sequence": 36,
         "status_code": 200
       },
       {
-        "duration_ms": 4.039792,
+        "duration_ms": 3.269625,
         "ok": true,
         "sequence": 37,
         "status_code": 200
       },
       {
-        "duration_ms": 4.42675,
+        "duration_ms": 3.266958,
         "ok": true,
         "sequence": 38,
         "status_code": 200
       },
       {
-        "duration_ms": 3.839333,
+        "duration_ms": 3.53025,
         "ok": true,
         "sequence": 39,
         "status_code": 200
       },
       {
-        "duration_ms": 3.603375,
+        "duration_ms": 3.424917,
         "ok": true,
         "sequence": 40,
         "status_code": 200
       },
       {
-        "duration_ms": 4.904375,
+        "duration_ms": 3.533833,
         "ok": true,
         "sequence": 41,
         "status_code": 200
       },
       {
-        "duration_ms": 4.007541,
+        "duration_ms": 3.296958,
         "ok": true,
         "sequence": 42,
         "status_code": 200
       },
       {
-        "duration_ms": 3.97475,
+        "duration_ms": 3.230833,
         "ok": true,
         "sequence": 43,
         "status_code": 200
       },
       {
-        "duration_ms": 4.146583,
+        "duration_ms": 4.101292,
         "ok": true,
         "sequence": 44,
         "status_code": 200
       },
       {
-        "duration_ms": 3.551,
+        "duration_ms": 4.554375,
         "ok": true,
         "sequence": 45,
         "status_code": 200
       },
       {
-        "duration_ms": 3.506167,
+        "duration_ms": 4.251667,
         "ok": true,
         "sequence": 46,
         "status_code": 200
       },
       {
-        "duration_ms": 4.55525,
+        "duration_ms": 3.906333,
         "ok": true,
         "sequence": 47,
         "status_code": 200
       },
       {
-        "duration_ms": 4.4425,
+        "duration_ms": 3.795167,
         "ok": true,
         "sequence": 48,
         "status_code": 200
       },
       {
-        "duration_ms": 4.697542,
+        "duration_ms": 4.545917,
         "ok": true,
         "sequence": 49,
         "status_code": 200
       },
       {
-        "duration_ms": 4.509208,
+        "duration_ms": 3.51325,
         "ok": true,
         "sequence": 50,
         "status_code": 200
