@@ -49,6 +49,38 @@ jobs:
         run: |
           test "${{ inputs.release_version }}" = "${{ steps.roots.outputs.release_version }}"
 
+      - name: Hydrate historical Governance evidence commit
+        shell: bash
+        run: |
+          evidence_commit="$(
+            python - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(
+              Path("artifacts/release/release-manifest.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          print(
+              manifest["compatibility"]["governance"]["evidence_commit"]
+          )
+          PY
+          )"
+
+          git fetch \
+            --no-tags \
+            --depth=2 \
+            origin \
+            "$evidence_commit"
+
+          git cat-file -e "${evidence_commit}^{commit}"
+
+          test "$(
+            git rev-list --parents -n 1 "$evidence_commit" |
+              awk '{print NF - 1}'
+          )" -eq 1
+
       - name: Checkout frozen Governance source
         uses: actions/checkout@v7
         with:
