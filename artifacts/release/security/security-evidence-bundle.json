@@ -4,28 +4,28 @@
       "media_type": "application/json",
       "path": "artifacts/release/security/vulnerabilities/governance_api-trivy.json",
       "role": "container_audit:governance_api",
-      "sha256": "d0cedcc8b9ab6c1b2d02b77b28b97a4f71a5fc7c34b1f97c5c47b2213a8f63f6",
-      "size_bytes": 971990
+      "sha256": "b7863450446738ebdb1f5fc9bb352d5da3392c21c4b4f03aaa2aa91e7c075106",
+      "size_bytes": 978748
     },
     {
       "media_type": "application/json",
       "path": "artifacts/release/security/vulnerabilities/governance_web-trivy.json",
       "role": "container_audit:governance_web",
-      "sha256": "8398c722f2b16193bcf5c55203ba97c1b6b282cc20fa0f711d4113f0b1eb46f4",
-      "size_bytes": 50094
+      "sha256": "ce0e231bf41ac5b8fdfe7be1966af69c67d6d9b3786503d4eff922b7cfd9eed6",
+      "size_bytes": 49927
     },
     {
       "media_type": "application/vnd.cyclonedx+json",
       "path": "artifacts/release/security/sbom/governance_api-image.cdx.json",
       "role": "container_sbom:governance_api",
-      "sha256": "647786bf6bfe2764b39af3d36e5d7fd6ca8fa889765f351f71b5f49c551fe606",
+      "sha256": "aefb84541be7461425dc68e1e0dc943b1479d7f8f6f5d3ffb232332e2d55929f",
       "size_bytes": 277624
     },
     {
       "media_type": "application/vnd.cyclonedx+json",
       "path": "artifacts/release/security/sbom/governance_web-image.cdx.json",
       "role": "container_sbom:governance_web",
-      "sha256": "6b38e382b330d96074b4d811b572079d87d28547eaaa895287ff4ad5b69c7bb5",
+      "sha256": "6b7b8b125dffd576284f65577a75698f2ec140f5690a019d3c11926aa85757ad",
       "size_bytes": 62008
     },
     {
@@ -39,7 +39,7 @@
       "media_type": "application/vnd.cyclonedx+json",
       "path": "artifacts/release/security/sbom/governance-web-npm.cdx.json",
       "role": "npm_sbom:governance_web",
-      "sha256": "8c250b1d432c0d01315ca69249aa22d4b3575bc3a1bdf0b30b3181cd14037972",
+      "sha256": "980be41c4488cee9ebaf1dff58379d65123c1bbdac36d9d42702e284639f465b",
       "size_bytes": 521933
     },
     {
@@ -102,48 +102,48 @@
       "media_type": "application/vnd.cyclonedx+json",
       "path": "artifacts/release/security/sbom/a2a_otel_kit-python.cdx.json",
       "role": "python_sbom:a2a_otel_kit",
-      "sha256": "2dd3ad09538f879fb50af54b801ddf0a09f401abe82aa597a078e2bfa7fd2fd3",
-      "size_bytes": 15782
+      "sha256": "a27ce9acb8dc7e744f18c9ea5acf95db704b711e1e1069f012be6556cf9d9e0f",
+      "size_bytes": 15770
     },
     {
       "media_type": "application/vnd.cyclonedx+json",
       "path": "artifacts/release/security/sbom/governance-python.cdx.json",
       "role": "python_sbom:governance",
-      "sha256": "bc60b50b1e1c645688530bfe8e8e72eb3bff08224ba5ad96660f911de637a247",
-      "size_bytes": 11745
+      "sha256": "46833941cff77d09fdb3c79a5dfd91123b1bc7f7338a1b9f0268d06e1076a688",
+      "size_bytes": 11741
     },
     {
       "media_type": "application/vnd.cyclonedx+json",
       "path": "artifacts/release/security/sbom/multi_agent_credit_desk-python.cdx.json",
       "role": "python_sbom:multi_agent_credit_desk",
-      "sha256": "7c4584b5338d205af2d4e54e67bb26bb67b8eb7609d49749ddcb4d993c09d11a",
-      "size_bytes": 15421
+      "sha256": "ffec718b03a7b3589572786fc4b1bcd72cb6fccdaf4684588c904a571756a383",
+      "size_bytes": 15433
     },
     {
       "media_type": "application/vnd.cyclonedx+json",
       "path": "artifacts/release/security/sbom/policy_model_router-python.cdx.json",
       "role": "python_sbom:policy_model_router",
-      "sha256": "83d8be975b33fffd9399cf339958dd3fb373a12df42fee7e8f41a9414a1a8e80",
-      "size_bytes": 12994
+      "sha256": "b378802df3866fea1ac1e0ade587e3e8aacf4a55c83f8c9e82f4bf8b8d9a9623",
+      "size_bytes": 13016
     }
   ],
-  "bundle_digest": "021d8ae90d0a7bda4b717aa65c87518eadd60b37d15e3ccd406cb37f046d7db9",
+  "bundle_digest": "163a5274cc59268ae59f7888a03540358a9a798fd09abdf989f8c8013838fdbd",
   "canonicalization": "json-sort-keys-compact-v1",
-  "generated_at": "2026-08-10T11:40:44.407982Z",
+  "generated_at": "2026-08-11T12:20:15.042644Z",
   "images": {
     "governance_api": {
-      "image_id": "sha256:a53c21edd6f31a2e96eed36f2202d5802fadffbc139414ddc5f528cc629e46d3",
-      "source_commit": "74133daddc7b4a087ed8a7129dfa41d0ce50fecd"
+      "image_id": "sha256:aa71de514ccb4fc383f1e11ca2e9e40dc98e709cac8d6f5cf0466d8c91f780a9",
+      "source_commit": "ef2c447e71638ee1cb0bedc6f39afd30bf8ba152"
     },
     "governance_web": {
-      "image_id": "sha256:39528ff2f1f189e8bb22dca3c034d9d86512639901fc85891ab1a685b5aa1bd7",
-      "source_commit": "74133daddc7b4a087ed8a7129dfa41d0ce50fecd"
+      "image_id": "sha256:1968bc903e4e5648f097e7a311319109bd64de1a4983078bcf852bca6377aecd",
+      "source_commit": "ef2c447e71638ee1cb0bedc6f39afd30bf8ba152"
     }
   },
   "kind": "verifiable-ai-governance/release-security-evidence",
   "policy_digest": "3dc91c8db39076a67ee27d1b1b34792f31590ea65edf647db306669708e13bf9",
-  "release_manifest_digest": "ba55a969f86bd032c8f1babeb61e8831c58dd364ecbf29a6a5afcbda51f4c9bc",
-  "release_version": "0.2.0-rc1",
+  "release_manifest_digest": "0f3dec44b3db519de74745f9dd39ee7c0995dc05706635baf25aefd1a2422c0b",
+  "release_version": "0.2.0-rc2",
   "schema_version": "1.0",
   "source_bindings": {
     "a2a_otel_kit": {
@@ -152,7 +152,7 @@
       "repository": "brunovicco/a2a-otel-kit"
     },
     "governance": {
-      "commit": "74133daddc7b4a087ed8a7129dfa41d0ce50fecd",
+      "commit": "ef2c447e71638ee1cb0bedc6f39afd30bf8ba152",
       "lockfile_sha256": "5b81d5e73760c51dd68c311f3c7e4c73dff99092aee22b6a139b6961b1c5d35a",
       "repository": "brunovicco/verifiable-ai-governance"
     },
@@ -171,7 +171,7 @@
     "container:governance_api": {
       "blocking_count": 0,
       "component": "governance_api",
-      "finding_count": 181,
+      "finding_count": 185,
       "findings": [
         {
           "fixed_version": "",
@@ -180,7 +180,7 @@
           "package": "libsqlite3-0",
           "severity": "CRITICAL",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -189,7 +189,7 @@
           "package": "perl-base",
           "severity": "CRITICAL",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -198,7 +198,7 @@
           "package": "perl-base",
           "severity": "CRITICAL",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -207,7 +207,7 @@
           "package": "perl-base",
           "severity": "CRITICAL",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -216,7 +216,7 @@
           "package": "perl-base",
           "severity": "CRITICAL",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -225,7 +225,7 @@
           "package": "zlib1g",
           "severity": "CRITICAL",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -234,7 +234,7 @@
           "package": "bsdutils",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -243,7 +243,7 @@
           "package": "gzip",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -252,7 +252,7 @@
           "package": "libacl1",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -261,7 +261,7 @@
           "package": "libblkid1",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -270,7 +270,7 @@
           "package": "libmount1",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -279,7 +279,7 @@
           "package": "libncursesw6",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -288,7 +288,7 @@
           "package": "libsmartcols1",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -297,7 +297,7 @@
           "package": "libtinfo6",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -306,7 +306,7 @@
           "package": "libuuid1",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -315,7 +315,7 @@
           "package": "mount",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -324,7 +324,7 @@
           "package": "ncurses-base",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -333,7 +333,7 @@
           "package": "ncurses-bin",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -342,7 +342,7 @@
           "package": "perl-base",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -351,7 +351,7 @@
           "package": "perl-base",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -360,7 +360,7 @@
           "package": "perl-base",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -369,7 +369,7 @@
           "package": "perl-base",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -378,7 +378,7 @@
           "package": "util-linux",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -387,7 +387,7 @@
           "package": "util-linux-extra",
           "severity": "HIGH",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -396,7 +396,7 @@
           "package": "apt",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -405,7 +405,7 @@
           "package": "bash",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -414,7 +414,7 @@
           "package": "bsdutils",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -423,7 +423,7 @@
           "package": "bsdutils",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -432,7 +432,7 @@
           "package": "coreutils",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -441,7 +441,7 @@
           "package": "coreutils",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -450,7 +450,7 @@
           "package": "coreutils",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -459,7 +459,7 @@
           "package": "coreutils",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -468,7 +468,7 @@
           "package": "coreutils",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -477,7 +477,7 @@
           "package": "diffutils",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -486,7 +486,7 @@
           "package": "gcc-12-base",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -495,7 +495,7 @@
           "package": "gpgv",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -504,7 +504,7 @@
           "package": "gpgv",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -513,7 +513,7 @@
           "package": "libapt-pkg6.0",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -522,7 +522,7 @@
           "package": "libblkid1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -531,7 +531,7 @@
           "package": "libblkid1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -540,7 +540,7 @@
           "package": "libc-bin",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -549,7 +549,7 @@
           "package": "libc-bin",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -558,7 +558,7 @@
           "package": "libc-bin",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -567,7 +567,7 @@
           "package": "libc-bin",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -576,7 +576,7 @@
           "package": "libc-bin",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -585,7 +585,7 @@
           "package": "libc-bin",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -594,7 +594,7 @@
           "package": "libc-bin",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -603,7 +603,7 @@
           "package": "libc6",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -612,7 +612,7 @@
           "package": "libc6",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -621,7 +621,7 @@
           "package": "libc6",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -630,7 +630,7 @@
           "package": "libc6",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -639,7 +639,7 @@
           "package": "libc6",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -648,7 +648,7 @@
           "package": "libc6",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -657,7 +657,7 @@
           "package": "libc6",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -666,7 +666,7 @@
           "package": "libgcc-s1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -675,7 +675,7 @@
           "package": "libgcrypt20",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -684,7 +684,7 @@
           "package": "libgcrypt20",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -693,7 +693,7 @@
           "package": "libgnutls30",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -702,7 +702,7 @@
           "package": "libmount1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -711,7 +711,7 @@
           "package": "libmount1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -720,7 +720,7 @@
           "package": "libncursesw6",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -729,7 +729,7 @@
           "package": "libsmartcols1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -738,7 +738,7 @@
           "package": "libsmartcols1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -747,7 +747,7 @@
           "package": "libsqlite3-0",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -756,7 +756,7 @@
           "package": "libsqlite3-0",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -765,7 +765,7 @@
           "package": "libsqlite3-0",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -774,7 +774,7 @@
           "package": "libssl3",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -783,7 +783,7 @@
           "package": "libssl3",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -792,7 +792,7 @@
           "package": "libstdc++6",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -801,7 +801,7 @@
           "package": "libsystemd0",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -810,7 +810,7 @@
           "package": "libsystemd0",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -819,7 +819,7 @@
           "package": "libsystemd0",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -828,7 +828,7 @@
           "package": "libsystemd0",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -837,7 +837,7 @@
           "package": "libsystemd0",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -846,7 +846,7 @@
           "package": "libtasn1-6",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -855,7 +855,7 @@
           "package": "libtinfo6",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -864,7 +864,7 @@
           "package": "libudev1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -873,7 +873,7 @@
           "package": "libudev1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -882,7 +882,7 @@
           "package": "libudev1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -891,7 +891,7 @@
           "package": "libudev1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -900,7 +900,7 @@
           "package": "libudev1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -909,7 +909,7 @@
           "package": "libuuid1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -918,7 +918,7 @@
           "package": "libuuid1",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -927,7 +927,7 @@
           "package": "login",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -936,7 +936,7 @@
           "package": "login",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -945,7 +945,7 @@
           "package": "login",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -954,7 +954,7 @@
           "package": "mount",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -963,7 +963,7 @@
           "package": "mount",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -972,7 +972,7 @@
           "package": "ncurses-base",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -981,7 +981,7 @@
           "package": "ncurses-bin",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -990,7 +990,7 @@
           "package": "openssl",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -999,7 +999,7 @@
           "package": "openssl",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1008,7 +1008,7 @@
           "package": "passwd",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1017,7 +1017,7 @@
           "package": "passwd",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1026,7 +1026,7 @@
           "package": "passwd",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1035,7 +1035,7 @@
           "package": "perl-base",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1044,7 +1044,7 @@
           "package": "perl-base",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1053,7 +1053,7 @@
           "package": "sysvinit-utils",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1062,7 +1062,7 @@
           "package": "tar",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1071,7 +1071,7 @@
           "package": "tar",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1080,7 +1080,7 @@
           "package": "util-linux",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1089,7 +1089,7 @@
           "package": "util-linux",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1098,7 +1098,7 @@
           "package": "util-linux-extra",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1107,7 +1107,7 @@
           "package": "util-linux-extra",
           "severity": "LOW",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1116,7 +1116,7 @@
           "package": "bsdutils",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1125,7 +1125,7 @@
           "package": "bsdutils",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1134,7 +1134,7 @@
           "package": "bsdutils",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1143,7 +1143,7 @@
           "package": "gpgv",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1152,7 +1152,7 @@
           "package": "gpgv",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1161,7 +1161,7 @@
           "package": "gzip",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1170,7 +1170,7 @@
           "package": "libacl1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1179,7 +1179,7 @@
           "package": "libattr1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1188,7 +1188,7 @@
           "package": "libblkid1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1197,7 +1197,7 @@
           "package": "libblkid1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1206,7 +1206,7 @@
           "package": "libblkid1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1215,7 +1215,7 @@
           "package": "libbz2-1.0",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1224,7 +1224,7 @@
           "package": "libc-bin",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1233,7 +1233,7 @@
           "package": "libc-bin",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1242,7 +1242,7 @@
           "package": "libc-bin",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1251,7 +1251,7 @@
           "package": "libc-bin",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1260,7 +1260,7 @@
           "package": "libc6",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1269,7 +1269,7 @@
           "package": "libc6",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1278,7 +1278,7 @@
           "package": "libc6",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1287,7 +1287,7 @@
           "package": "libc6",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1296,7 +1296,7 @@
           "package": "libmount1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1305,7 +1305,7 @@
           "package": "libmount1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1314,7 +1314,7 @@
           "package": "libmount1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1323,7 +1323,7 @@
           "package": "libncursesw6",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1332,7 +1332,7 @@
           "package": "libp11-kit0",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1341,7 +1341,7 @@
           "package": "libp11-kit0",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1350,7 +1350,7 @@
           "package": "libpam-modules",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1359,7 +1359,7 @@
           "package": "libpam-modules",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1368,7 +1368,7 @@
           "package": "libpam-modules-bin",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1377,7 +1377,7 @@
           "package": "libpam-modules-bin",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1386,7 +1386,7 @@
           "package": "libpam-runtime",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1395,7 +1395,7 @@
           "package": "libpam-runtime",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1404,7 +1404,7 @@
           "package": "libpam0g",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1413,7 +1413,7 @@
           "package": "libpam0g",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1422,7 +1422,7 @@
           "package": "libsmartcols1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1431,7 +1431,7 @@
           "package": "libsmartcols1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1440,7 +1440,7 @@
           "package": "libsmartcols1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1449,7 +1449,7 @@
           "package": "libsqlite3-0",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1458,7 +1458,7 @@
           "package": "libsqlite3-0",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1467,7 +1467,7 @@
           "package": "libsqlite3-0",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1476,7 +1476,7 @@
           "package": "libsqlite3-0",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1485,7 +1485,7 @@
           "package": "libsqlite3-0",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1494,7 +1494,7 @@
           "package": "libtinfo6",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1503,7 +1503,7 @@
           "package": "libuuid1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1512,7 +1512,7 @@
           "package": "libuuid1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1521,7 +1521,7 @@
           "package": "libuuid1",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1530,7 +1530,7 @@
           "package": "mount",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1539,7 +1539,7 @@
           "package": "mount",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1548,7 +1548,7 @@
           "package": "mount",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1557,7 +1557,7 @@
           "package": "ncurses-base",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1566,7 +1566,7 @@
           "package": "ncurses-bin",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1575,7 +1575,7 @@
           "package": "perl-base",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1584,7 +1584,7 @@
           "package": "perl-base",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1593,7 +1593,7 @@
           "package": "perl-base",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1602,7 +1602,7 @@
           "package": "perl-base",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1611,7 +1611,7 @@
           "package": "perl-base",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1620,7 +1620,7 @@
           "package": "tar",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1629,7 +1629,7 @@
           "package": "tar",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1638,7 +1638,7 @@
           "package": "tar",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1647,7 +1647,7 @@
           "package": "util-linux",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1656,7 +1656,7 @@
           "package": "util-linux",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1665,7 +1665,7 @@
           "package": "util-linux",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1674,7 +1674,7 @@
           "package": "util-linux-extra",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1683,7 +1683,7 @@
           "package": "util-linux-extra",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1692,7 +1692,7 @@
           "package": "util-linux-extra",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1701,7 +1701,7 @@
           "package": "zlib1g",
           "severity": "MEDIUM",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1710,7 +1710,7 @@
           "package": "bsdutils",
           "severity": "UNKNOWN",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "20250419~deb12u1",
@@ -1719,7 +1719,7 @@
           "package": "ca-certificates",
           "severity": "UNKNOWN",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1728,7 +1728,43 @@
           "package": "libblkid1",
           "severity": "UNKNOWN",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-6368",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-6791",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc-bin",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-6368",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
+        },
+        {
+          "fixed_version": "",
+          "id": "CVE-2026-6791",
+          "installed_version": "2.36-9+deb12u14",
+          "package": "libc6",
+          "severity": "UNKNOWN",
+          "status": "observed",
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1737,7 +1773,7 @@
           "package": "libmount1",
           "severity": "UNKNOWN",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1746,7 +1782,7 @@
           "package": "libsmartcols1",
           "severity": "UNKNOWN",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1755,7 +1791,7 @@
           "package": "libuuid1",
           "severity": "UNKNOWN",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1764,7 +1800,7 @@
           "package": "mount",
           "severity": "UNKNOWN",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1773,7 +1809,7 @@
           "package": "perl-base",
           "severity": "UNKNOWN",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1782,7 +1818,7 @@
           "package": "perl-base",
           "severity": "UNKNOWN",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1791,7 +1827,7 @@
           "package": "util-linux",
           "severity": "UNKNOWN",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         },
         {
           "fixed_version": "",
@@ -1800,7 +1836,7 @@
           "package": "util-linux-extra",
           "severity": "UNKNOWN",
           "status": "observed",
-          "target": "vaigov-p2-0b-governance_api:ba55a969f86b-45149 (debian 12.15)"
+          "target": "vaigov-p2-0b-governance_api:0f3dec44b3db-21149 (debian 12.15)"
         }
       ],
       "high_critical_unfixed_count": 24,
