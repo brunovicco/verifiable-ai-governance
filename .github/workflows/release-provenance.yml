@@ -79,6 +79,7 @@ jobs:
           repository: brunovicco/a2a-otel-kit
           ref: ${{ steps.roots.outputs.otel }}
           path: .release-sources/a2a-otel-kit
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Verify committed deterministic provenance subjects
