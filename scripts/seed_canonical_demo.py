@@ -6,6 +6,7 @@ import json
 import sys
 from pathlib import Path
 
+from scripts.canonical_demo_identity import install_canonical_demo_identity_listener
 from scripts.canonical_demo_seed import (
     RESET_CONFIRMATION,
     CanonicalDemoDriftError,
@@ -59,6 +60,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 async def run(args: argparse.Namespace) -> int:
     """Execute the selected idempotent seed operation."""
+    install_canonical_demo_identity_listener()
     if args.check and args.reset:
         raise ValueError("--check and --reset cannot be used together")
 

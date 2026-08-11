@@ -24,6 +24,7 @@ from scripts.canonical_demo_identity import (
     CANONICAL_DEMO_SCENARIO_ID,
     CANONICAL_DEMO_SYSTEM_ID,
     canonical_demo_id,
+    install_canonical_demo_identity_listener,
 )
 from scripts.canonical_demo_seed import (
     AGENT_NAME,
@@ -42,6 +43,8 @@ from scripts.canonical_demo_seed import (
     reset_application_data,
     validate_reset_request,
 )
+
+install_canonical_demo_identity_listener()
 
 
 async def test_canonical_seed_is_complete_and_idempotent() -> None:

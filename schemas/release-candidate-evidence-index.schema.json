@@ -1,0 +1,159 @@
+{
+  "$defs": {
+    "root": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "path": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "verdict": {
+          "const": "pass"
+        }
+      },
+      "required": [
+        "path",
+        "digest"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/brunovicco/verifiable-ai-governance/schemas/release-candidate-evidence-index.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "attestation": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "actions/attest@v4"
+        },
+        "provenance_subject_checksums": {
+          "const": "artifacts/release/provenance/release-subjects.sha256"
+        },
+        "provider": {
+          "const": "github-artifact-attestations"
+        },
+        "release_candidate_subject_checksums": {
+          "const": "artifacts/release/release-candidate-subjects.sha256"
+        },
+        "workflow_path": {
+          "const": ".github/workflows/release-provenance.yml"
+        }
+      },
+      "required": [
+        "provider",
+        "action",
+        "workflow_path",
+        "provenance_subject_checksums",
+        "release_candidate_subject_checksums"
+      ],
+      "type": "object"
+    },
+    "canonical_demo": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "const": "565aa2b9-ead9-59e6-89a9-18920cced7ce"
+        },
+        "ai_system_id": {
+          "const": "eabfd874-b6ca-5319-b7e1-30cae5d798df"
+        },
+        "approved_model_id": {
+          "const": "9a798288-ea72-5e4d-ac33-dfc7533d80cb"
+        },
+        "identity_scheme": {
+          "const": "uuidv5"
+        },
+        "initiative_id": {
+          "const": "e3095057-9408-561b-a755-cfc9f1453af5"
+        },
+        "out_of_scope_model_id": {
+          "const": "150df55c-7ca6-551b-826d-545ccbe1dff5"
+        },
+        "scenario_id": {
+          "const": "credit-pj-governed-runtime"
+        }
+      },
+      "required": [
+        "scenario_id",
+        "identity_scheme",
+        "initiative_id",
+        "ai_system_id",
+        "approved_model_id",
+        "out_of_scope_model_id",
+        "agent_id"
+      ],
+      "type": "object"
+    },
+    "canonicalization": {
+      "const": "json-sort-keys-compact-v1"
+    },
+    "index_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "kind": {
+      "const": "verifiable-ai-governance/release-candidate-evidence-index"
+    },
+    "release_version": {
+      "const": "0.2.0-rc2"
+    },
+    "roots": {
+      "additionalProperties": false,
+      "properties": {
+        "build_provenance": {
+          "$ref": "#/$defs/root"
+        },
+        "clean_install": {
+          "$ref": "#/$defs/root"
+        },
+        "release_manifest": {
+          "$ref": "#/$defs/root"
+        },
+        "runtime_benchmark": {
+          "$ref": "#/$defs/root"
+        },
+        "security_evidence": {
+          "$ref": "#/$defs/root"
+        }
+      },
+      "required": [
+        "release_manifest",
+        "security_evidence",
+        "build_provenance",
+        "runtime_benchmark",
+        "clean_install"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "source_commit": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "verdict": {
+      "const": "pass"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "canonicalization",
+    "release_version",
+    "source_commit",
+    "roots",
+    "canonical_demo",
+    "attestation",
+    "verdict",
+    "index_digest"
+  ],
+  "title": "Release Candidate Evidence Index",
+  "type": "object"
+}

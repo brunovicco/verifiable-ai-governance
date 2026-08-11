@@ -1,0 +1,127 @@
+{
+  "$id": "https://github.com/brunovicco/verifiable-ai-governance/schemas/release-clean-install-evidence.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "canonicalization": {
+      "const": "json-sort-keys-compact-v1"
+    },
+    "checks": {
+      "additionalProperties": false,
+      "properties": {
+        "api_readiness_ok": {"const": true},
+        "empty_database_precondition": {"const": true},
+        "first_upgrade_reached_head": {"const": true},
+        "script_reported_pass": {"const": true},
+        "second_upgrade_reached_head": {"const": true}
+      },
+      "required": [
+        "empty_database_precondition",
+        "first_upgrade_reached_head",
+        "second_upgrade_reached_head",
+        "api_readiness_ok",
+        "script_reported_pass"
+      ],
+      "type": "object"
+    },
+    "environment": {
+      "additionalProperties": false,
+      "properties": {
+        "docker": {"minLength": 1, "type": "string"},
+        "docker_compose": {"minLength": 1, "type": "string"},
+        "machine": {"minLength": 1, "type": "string"},
+        "system": {"minLength": 1, "type": "string"},
+        "system_release": {"minLength": 1, "type": "string"}
+      },
+      "required": ["system", "system_release", "machine", "docker", "docker_compose"],
+      "type": "object"
+    },
+    "evidence_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "expected_alembic_head": {
+      "const": "0019"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "kind": {
+      "const": "verifiable-ai-governance/release-clean-install-evidence"
+    },
+    "log": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "const": "artifacts/release/clean-install/clean-install-e2e.log"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "size_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": ["path", "sha256", "size_bytes"],
+      "type": "object"
+    },
+    "release_version": {
+      "const": "0.2.0-rc2"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "source": {
+      "additionalProperties": false,
+      "properties": {
+        "governance_commit": {
+          "pattern": "^[0-9a-f]{40}$",
+          "type": "string"
+        },
+        "release_manifest_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": ["governance_commit", "release_manifest_digest"],
+      "type": "object"
+    },
+    "test_script": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "const": "scripts/test_fresh_install_migrations.sh"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": ["path", "sha256"],
+      "type": "object"
+    },
+    "verdict": {
+      "const": "pass"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "canonicalization",
+    "release_version",
+    "generated_at",
+    "source",
+    "test_script",
+    "expected_alembic_head",
+    "checks",
+    "environment",
+    "log",
+    "verdict",
+    "evidence_digest"
+  ],
+  "title": "Release Clean Install Evidence",
+  "type": "object"
+}

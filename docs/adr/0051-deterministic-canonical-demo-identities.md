@@ -27,7 +27,8 @@ normal persistence models.
 
 ## Decision
 
-The canonical demo now has a dedicated deterministic identity layer under
+The canonical demo now separates a pure deterministic identity contract in
+`scripts/canonical_demo_contract.py` from the SQLAlchemy assignment hook in
 `scripts/canonical_demo_identity.py`.
 
 - Use UUIDv5 with the existing fixed demo namespace.
@@ -39,8 +40,11 @@ The canonical demo now has a dedicated deterministic identity layer under
   out-of-scope model, agent, assessments, review submissions, approval gates, and
   evidence rows.
 - Preserve the already deterministic routing-decision and incident ID behavior.
-- Install the SQLAlchemy `before_flush` listener only through the `scripts`
-  package. Production application startup does not import this demo integration.
+- Keep the `scripts` package initializer side-effect free. The supported canonical
+  seed CLI explicitly installs the SQLAlchemy `before_flush` listener before seed
+  operations, and the seed regression suite installs the same hook explicitly.
+- Keep the pure UUIDv5 contract importable by release tooling without importing
+  SQLAlchemy or application persistence models.
 - Match exact canonical markers and parent IDs before replacing a generated ID.
   Non-demo persistence keeps the existing UUIDv4 behavior.
 - Keep the normal application services as the creation path. The demo identity
