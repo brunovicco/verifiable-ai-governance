@@ -13,7 +13,7 @@
       "attested_paths_digest": "b1afbd4af3870489291a600f519343473d3a5f12d224f3f5952616584834f5bd",
       "evidence_commit": "fd044430f39f860a2b67fedb2a425eeb7c073fcd",
       "relation": "squash_equivalent",
-      "selected_commit": "74133daddc7b4a087ed8a7129dfa41d0ce50fecd"
+      "selected_commit": "ef2c447e71638ee1cb0bedc6f39afd30bf8ba152"
     },
     "latest_runtime_evidence": "p1_9_governed_actuation",
     "limitation": "P1.9 records the Router decision source and behavior but does not persist the Policy Model Router Git commit; P2.0a therefore pins the selected Router source without claiming that the P1.9 report attests its exact commit.",
@@ -45,8 +45,8 @@
       "requires_python": ">=3.13,<3.15"
     },
     "governance": {
-      "commit": "74133daddc7b4a087ed8a7129dfa41d0ce50fecd",
-      "commit_timestamp": "2026-08-09T23:13:31-03:00",
+      "commit": "ef2c447e71638ee1cb0bedc6f39afd30bf8ba152",
+      "commit_timestamp": "2026-08-11T09:11:36-03:00",
       "integration_dependencies": {
         "a2a_otel_kit": null
       },
@@ -156,10 +156,10 @@
     }
   },
   "kind": "verifiable-ai-governance/release-evidence-manifest",
-  "manifest_digest": "ba55a969f86bd032c8f1babeb61e8831c58dd364ecbf29a6a5afcbda51f4c9bc",
+  "manifest_digest": "0f3dec44b3db519de74745f9dd39ee7c0995dc05706635baf25aefd1a2422c0b",
   "release": {
-    "source_date": "2026-08-09T23:13:31-03:00",
-    "version": "0.2.0-rc1"
+    "source_date": "2026-08-11T09:11:36-03:00",
+    "version": "0.2.0-rc2"
   },
   "schema_version": "1.0"
 }
