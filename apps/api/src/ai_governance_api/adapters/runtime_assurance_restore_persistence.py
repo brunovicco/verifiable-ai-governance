@@ -264,9 +264,7 @@ class SqlAlchemyRuntimeAssuranceRestoreRepository(RuntimeAssuranceRestoreReposit
             )
             if len(transitions) > 1:
                 raise ValueError("Multiple Runtime Control transitions reuse one restore decision")
-            matching_transition = (
-                _transition_to_domain(transitions[0]) if transitions else None
-            )
+            matching_transition = _transition_to_domain(transitions[0]) if transitions else None
         return RuntimeAssuranceRestoreExecutionContext(
             decision=decision,
             request=request,

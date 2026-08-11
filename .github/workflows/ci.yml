@@ -40,6 +40,13 @@ jobs:
       - run: uv run mypy apps/api/src packages/governance-schemas/src packages/policy-engine/src
       - run: uv run pytest
 
+  fresh-install-migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Verify migrations from an empty PostgreSQL database
+        run: ./scripts/test_fresh_install_migrations.sh
+
   web:
     runs-on: ubuntu-latest
     steps:

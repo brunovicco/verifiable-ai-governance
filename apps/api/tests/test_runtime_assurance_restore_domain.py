@@ -170,9 +170,7 @@ def test_restore_source_requires_remediation_and_authoritative_engage_transition
             replace(source_context(), incident_status=IncidentStatus.CONTAINED)
         )
     with pytest.raises(RuntimeAssuranceRestoreDomainError):
-        validate_restore_source_eligibility(
-            replace(source_context(), remediation_description=None)
-        )
+        validate_restore_source_eligibility(replace(source_context(), remediation_description=None))
     with pytest.raises(RuntimeAssuranceRestoreDomainError):
         validate_restore_source_eligibility(
             replace(source_context(), latest_transition=replace(engage_transition(), id="other"))

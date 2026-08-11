@@ -1,4 +1,4 @@
-.PHONY: setup dev dev-api dev-web test lint format build quality migrate compose-up compose-down oidc-up oidc-verify oidc-down backup backup-verify backup-restore-test backup-restore seed-demo seed-demo-check seed-demo-reset seed-demo-gallery
+.PHONY: setup dev dev-api dev-web test lint format build quality migrate fresh-install-e2e compose-up compose-down oidc-up oidc-verify oidc-down backup backup-verify backup-restore-test backup-restore seed-demo seed-demo-check seed-demo-reset seed-demo-gallery
 
 BACKUP_DIR ?= backups/manual
 
@@ -37,6 +37,9 @@ quality:
 
 migrate:
 	uv run alembic -c apps/api/alembic.ini upgrade head
+
+fresh-install-e2e:
+	./scripts/test_fresh_install_migrations.sh
 
 compose-up:
 	docker compose up --build -d

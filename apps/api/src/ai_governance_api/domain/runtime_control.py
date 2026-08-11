@@ -45,9 +45,7 @@ class RuntimeControlAgentContext:
     def state(self) -> RuntimeControlState:
         """Return the state represented by the durable agent row."""
         return (
-            RuntimeControlState.ACTIVE
-            if self.kill_switch_engaged
-            else RuntimeControlState.INACTIVE
+            RuntimeControlState.ACTIVE if self.kill_switch_engaged else RuntimeControlState.INACTIVE
         )
 
 

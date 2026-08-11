@@ -1,0 +1,75 @@
+x-api-environment: &api-environment
+  APP_ENV: local
+  APP_VERSION: p2.0e1-test
+  DATABASE_URL: postgresql+asyncpg://governance:p2e1-local-only@postgres:5432/governance_fresh_install
+  AUTO_CREATE_SCHEMA: "false"
+  DEV_AUTH_ENABLED: "true"
+  OIDC_ENABLED: "false"
+  AUDIT_HASH_SALT: p2e1-fresh-install-test-only
+  POLICY_MODEL_ROUTER_ENABLED: "false"
+  RUNTIME_CONTROL_ENABLED: "true"
+  RUNTIME_CONTROL_REDIS_URL: redis://runtime-control-redis:6379/0
+  RUNTIME_TELEMETRY_INGEST_ENABLED: "false"
+  OTEL_ENABLED: "false"
+
+x-api-build: &api-build
+  context: ../..
+  dockerfile: apps/api/Dockerfile
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: governance_fresh_install
+      POSTGRES_USER: governance
+      POSTGRES_PASSWORD: p2e1-local-only
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U governance -d governance_fresh_install"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  runtime-control-redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    tmpfs:
+      - /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    build: *api-build
+    environment:
+      <<: *api-environment
+    command: ["alembic", "-c", "/workspace/alembic.ini", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: *api-build
+    environment:
+      <<: *api-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      runtime-control-redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)",
+        ]
+      interval: 2s
+      timeout: 4s
+      retries: 30
+      start_period: 2s

@@ -65,9 +65,7 @@ class FakeRepository:
     async def list_pending(self, *, limit):
         return [
             transition
-            for transition in sorted(
-                self.transitions.values(), key=lambda item: item.control_epoch
-            )
+            for transition in sorted(self.transitions.values(), key=lambda item: item.control_epoch)
             if transition.status is RuntimeControlTransitionStatus.PENDING
         ][:limit]
 
@@ -189,8 +187,7 @@ def test_projection_failure_leaves_pending_transition_for_reconciliation() -> No
         assert len(reconciled) == 1
         assert reconciled[0].kill_switch_engaged is True
         assert (
-            repository.transitions["transition-1"].status
-            is RuntimeControlTransitionStatus.APPLIED
+            repository.transitions["transition-1"].status is RuntimeControlTransitionStatus.APPLIED
         )
         assert "runtime_control.projection_reconciled" in audit.actions
 
@@ -232,6 +229,7 @@ def test_gate_repairs_missing_projection_but_rejects_ambiguous_divergence() -> N
 
     asyncio.run(scenario())
 
+
 def test_gate_rejects_pending_transition_without_reading_as_inactive() -> None:
     class Reader:
         async def get_durable_state(self, agent_id):
@@ -253,4 +251,3 @@ def test_gate_rejects_pending_transition_without_reading_as_inactive() -> None:
             await gate.state_for("agent-1")
 
     asyncio.run(scenario())
-

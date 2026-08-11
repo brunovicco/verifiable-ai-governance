@@ -125,8 +125,8 @@ class ExecutionService:
 
 async def test_restore_request_endpoint_accepts_empty_body_only(client: AsyncClient) -> None:
     app.dependency_overrides[get_authorized_principal] = authorized_principal
-    app.dependency_overrides[get_runtime_assurance_restore_request_service] = (
-        lambda: RequestService()
+    app.dependency_overrides[get_runtime_assurance_restore_request_service] = lambda: (
+        RequestService()
     )
     try:
         response = await client.post(
@@ -151,8 +151,8 @@ async def test_restore_decision_endpoint_rejects_client_selected_action(
     client: AsyncClient,
 ) -> None:
     app.dependency_overrides[get_authorized_principal] = authorized_principal
-    app.dependency_overrides[get_runtime_assurance_restore_decision_service] = (
-        lambda: DecisionService()
+    app.dependency_overrides[get_runtime_assurance_restore_decision_service] = lambda: (
+        DecisionService()
     )
     try:
         response = await client.post(

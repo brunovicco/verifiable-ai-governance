@@ -117,9 +117,7 @@ class Settings(BaseSettings):
 
     runtime_control_enabled: bool = False
     runtime_control_redis_url: str = Field(default="", repr=False)
-    runtime_control_redis_key_prefix: str = (
-        "verifiable-ai-governance:runtime-control:v1:agent:"
-    )
+    runtime_control_redis_key_prefix: str = "verifiable-ai-governance:runtime-control:v1:agent:"
     runtime_control_redis_timeout_seconds: float = Field(default=2.0, gt=0, le=10)
     runtime_control_reconcile_batch_size: int = Field(default=100, ge=1, le=1000)
 
