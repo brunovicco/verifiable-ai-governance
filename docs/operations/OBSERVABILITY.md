@@ -1,8 +1,8 @@
 # Observability
 
-- **Status:** Current design with planned runtime ingestion
+- **Status:** Current reference implementation; production thresholds are deployment-specific
 - **Owner:** Platform engineering and operations
-- **Last reviewed:** 2026-08-03
+- **Last reviewed:** 2026-08-11
 - **Review trigger:** New dependency, metric, dashboard or runtime adapter
 
 ## Objectives
@@ -13,7 +13,12 @@ Observability must answer:
 - Are security and policy dependencies healthy?
 - Are reviews, incidents and exceptions progressing within expectations?
 - Are models and agents operating within approved scope?
+- What bounded runtime observations support the current assurance state?
 - Is collected telemetry proportionate and privacy-preserving?
+
+The repository now includes authenticated sanitized runtime-telemetry ingestion and bounded
+runtime-assurance evaluation. This does not remove the requirement for adopting organizations to
+choose meaningful SLOs, thresholds, retention and alert ownership.
 
 ## Three levels
 
@@ -25,7 +30,7 @@ Observability must answer:
 - migration status;
 - object-storage and malware-scanner health;
 - OIDC/JWKS and Graph dependency health;
-- external router latency and failure;
+- external Router latency and failure;
 - backup and restore-test status.
 
 ### Model governance
@@ -34,19 +39,37 @@ Observability must answer:
 - review state and expiry;
 - eligible routing group;
 - blocked routing decisions and reasons;
-- data-class incompatibility;
-- cost or latency boundary rejection;
-- future quality, groundedness, safety and drift evidence.
+- trusted runtime violation code/digest;
+- data-class or approved-scope incompatibility;
+- runtime latency/availability observations where emitted;
+- bounded assurance state from defined observations;
+- future domain-specific quality/groundedness and long-horizon statistical drift evidence.
 
 ### Agent governance
 
 - approved agent scope and review validity;
 - allowed models and tools;
 - autonomy and human-approval conditions;
+- authenticated runtime telemetry bound to the governed agent identity;
 - blocked actions and reasons;
-- cost, time and step limits;
-- incident and kill-switch state;
-- future sanitized plan, delegation and tool-decision evidence.
+- runtime-control/containment state;
+- incident and restoration state;
+- future domain-specific plan/delegation evidence where explicitly minimized and approved.
+
+## Runtime telemetry boundary
+
+Runtime telemetry is designed to be useful without treating prompt capture as an observability
+requirement. The ingestion path prefers bounded metadata such as:
+
+- stable governed entity identifiers;
+- correlation/request identifiers;
+- event category and outcome;
+- latency/availability values;
+- policy/authorization/violation identifiers or digests when applicable;
+- timestamps and source identity.
+
+Telemetry ingestion is authenticated per governed agent and validates bounded contracts before
+persistence. It must not be expanded into a free-form event sink.
 
 ## Logging principles
 
@@ -73,19 +96,13 @@ Exclude by default:
 
 ## Recommended metrics
 
-### API
+### API and persistence
 
 - request count by route group and result class;
 - latency percentiles;
 - 4xx/5xx rate;
 - optimistic-concurrency conflict count;
-- authorization denial count by reason category;
-- emergency-blocked request count.
-
-### Database
-
-- connection utilization;
-- query latency;
+- database connection/query health;
 - transaction rollback count;
 - migration revision mismatch;
 - audit append failures.
@@ -99,40 +116,44 @@ Exclude by default:
 - storage write/delete compensation failures;
 - average scan latency.
 
-### Identity and directory
+### Identity and authorization
 
 - token validation failures by safe category;
 - JWKS refresh failure;
 - Graph latency and throttling;
-- group-overage resolution count;
 - authorization-cache hit/miss/expiry/invalidation;
-- authorization-catalog digest changes.
+- authorization-catalog digest changes;
+- emergency-blocked request count.
 
 ### Governance workflow
 
 - initiatives by status and risk tier;
 - required versus submitted assessments;
 - gates pending, approved, rejected and not required;
-- average review-round duration with sample count;
+- review-round duration with sample count;
 - overdue asset reviews;
 - residual-risk distribution.
 
-### Runtime routing
+### Runtime routing and assurance
 
 - pending, allowed, blocked and dependency-unavailable outcomes;
-- blocked reason distribution;
-- router latency;
-- registry-scope-changed count;
+- trusted violation count by bounded reason code;
+- Router latency;
+- registry/scope-change rejection count;
 - returned-unapproved-group count;
-- cost/data-class rejection count.
+- authenticated telemetry accepted/rejected count;
+- stale/missing telemetry required by an assurance rule;
+- assurance state transitions by bounded category;
+- benchmark latency/availability and SLO verdict for release evidence.
 
-### Incidents and exceptions
+### Incidents and governed actuation
 
 - open incidents by severity;
 - overdue remediation;
-- mean time to acknowledge and resolve when data exists;
+- mean time to acknowledge/resolve when enough observations exist;
 - active and expiring exceptions;
-- kill-switch activation and restoration events.
+- containment activation/restoration events;
+- runtime-control dependency failures.
 
 ## Tracing
 
@@ -142,11 +163,12 @@ Trace context should propagate across:
 Browser/API request
   → application use case
     → database transaction
-    → identity/Graph, scanner/storage or model-router dependency
-      → final audit and response
+    → identity/Graph, scanner/storage or Policy Model Router
+      → runtime telemetry / governed response where applicable
+        → final audit and response
 ```
 
-Trace attributes must follow the same minimization rules as logs.
+Trace attributes must follow the same minimization rules as logs/telemetry.
 
 ## Dashboards
 
@@ -157,9 +179,11 @@ Recommended dashboards:
 3. evidence pipeline;
 4. governance portfolio;
 5. model/agent assurance;
-6. runtime routing outcomes;
-7. incidents and exceptions;
-8. backup and recovery assurance.
+6. runtime routing and violation outcomes;
+7. runtime assurance and governed-actuation state;
+8. incidents and exceptions;
+9. backup/recovery assurance;
+10. release benchmark/SLO evidence.
 
 ## Alerts
 
@@ -167,25 +191,30 @@ Alert only on actionable conditions with an owner and runbook, including:
 
 - API or database unavailability;
 - failed or stuck migration;
-- ClamAV unavailable beyond startup allowance;
-- object-storage write or compensation failure;
-- abnormal token-validation or authorization-denial spike;
-- Graph/JWKS/router dependency failure above threshold;
+- ClamAV or object-storage failure;
+- abnormal authentication/authorization denial spike;
+- Graph/JWKS/Router/runtime-control dependency failure above an approved threshold;
 - audit append or chain-verification failure;
+- stale required runtime telemetry;
+- blocked/critical runtime assurance state when an owning team has defined response;
 - overdue critical remediation;
-- active critical kill switch or unexpected restoration;
+- unexpected containment restoration;
 - backup or restore-assurance failure.
 
-## SLO examples to define organizationally
+## SLOs and thresholds
 
-The repository should not invent production targets. Adopting organizations should set:
+The repository includes benchmark/SLO evidence for its release reference path, but an adopting
+organization must define production objectives for its own environment, including:
 
 - API availability and latency;
+- runtime routing and telemetry availability/latency;
+- maximum accepted telemetry staleness;
 - evidence-processing completion time;
 - maximum authorization-cache staleness;
-- review and incident service-level objectives;
+- review and incident objectives;
 - backup completion and restore-test frequency;
 - alert acknowledgement and resolution targets.
 
 Every displayed average should show its sample count. Missing source data should produce
-“unavailable”, not zero or an estimated success value.
+“unavailable” or an explicit assurance failure according to policy, never zero or a fabricated
+success value.

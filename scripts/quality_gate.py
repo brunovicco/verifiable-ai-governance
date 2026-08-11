@@ -19,6 +19,7 @@ class Check:
 
 CHECKS = (
     Check("lock", ("uv", "lock", "--check")),
+    Check("hygiene", (sys.executable, "scripts/validate_repository_hygiene.py")),
     Check("ruff", (sys.executable, "-m", "ruff", "check", ".")),
     Check(
         "mypy",

@@ -8,6 +8,10 @@ Accepted.
 
 2026-08-10.
 
+## Sequencing amendment - 2026-08-11
+
+P2.0e.3 delivered the coordinated evidence tooling but no longer freezes or materializes the final rc2 source. P2.0e.4 hardens the public repository first. P2.0e.5 executes the evidence chain from the post-hardening source freeze, and P2.0e.6 owns final validation, tag and release. The evidence formats and verifier design in this ADR are unchanged.
+
 ## Context
 
 P2.0a through P2.0d established separate evidence roots for the release manifest,
@@ -27,10 +31,10 @@ required evidence family belongs to the same source selection.
 
 ## Decision
 
-P2.0e.3 rebuilds evidence for `0.2.0-rc2` as a staged, content-addressed chain.
+P2.0e.3 provides the tooling and P2.0e.5 rebuilds evidence for `0.2.0-rc2` as a staged, content-addressed chain.
 
-1. Commit all P2.0e.1, P2.0e.2, and P2.0e.3 implementation/tooling changes.
-2. Generate a new release manifest from that clean Governance commit.
+1. Commit P2.0e.1, P2.0e.2, P2.0e.3 tooling and P2.0e.4 public hardening.
+2. Freeze that clean post-hardening Governance commit and generate a new release manifest from it.
 3. Preserve the rc1 Policy Model Router, Credit Desk, and A2A OTel commit bindings;
    rc2 intentionally advances only Governance.
 4. Commit the manifest before generating security evidence.
@@ -153,7 +157,7 @@ would enlarge compatibility scope without new cross-repository evidence.
 
 ### Tag `v0.2.0` in this phase
 
-Rejected. P2.0e.4 remains the explicit final verification, tag, and release step.
+Rejected. P2.0e.6 remains the explicit final verification, tag, and release step.
 
 ## Consequences
 
@@ -165,5 +169,5 @@ Rejected. P2.0e.4 remains the explicit final verification, tag, and release step
 - Evidence generation remains intentionally staged across commits.
 - No production control, authorization, runtime enforcement, or migration semantics
   are weakened by this phase.
-- P2.0e.4 can make the final tag decision using one offline verifier plus the
+- P2.0e.6 can make the final tag decision using one offline verifier plus the
   GitHub attestation result.

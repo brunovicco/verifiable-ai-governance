@@ -1,10 +1,13 @@
-# P2.0e.3 - 0.2.0-rc2 release evidence refresh
+# P2.0e.3 tooling / P2.0e.5 execution - 0.2.0-rc2 release evidence refresh
+
+> **Sequencing update (2026-08-11):** P2.0e.3 delivered the tooling described here. P2.0e.4 must complete public-repository hardening before source freeze. The evidence generation stages in this runbook are executed as P2.0e.5. P2.0e.6 owns the final tag and release.
 
 ## Purpose
 
 P2.0e.3 rebuilds the release evidence chain after the P2.0e.1 fresh-install fix and
-P2.0e.2 deterministic canonical identities. It does not create the final `v0.2.0`
-tag or GitHub Release; those remain P2.0e.4.
+P2.0e.2 deterministic canonical identities. The tooling itself does not create the final `v0.2.0`
+tag or GitHub Release; P2.0e.4 hardens the public source, P2.0e.5 executes this evidence chain,
+and P2.0e.6 owns the final release.
 
 The required order is intentional:
 
@@ -77,7 +80,7 @@ The repository-specific prohibited-import check must produce no output for the
 P2.0e.3 files.
 
 Stage all implementation/tooling files, inspect the staged scope, and commit them.
-Do not include generated rc2 evidence yet.
+Do not include generated rc2 evidence yet. Complete P2.0e.4 public-repository hardening before recording the rc2 source commit below.
 
 ```bash
 git add \
@@ -106,8 +109,13 @@ git diff --cached --name-status
 git commit -m "feat: coordinate v0.2.0-rc2 release evidence refresh"
 ```
 
-Record the source commit. This is the Governance commit that the rc2 manifest must
-freeze:
+Do not record the rc2 source commit at the P2.0e.3 tooling commit. Complete P2.0e.4 public-repository hardening first.
+
+## P2.0e.4 hardening gate before source freeze
+
+Before executing Stage 1, the public-repository hardening phase must be committed and the worktree must be clean. In particular, repository hygiene, EN/PT-BR public documentation, the canonical reference-demo workflow and capability status must reflect the source intended for v0.2.0.
+
+Only then record the source commit that the rc2 manifest must freeze:
 
 ```bash
 RC2_SOURCE_SHA="$(git rev-parse HEAD)"
@@ -115,8 +123,7 @@ printf '%s\n' "$RC2_SOURCE_SHA"
 test -z "$(git status --porcelain)"
 ```
 
-No production runtime path may change after this point. Evidence commits are
-expected; runtime implementation changes require restarting the rc2 evidence chain.
+No production runtime path, workflow, or public documentation intended for v0.2.0 may change after this point. Evidence commits are expected; candidate-source changes require restarting the rc2 evidence chain.
 
 ## Stage 1 - regenerate and commit the rc2 release manifest
 
@@ -390,9 +397,9 @@ The workflow:
 - uploads both Sigstore bundles;
 - verifies both attestation sets with GitHub CLI.
 
-A workflow failure blocks P2.0e.4.
+A workflow failure blocks P2.0e.6.
 
-## Final local gate before P2.0e.4
+## Final local gate before P2.0e.6
 
 ```bash
 uv run ruff check .
@@ -408,4 +415,4 @@ test -z "$(git status --porcelain)"
 ```
 
 Do not create `v0.2.0` in P2.0e.3. The final tag/release decision belongs to
-P2.0e.4 after the rc2 evidence and attestations are confirmed.
+P2.0e.6 after the rc2 evidence and attestations are confirmed.

@@ -6,11 +6,11 @@ This index organizes the project documentation by audience and decision type.
 
 | Audience | Recommended path |
 |---|---|
-| Recruiter or hiring manager | [Executive overview](executive/EXECUTIVE_OVERVIEW.md) → [Capability matrix](product/CAPABILITY_MATRIX.md) |
+| Recruiter or hiring manager | [Executive overview](executive/EXECUTIVE_OVERVIEW.md) → [Five-minute walkthrough](demo/FIVE_MINUTE_WALKTHROUGH.md) → [Capability matrix](product/CAPABILITY_MATRIX.md) |
 | CTO or platform leader | [Executive overview](executive/EXECUTIVE_OVERVIEW.md) → [Architecture](architecture/ARCHITECTURE.md) → [Production readiness](operations/PRODUCTION_READINESS.md) |
 | AI Governance or GRC | [Governance model](governance/GOVERNANCE_MODEL.md) → [Evidence model](governance/EVIDENCE_MODEL.md) → [Control crosswalk](governance/CONTROL_CROSSWALK.md) |
 | Security architect | [Security model](security/SECURITY_MODEL.md) → [Threat model](security/THREAT_MODEL.md) → [Trust boundaries](architecture/TRUST_BOUNDARIES.md) |
-| Developer | [Demo guide](demo/DEMO_GUIDE.md) → [API guide](integrations/API_GUIDE.md) → [Architecture](architecture/ARCHITECTURE.md) |
+| Developer | [Development guide](DEVELOPMENT.md) → [Demo guide](demo/DEMO_GUIDE.md) → [API guide](integrations/API_GUIDE.md) |
 | Operator or SRE | [Production readiness](operations/PRODUCTION_READINESS.md) → [Observability](operations/OBSERVABILITY.md) → [Incident response](operations/INCIDENT_RESPONSE.md) |
 
 ## Product and positioning
@@ -20,7 +20,18 @@ This index organizes the project documentation by audience and decision type.
 - [Capability matrix](product/CAPABILITY_MATRIX.md)
 - [Roadmap](product/ROADMAP.md)
 - [MVP backlog](backlog/MVP_BACKLOG.md)
+
+## Demo and executable proof
+
+- [Five-minute walkthrough](demo/FIVE_MINUTE_WALKTHROUGH.md)
+- [Passo a passo em cinco minutos (PT-BR)](demo/FIVE_MINUTE_WALKTHROUGH.pt-BR.md)
+- [Canonical demo scenario](demo/CANONICAL_DEMO_SCENARIO.md)
 - [Demo guide](demo/DEMO_GUIDE.md)
+- [Governed actuation E2E](operations/P1_9_GOVERNED_ACTUATION_E2E.md)
+- P2.0 release-evidence runbooks under `operations/`
+
+The canonical seed is deliberately reproducible and local. Cross-repository/live proofs are kept
+separate so a deterministic fixture is never presented as proof of a real external dependency.
 
 ## Governance and assurance
 
@@ -41,17 +52,17 @@ This index organizes the project documentation by audience and decision type.
 - [Trust boundaries](architecture/TRUST_BOUNDARIES.md)
 - [Security model](security/SECURITY_MODEL.md)
 - [Threat model](security/THREAT_MODEL.md)
-- Architecture Decision Records: `architecture/adr/`
+- Architecture Decision Records: `adr/`
 
-ADRs are authoritative for accepted engineering decisions. Narrative documents should
-link to the relevant ADR instead of duplicating detailed rationale.
+ADRs are authoritative for accepted engineering decisions. Narrative documents should link to the
+relevant ADR instead of duplicating detailed rationale.
 
 ## Operations
 
 - [Production readiness](operations/PRODUCTION_READINESS.md)
 - [Observability](operations/OBSERVABILITY.md)
 - [Incident response](operations/INCIDENT_RESPONSE.md)
-- Existing service-specific runbooks remain under `operations/`.
+- Existing service-specific and release runbooks remain under `operations/`.
 
 ## Integrations and deployment
 
@@ -59,8 +70,9 @@ link to the relevant ADR instead of duplicating detailed rationale.
 - [Policy model router](integrations/POLICY_MODEL_ROUTER.md)
 - [Deployment options](deployment/DEPLOYMENT_OPTIONS.md)
 
-## Project governance
+## Development and project governance
 
+- [Development guide](DEVELOPMENT.md)
 - [Documentation governance](project/DOCUMENTATION_GOVERNANCE.md)
 - [License decision](project/LICENSE_DECISION.md)
 - Root [CONTRIBUTING.md](../CONTRIBUTING.md)
@@ -78,5 +90,5 @@ Review trigger: time-based or event-based
 Authoritative sources: code, ADRs, policy version or external reference
 ```
 
-A recent file modification timestamp is not evidence that the content is current.
-Content must be reviewed against implemented behavior.
+A recent file modification timestamp is not evidence that the content is current. Content must be
+reviewed against implemented behavior.

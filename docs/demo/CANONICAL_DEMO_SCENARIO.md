@@ -1,155 +1,150 @@
-# Canonical demo scenario — governed corporate credit runtime
+# Canonical demo scenario - governed corporate credit
 
-## Business story
+- **Status:** Current
+- **Owner:** Product and architecture
+- **Last reviewed:** 2026-08-11
+- **Review trigger:** Canonical seed contract, runtime-governance flow or public demo change
 
-A corporate-credit desk needs to accelerate analysis without transferring
-approval authority to a language model.
+## Purpose
 
-The deterministic credit core calculates financial indicators, policy results,
-rating and limit recommendations. The governed agent receives only structured,
-minimized facts and may draft a narrative opinion. A human approver remains the
-final decision authority.
+The canonical scenario provides one reproducible story that can be used to evaluate the platform
+without inventing production data or relying on mutable manual setup.
 
-The scenario is intentionally designed to connect later with:
+It represents a corporate-credit workflow in which deterministic rules calculate the business
+result and an AI agent may prepare a narrative opinion for human review. The model/agent path is
+governed, scoped and observable; the agent is not the final credit authority.
 
-```text
-Verifiable AI Governance
-    -> Policy Model Router
-    -> Multi-Agent Credit Desk
-    -> a2a-otel-kit
-    -> Verifiable AI Governance
-```
+The scenario is synthetic. It is an example of how a regulated workflow can use the platform, not a
+financial-services policy overlay or a production credit implementation.
 
-P0.3 seeds the Governance side of that story and produces runtime-routing evidence
-through the enforcement logic already implemented in this repository.
-
-## Canonical entities
-
-| Entity | Canonical value | Expected state |
-|---|---|---|
-| Initiative | `[DEMO-CANONICAL] Análise de Crédito PJ Assistida e Auditável` | Approved |
-| AI system | `Mesa de Crédito PJ Governada` | Active |
-| Approved model | `credit-opinion-approved` | Independently reviewed |
-| Out-of-scope model | `credit-opinion-experimental` | Draft and not reviewed |
-| Agent | `Agente de Parecer de Crédito PJ` | Independently reviewed |
-| Runtime incident | `Tentativa bloqueada de uso de modelo fora do escopo` | Remediating |
-
-## Authority boundary
-
-The agent:
-
-- may read deterministic credit-analysis facts;
-- may draft a narrative opinion;
-- may not calculate the rating;
-- may not alter limits or guarantees;
-- may not approve credit;
-- may not invoke transactional tools;
-- may use only the reviewed model in its allowlist.
-
-The system metadata records `human_credit_approver` as the decision authority and
-`opinion_drafting_only` as the LLM role.
-
-## Seeded controls
-
-- `GOV-HUM-001` — human oversight;
-- `GOV-MOD-003` — approved-model enforcement;
-- `GOV-AGT-002` — tool and MCP allowlist;
-- `GOV-AGT-004` — human approval for material actions;
-- `GOV-OPS-001` — runtime monitoring;
-- `GOV-EVD-001` — integrity-preserving audit trail;
-- `GOV-EVD-002` — independent evidence and evaluation.
-
-The IDs come from the repository's actual declarative control catalog.
-
-## Assessments and evidence
-
-The seed creates and submits:
-
-1. AI Impact Assessment;
-2. RIPD;
-3. International Processing Assessment.
-
-It also creates content-minimized references for all current evidence categories:
-
-- architecture;
-- policy;
-- assessment;
-- security test;
-- approval;
-- other/runbook.
-
-References use `urn:demo:` identifiers. No customer documents, prompts,
-credentials or personal data are seeded.
-
-## Runtime decisions
-
-Both attempts use workload `opinion_drafting` and the same approved agent scope.
-
-### Authorized attempt
+## Governance story
 
 ```text
-task_id = draft-opinion-authorized-model
-selected group = credit-opinion-approved
-expected outcome = allowed
+Proposal
+  → deterministic preliminary risk
+  → required controls and structured assessments
+  → multidisciplinary approval
+  → AI system inventory
+  → model review
+  → agent review
+  → scope-bound runtime authorization
+  → allowed routing decision
+  → blocked out-of-scope routing decision
+  → incident / runtime evidence
 ```
 
-### Unauthorized attempt
+The wider repository then extends the runtime story through sanitized telemetry, runtime assurance,
+governed actuation and release evidence. Those cross-service paths have their own E2E/runbooks and
+must not be confused with the seed fixture itself.
 
-```text
-task_id = draft-opinion-unapproved-model
-selected group = credit-opinion-experimental
-expected outcome = blocked
-reason_code = selected_model_group_not_approved
-```
+## Stable scenario identity
 
-The second attempt is blocked after the simulated Policy Model Router decision and
-before inference. Its structured evidence becomes the source for the seeded
-incident.
+The seed uses semantic UUIDv5 identities so a fresh database produces the same top-level reference
+objects instead of random UUIDs.
 
-The local deterministic router stub exists only to make this seed reproducible.
-It does not replace the real Policy Model Router integration planned for Phase 2.
+| Object | Stable ID |
+|---|---|
+| Scenario | `credit-pj-governed-runtime` |
+| Initiative | `e3095057-9408-561b-a755-cfc9f1453af5` |
+| AI system | `eabfd874-b6ca-5319-b7e1-30cae5d798df` |
+| Approved model | `9a798288-ea72-5e4d-ac33-dfc7533d80cb` |
+| Out-of-scope model | `150df55c-7ca6-551b-826d-545ccbe1dff5` |
+| Agent | `565aa2b9-ead9-59e6-89a9-18920cced7ce` |
+| Allowed routing decision | `1c384bfc-4126-5fda-8d58-bd63fd73aac4` |
+| Blocked routing decision | `32f86499-5b44-5580-870c-9c5a13bf9ff3` |
+| Incident | `29629ff5-c689-5d4e-8b22-5812e2e07a65` |
 
-## Idempotency
+Assessments, review submissions, approvals and evidence records derive stable IDs from semantic
+keys as well. Stable identity is a demo/release-evidence property; normal production entities are
+not globally assigned these demo IDs.
 
-Running `make seed-demo`:
+## What the seed actually proves
 
-- creates the scenario when absent;
-- validates and returns success when the complete scenario already exists;
-- fails closed when a partial or inconsistent scenario is found;
-- never silently repairs material drift.
+`python -m scripts.seed_canonical_demo` drives Governance application services to create and
+validate the scenario. It proves that the Governance domain can persist and reconstruct the
+approved and blocked reference states.
 
-A runtime manifest is written to:
+For reproducibility, the seed uses a **deterministic local Policy Model Router adapter**. It chooses
+the expected logical group from the fixed task identity and returns a contract-compatible decision
+that Governance then revalidates. Therefore:
 
-```text
-artifacts/demo/canonical-seed-manifest.json
-```
+- the seed proves Governance routing enforcement and evidence semantics deterministically;
+- the seed does **not** prove a live network call to `policy-model-router`;
+- the cross-repository governed-actuation E2E is the live integration proof for that boundary.
 
-## Commands
+This distinction is intentional and regression-protected in public documentation.
+
+## Scenario characteristics
+
+The initiative is deliberately high-assurance:
+
+- material decision impact;
+- restricted data classification;
+- personal and sensitive data flags;
+- regulated context;
+- international processing;
+- AI agent usage;
+- MCP usage;
+- human final approval;
+- explicit model and agent reviews;
+- an approved logical routing group;
+- an out-of-scope routing attempt that must be blocked.
+
+The structured assessments include AI impact, RIPD/privacy and international-processing context.
+The evidence set and approval gates use the normal application contracts instead of bypassing the
+workflow with direct fixture inserts.
+
+## Run locally
+
+Start the stack and seed:
 
 ```bash
-make migrate
+cp .env.example .env
+docker compose up --build
 make seed-demo
-make seed-demo-check
 ```
 
-Explicit reset for a dedicated non-production demo database:
+Or invoke the CLI directly:
 
 ```bash
-make seed-demo-reset
+uv run python -m scripts.seed_canonical_demo
 ```
 
-Reset deletes **all application data**, including the audit chain, before
-reseeding. It:
-
-- requires the exact confirmation phrase;
-- is disabled when `APP_ENV=production`;
-- must not be used on a shared development, staging or corporate database.
-
-The historical ten-case gallery remains available separately:
+Validate without mutation:
 
 ```bash
-make seed-demo-gallery
+uv run python -m scripts.seed_canonical_demo --check
 ```
 
-Do not run the gallery and canonical seed against the same database when preparing
-screenshots or the five-minute portfolio demonstration.
+The command writes a deterministic JSON summary to
+`artifacts/demo/canonical-seed-manifest.json` by default. The output path can be changed with
+`--output`.
+
+## Reset safeguards
+
+Reset is intentionally destructive and is allowed only with an explicit confirmation on a
+non-production environment. Use it only for a dedicated demo database. Routine reruns are
+idempotent and do not require reset.
+
+## CI proof
+
+`.github/workflows/reference-demo.yml` runs the public reference-demo gate against an empty
+PostgreSQL database:
+
+1. install the locked workspace;
+2. verify repository hygiene;
+3. apply the full Alembic migration chain;
+4. create the canonical scenario;
+5. run `--check` against the resulting scenario;
+6. execute deterministic identity, migration-history and hygiene regression tests.
+
+This workflow is intentionally narrower than release evidence. Security scanners, live sibling
+repositories, runtime benchmark/SLO and attestations remain part of their dedicated evidence paths.
+
+## Related proof
+
+- [Five-minute walkthrough](FIVE_MINUTE_WALKTHROUGH.md)
+- [Demo guide](DEMO_GUIDE.md)
+- [Governed actuation E2E](../operations/P1_9_GOVERNED_ACTUATION_E2E.md)
+- [Capability matrix](../product/CAPABILITY_MATRIX.md)
+- P2.0 release-evidence runbooks under `docs/operations/`
