@@ -1,0 +1,37 @@
+{
+  "canonicalization": "json-sort-keys-compact-v1",
+  "checks": {
+    "api_readiness_ok": true,
+    "empty_database_precondition": true,
+    "first_upgrade_reached_head": true,
+    "script_reported_pass": true,
+    "second_upgrade_reached_head": true
+  },
+  "environment": {
+    "docker": "Docker version 29.4.2, build 055a478ea9",
+    "docker_compose": "Docker Compose version 5.2.0",
+    "machine": "arm64",
+    "system": "Darwin",
+    "system_release": "25.5.0"
+  },
+  "evidence_digest": "e8489819958d11f9aa82f2303b5429c67074031d41092b74a205e38946208b24",
+  "expected_alembic_head": "0019",
+  "generated_at": "2026-08-11T14:20:29.871722Z",
+  "kind": "verifiable-ai-governance/release-clean-install-evidence",
+  "log": {
+    "path": "artifacts/release/clean-install/clean-install-e2e.log",
+    "sha256": "7ff875fb56c66025c12377748774e97e76d35094e5c01012b7e913860f02b72e",
+    "size_bytes": 9958
+  },
+  "release_version": "0.2.0-rc2",
+  "schema_version": "1.0",
+  "source": {
+    "governance_commit": "ef2c447e71638ee1cb0bedc6f39afd30bf8ba152",
+    "release_manifest_digest": "0f3dec44b3db519de74745f9dd39ee7c0995dc05706635baf25aefd1a2422c0b"
+  },
+  "test_script": {
+    "path": "scripts/test_fresh_install_migrations.sh",
+    "sha256": "29ccf0084cf5f63b17af3d7ace741e57213c6dddd3f2349e21d83586c49cdd33"
+  },
+  "verdict": "pass"
+}

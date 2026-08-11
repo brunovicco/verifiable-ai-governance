@@ -1,0 +1,187 @@
+P2.0e.1 isolated Compose project: vag-p2e1-rc2-3644
+ Network vag-p2e1-rc2-3644_default Creating 
+ Network vag-p2e1-rc2-3644_default Created 
+ Container vag-p2e1-rc2-3644-runtime-control-redis-1 Creating 
+ Container vag-p2e1-rc2-3644-postgres-1 Creating 
+ Container vag-p2e1-rc2-3644-runtime-control-redis-1 Created 
+ Container vag-p2e1-rc2-3644-postgres-1 Created 
+ Container vag-p2e1-rc2-3644-postgres-1 Starting 
+ Container vag-p2e1-rc2-3644-runtime-control-redis-1 Starting 
+ Container vag-p2e1-rc2-3644-postgres-1 Started 
+ Container vag-p2e1-rc2-3644-runtime-control-redis-1 Started 
+ Container vag-p2e1-rc2-3644-postgres-1 Waiting 
+ Container vag-p2e1-rc2-3644-runtime-control-redis-1 Waiting 
+ Container vag-p2e1-rc2-3644-runtime-control-redis-1 Healthy 
+ Container vag-p2e1-rc2-3644-postgres-1 Healthy 
+ Image vag-p2e1-rc2-3644-migrate Building 
+ Image vag-p2e1-rc2-3644-api Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.22kB done
+#1 DONE 0.0s
+
+#2 [api internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.35kB 0.0s done
+#2 transferring dockerfile: 1.35kB 0.0s done
+#2 DONE 0.1s
+
+#3 [migrate internal] load metadata for ghcr.io/astral-sh/uv:python3.14-bookworm-slim
+#3 DONE 1.4s
+
+#4 [api internal] load metadata for docker.io/library/python:3.14-slim-bookworm
+#4 DONE 1.4s
+
+#5 [migrate internal] load .dockerignore
+#5 transferring context: 362B done
+#5 DONE 0.0s
+
+#6 [api builder  1/10] FROM ghcr.io/astral-sh/uv:python3.14-bookworm-slim@sha256:7cf77f594be8042dab6daa9fe326f90962252268b4f120a7f5dccce4d947e6c1
+#6 resolve ghcr.io/astral-sh/uv:python3.14-bookworm-slim@sha256:7cf77f594be8042dab6daa9fe326f90962252268b4f120a7f5dccce4d947e6c1 0.0s done
+#6 DONE 0.0s
+
+#7 [api stage-1 1/7] FROM docker.io/library/python:3.14-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52
+#7 resolve docker.io/library/python:3.14-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52 0.0s done
+#7 DONE 0.0s
+
+#8 [api internal] load build context
+#8 transferring context: 1.56MB 0.1s done
+#8 DONE 0.1s
+
+#9 [migrate stage-1 5/7] COPY --from=builder /workspace/.venv /workspace/.venv
+#9 CACHED
+
+#10 [migrate builder  5/10] COPY packages/governance-schemas/pyproject.toml packages/governance-schemas/pyproject.toml
+#10 CACHED
+
+#11 [migrate stage-1 3/7] RUN addgroup --system governance && adduser --system --ingroup governance governance
+#11 CACHED
+
+#12 [migrate stage-1 4/7] RUN python -m pip uninstall --yes pip && rm -rf /usr/local/lib/python3.14/ensurepip
+#12 CACHED
+
+#13 [migrate builder 10/10] RUN uv sync --frozen --package ai-governance-api --no-dev --no-editable
+#13 CACHED
+
+#14 [migrate stage-1 6/7] COPY apps/api/alembic.ini /workspace/alembic.ini
+#14 CACHED
+
+#15 [migrate stage-1 2/7] WORKDIR /workspace
+#15 CACHED
+
+#16 [migrate builder  4/10] COPY apps/api/pyproject.toml apps/api/pyproject.toml
+#16 CACHED
+
+#17 [migrate builder  8/10] COPY packages/governance-schemas/src packages/governance-schemas/src
+#17 CACHED
+
+#18 [migrate builder  7/10] COPY apps/api/src apps/api/src
+#18 CACHED
+
+#19 [migrate builder  3/10] COPY pyproject.toml uv.lock ./
+#19 CACHED
+
+#20 [migrate builder  6/10] COPY packages/policy-engine/pyproject.toml packages/policy-engine/pyproject.toml
+#20 CACHED
+
+#21 [migrate builder  9/10] COPY packages/policy-engine/src packages/policy-engine/src
+#21 CACHED
+
+#22 [migrate builder  2/10] WORKDIR /workspace
+#22 CACHED
+
+#23 [migrate stage-1 7/7] COPY apps/api/alembic /workspace/alembic
+#23 CACHED
+
+#24 [migrate] exporting to image
+#24 exporting layers done
+#24 exporting manifest sha256:ad2e87bb2806fc56d4b73eab15b05416f7728fac277ceceeebb735e2893a2bc7 0.0s done
+#24 exporting config sha256:396fd289de66787203143431e460cd9203cf285160cb500971d5f83be835c292 0.0s done
+#24 exporting attestation manifest sha256:ada201645bdde04f1c07e81f44b5cc1b15fe7ce0a9bbc319e76e29a083c48211 0.0s done
+#24 exporting manifest list sha256:47107e2e755367831299c054b0a107ccbb229323cbded0721a57f443e10517b5
+#24 exporting manifest list sha256:47107e2e755367831299c054b0a107ccbb229323cbded0721a57f443e10517b5 0.0s done
+#24 naming to docker.io/library/vag-p2e1-rc2-3644-migrate:latest done
+#24 unpacking to docker.io/library/vag-p2e1-rc2-3644-migrate:latest done
+#24 DONE 0.2s
+
+#25 [api] exporting to image
+#25 exporting layers done
+#25 exporting manifest sha256:36dae83adb728ae9cefc72d18dbda0597b9d4fab5c1cbb03ff8e0126df1c6209 0.0s done
+#25 exporting config sha256:dc02facee14aea419a4e69db46f020ecfd4253ea769fd5ef82ae83a1daff9837 0.0s done
+#25 exporting attestation manifest sha256:de94581df288690e19fd3f9ae4ffd57ec89ab196f3faf7175ec54554f584d43f 0.0s done
+#25 exporting manifest list sha256:f2ad524c80ea341700a8877a8902abe681894abd5ddf2e951e22d606d16e3a8c done
+#25 naming to docker.io/library/vag-p2e1-rc2-3644-api:latest done
+#25 unpacking to docker.io/library/vag-p2e1-rc2-3644-api:latest done
+#25 DONE 0.2s
+
+#26 [migrate] resolving provenance for metadata file
+#26 DONE 0.0s
+
+#27 [api] resolving provenance for metadata file
+#27 DONE 0.0s
+ Image vag-p2e1-rc2-3644-api Built 
+ Image vag-p2e1-rc2-3644-migrate Built 
+--- first alembic upgrade head ---
+ Container vag-p2e1-rc2-3644-postgres-1 Running 
+ Container vag-p2e1-rc2-3644-runtime-control-redis-1 Running 
+ Container vag-p2e1-rc2-3644-postgres-1 Waiting 
+ Container vag-p2e1-rc2-3644-postgres-1 Healthy 
+ Container vag-p2e1-rc2-3644-migrate-run-06ab93defaf4 Creating 
+ Container vag-p2e1-rc2-3644-migrate-run-06ab93defaf4 Created 
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001, Initial governance inventory schema.
+INFO  [alembic.runtime.migration] Running upgrade 0001 -> 0002, Require one current assessment per definition and initiative.
+INFO  [alembic.runtime.migration] Running upgrade 0002 -> 0003, Add trusted upload metadata to evidence records.
+INFO  [alembic.runtime.migration] Running upgrade 0003 -> 0004, Add immutable review submissions and versioned approval rounds.
+INFO  [alembic.runtime.migration] Running upgrade 0004 -> 0005, Add shared directory-authorization snapshots and invalidation markers.
+INFO  [alembic.runtime.migration] Running upgrade 0005 -> 0006, Add persistent emergency access restrictions for Entra identities.
+INFO  [alembic.runtime.migration] Running upgrade 0006 -> 0007, Add governed scope reviews to model and agent registry assets.
+INFO  [alembic.runtime.migration] Running upgrade 0007 -> 0008, Add governed policy-model-router decisions.
+INFO  [alembic.runtime.migration] Running upgrade 0008 -> 0009, Add incident remediation, kill-switch actions, and temporary exceptions.
+INFO  [alembic.runtime.migration] Running upgrade 0009 -> 0010, Add structured runtime violation evidence to routing decisions.
+INFO  [alembic.runtime.migration] Running upgrade 0010 -> 0011, Add durable monotonic runtime-control transitions.
+INFO  [alembic.runtime.migration] Running upgrade 0011 -> 0012, Add sanitized runtime telemetry evidence.
+INFO  [alembic.runtime.migration] Running upgrade 0012 -> 0013, Add deterministic runtime assurance policy and evaluation evidence.
+INFO  [alembic.runtime.migration] Running upgrade 0013 -> 0014, Add governed Runtime Assurance breach-to-incident promotion evidence.
+INFO  [alembic.runtime.migration] Running upgrade 0014 -> 0015, Add deterministic advisory runtime-response recommendation evidence.
+INFO  [alembic.runtime.migration] Running upgrade 0015 -> 0016, Add governed Runtime Assurance actuation approval-request evidence.
+INFO  [alembic.runtime.migration] Running upgrade 0016 -> 0017, Add governed Runtime Assurance actuation decision evidence.
+INFO  [alembic.runtime.migration] Running upgrade 0017 -> 0018, Add governed Runtime Assurance actuation execution receipts.
+INFO  [alembic.runtime.migration] Running upgrade 0018 -> 0019, Add governed Runtime Assurance kill-switch restore workflow.
+--- alembic current after fresh install ---
+ Container vag-p2e1-rc2-3644-postgres-1 Running 
+ Container vag-p2e1-rc2-3644-runtime-control-redis-1 Running 
+ Container vag-p2e1-rc2-3644-postgres-1 Waiting 
+ Container vag-p2e1-rc2-3644-postgres-1 Healthy 
+ Container vag-p2e1-rc2-3644-migrate-run-2448ec2b856c Creating 
+ Container vag-p2e1-rc2-3644-migrate-run-2448ec2b856c Created 
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+0019 (head)
+--- second alembic upgrade head ---
+ Container vag-p2e1-rc2-3644-postgres-1 Running 
+ Container vag-p2e1-rc2-3644-runtime-control-redis-1 Running 
+ Container vag-p2e1-rc2-3644-postgres-1 Waiting 
+ Container vag-p2e1-rc2-3644-postgres-1 Healthy 
+ Container vag-p2e1-rc2-3644-migrate-run-87241cb9bf1d Creating 
+ Container vag-p2e1-rc2-3644-migrate-run-87241cb9bf1d Created 
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+--- current revision after second upgrade ---
+ Container vag-p2e1-rc2-3644-postgres-1 Running 
+ Container vag-p2e1-rc2-3644-runtime-control-redis-1 Running 
+ Container vag-p2e1-rc2-3644-postgres-1 Waiting 
+ Container vag-p2e1-rc2-3644-postgres-1 Healthy 
+ Container vag-p2e1-rc2-3644-migrate-run-b78b9288d3c9 Creating 
+ Container vag-p2e1-rc2-3644-migrate-run-b78b9288d3c9 Created 
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+0019 (head)
+--- API readiness ---
+ Container vag-p2e1-rc2-3644-postgres-1 Running 
+ Container vag-p2e1-rc2-3644-runtime-control-redis-1 Running 
+ Container vag-p2e1-rc2-3644-api-1 Creating 
+ Container vag-p2e1-rc2-3644-api-1 Created 
+ Container vag-p2e1-rc2-3644-api-1 Starting 
+ Container vag-p2e1-rc2-3644-api-1 Started 
+{"checks": {"database": "ok", "runtime_control": "ok", "schema": "ok"}, "status": "ok"}
+P2.0e.1 fresh-install E2E: PASS
