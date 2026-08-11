@@ -15,3 +15,14 @@ coverage.xml
 htmlcov
 work
 outputs
+
+# Local AI/coding-agent tooling must not enter the build context.
+.agents
+.codex
+.claude
+.harness.json
+AGENTS.md
+CLAUDE.md
+CLAUDE.local.md
+.idea
+.vscode

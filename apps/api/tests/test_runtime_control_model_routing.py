@@ -170,9 +170,7 @@ def _case(states: list[RuntimeControlState]):
 
 
 async def test_active_runtime_control_blocks_before_router_call() -> None:
-    case, reader, router, store, audit, transaction, gate = _case(
-        [RuntimeControlState.ACTIVE]
-    )
+    case, reader, router, store, audit, transaction, gate = _case([RuntimeControlState.ACTIVE])
 
     result = await case.execute(
         agent_id="agent-1",

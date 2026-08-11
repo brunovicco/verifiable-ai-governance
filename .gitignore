@@ -14,3 +14,14 @@ coverage/
 dist/
 *.egg-info/
 backups/
+
+# Local AI/coding-agent tooling. Public engineering guidance belongs in docs/.
+.agents/
+.codex/
+.claude/
+.harness.json
+AGENTS.md
+CLAUDE.md
+CLAUDE.local.md
+.idea/
+.vscode/*.local.json

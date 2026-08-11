@@ -175,9 +175,7 @@ class Repository:
         self.execution: RuntimeAssuranceRestoreExecution | None = None
         self.matching_transition: RuntimeControlTransitionRecord | None = None
 
-    async def get_source_context(
-        self, source_execution_id: str, *, for_update: bool = False
-    ):
+    async def get_source_context(self, source_execution_id: str, *, for_update: bool = False):
         del for_update
         return self.source if source_execution_id == self.source.source_execution.id else None
 

@@ -1,6 +1,6 @@
 {
-  "benchmark_implementation_commit": "cdc0633b83f233360045d1588fb0479a52acbf53",
-  "bundle_digest": "48bee7f10f7b5e16f12969dd5fe7fc92ea90c48b1fb989f8a03a44c4fc2d4b98",
+  "benchmark_implementation_commit": "eb73c0115c2cfc0319fff1f0e4dba0a55ab3c1f7",
+  "bundle_digest": "bdcf8f2bd80ab51948b3ecf521b746a359b155759b5e8493b537e24f043d05e0",
   "canonicalization": "json-sort-keys-compact-v1",
   "environment": {
     "benchmark_mode": "sequential",
@@ -11,7 +11,7 @@
     "system": "Darwin",
     "system_release": "25.5.0"
   },
-  "generated_at": "2026-08-10T23:05:49.375184Z",
+  "generated_at": "2026-08-11T13:50:45.329655Z",
   "kind": "verifiable-ai-governance/release-runtime-benchmark",
   "policy": {
     "digest": "72f6fc7dc6303f4fd1b78dadfd6befcec8f909aa750542a6d283697802a03efb",
@@ -20,14 +20,14 @@
   },
   "raw_measurements": {
     "path": "artifacts/release/benchmark/runtime-benchmark-raw.json",
-    "sha256": "12c3f84bf6187358c79b41df7888485462ca677a219549a86b2cbfb41ebac9cd",
-    "size_bytes": 25662
+    "sha256": "9a29b6d8e4af4fa2ce55d66f58d409e00663102295b618bf17fdd1f80e2f052e",
+    "size_bytes": 25672
   },
-  "release_version": "0.2.0-rc1",
+  "release_version": "0.2.0-rc2",
   "runtime_equivalence": {
-    "benchmark_commit": "cdc0633b83f233360045d1588fb0479a52acbf53",
-    "changed_path_count": 55,
-    "release_commit": "74133daddc7b4a087ed8a7129dfa41d0ce50fecd",
+    "benchmark_commit": "eb73c0115c2cfc0319fff1f0e4dba0a55ab3c1f7",
+    "changed_path_count": 19,
+    "release_commit": "ef2c447e71638ee1cb0bedc6f39afd30bf8ba152",
     "runtime_changed_paths": [],
     "runtime_equivalent": true
   },
@@ -53,13 +53,13 @@
       "summary": {
         "error_count": 0,
         "error_rate": 0.0,
-        "max_ms": 61.684791,
-        "mean_ms": 14.58133916,
-        "min_ms": 10.803417,
-        "observed_rate_per_second": 68.580806538211,
-        "p50_ms": 12.120167,
-        "p95_ms": 24.540917,
-        "p99_ms": 61.684791,
+        "max_ms": 24.532042,
+        "mean_ms": 13.07292994,
+        "min_ms": 10.895916,
+        "observed_rate_per_second": 76.49394623773223,
+        "p50_ms": 12.175125,
+        "p95_ms": 19.338708,
+        "p99_ms": 24.532042,
         "sample_count": 50
       }
     },
@@ -84,13 +84,13 @@
       "summary": {
         "error_count": 0,
         "error_rate": 0.0,
-        "max_ms": 66.3155,
-        "mean_ms": 46.704556540000006,
-        "min_ms": 42.477042,
-        "observed_rate_per_second": 21.411187132106743,
-        "p50_ms": 45.284917,
-        "p95_ms": 61.252125,
-        "p99_ms": 66.3155,
+        "max_ms": 53.435208,
+        "mean_ms": 45.675077460000004,
+        "min_ms": 39.911834,
+        "observed_rate_per_second": 21.89377786771683,
+        "p50_ms": 45.224166,
+        "p95_ms": 51.449875,
+        "p99_ms": 53.435208,
         "sample_count": 50
       }
     },
@@ -115,13 +115,13 @@
       "summary": {
         "error_count": 0,
         "error_rate": 0.0,
-        "max_ms": 17.917666,
-        "mean_ms": 6.08907285,
-        "min_ms": 4.230208,
-        "observed_rate_per_second": 164.22861487032463,
-        "p50_ms": 5.133417,
-        "p95_ms": 7.852792,
-        "p99_ms": 17.917666,
+        "max_ms": 5.649291,
+        "mean_ms": 5.059077,
+        "min_ms": 4.411959,
+        "observed_rate_per_second": 197.6645146930952,
+        "p50_ms": 5.0625,
+        "p95_ms": 5.603333,
+        "p99_ms": 5.649291,
         "sample_count": 20
       }
     },
@@ -146,13 +146,13 @@
       "summary": {
         "error_count": 0,
         "error_rate": 0.0,
-        "max_ms": 40.446958,
-        "mean_ms": 5.7447791,
-        "min_ms": 2.867542,
-        "observed_rate_per_second": 174.07109700701983,
-        "p50_ms": 4.301542,
-        "p95_ms": 12.3795,
-        "p99_ms": 40.446958,
+        "max_ms": 9.5045,
+        "mean_ms": 4.46963338,
+        "min_ms": 3.029833,
+        "observed_rate_per_second": 223.73199656030846,
+        "p50_ms": 4.200667,
+        "p95_ms": 6.404334,
+        "p99_ms": 9.5045,
         "sample_count": 50
       }
     },
@@ -177,22 +177,22 @@
       "summary": {
         "error_count": 0,
         "error_rate": 0.0,
-        "max_ms": 7.038459,
-        "mean_ms": 4.35365336,
-        "min_ms": 3.506167,
-        "observed_rate_per_second": 229.69214985917023,
-        "p50_ms": 4.23925,
-        "p95_ms": 6.207458,
-        "p99_ms": 7.038459,
+        "max_ms": 16.242333,
+        "mean_ms": 4.5145491,
+        "min_ms": 3.230833,
+        "observed_rate_per_second": 221.50606358451168,
+        "p50_ms": 3.906333,
+        "p95_ms": 11.107625,
+        "p99_ms": 16.242333,
         "sample_count": 50
       }
     }
   },
   "schema_version": "1.0",
   "upstream_roots": {
-    "build_provenance_digest": "b3ef18e39a6e54eb40001c142c70b8dc0f9d02a3f2191a369cbf592bd2c8da85",
-    "release_manifest_digest": "ba55a969f86bd032c8f1babeb61e8831c58dd364ecbf29a6a5afcbda51f4c9bc",
-    "security_bundle_digest": "021d8ae90d0a7bda4b717aa65c87518eadd60b37d15e3ccd406cb37f046d7db9"
+    "build_provenance_digest": "eb30e80969c827f568a83e105af9e705c98af4f3ec3ab971f0c61bda3c7346c1",
+    "release_manifest_digest": "0f3dec44b3db519de74745f9dd39ee7c0995dc05706635baf25aefd1a2422c0b",
+    "security_bundle_digest": "163a5274cc59268ae59f7888a03540358a9a798fd09abdf989f8c8013838fdbd"
   },
   "verdict": "pass"
 }

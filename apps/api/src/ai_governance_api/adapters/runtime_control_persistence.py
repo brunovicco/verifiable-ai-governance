@@ -140,8 +140,7 @@ class SqlAlchemyRuntimeControlRepository:
         entities = await self._session.scalars(
             select(RuntimeControlTransitionEntry)
             .where(
-                RuntimeControlTransitionEntry.status
-                == RuntimeControlTransitionStatus.PENDING.value
+                RuntimeControlTransitionEntry.status == RuntimeControlTransitionStatus.PENDING.value
             )
             .order_by(
                 RuntimeControlTransitionEntry.requested_at.asc(),

@@ -10,16 +10,16 @@
   "build_recipe": {
     "bundle": {
       "media_type": "application/gzip",
-      "path": "artifacts/release/provenance/build-recipe-0.2.0-rc1.tar.gz",
+      "path": "artifacts/release/provenance/build-recipe-0.2.0-rc2.tar.gz",
       "role": "build_recipe_bundle",
-      "sha256": "94287af0659087787d0a7dd0fb3d79533cf3331b37bf99314a776e99858dac85",
-      "size_bytes": 9077
+      "sha256": "ae04474fb4a634f31137b4be72645839034d437151cddddde93927785f557801",
+      "size_bytes": 9216
     },
     "files": [
       {
         "path": ".github/workflows/release-provenance.yml",
-        "sha256": "8cab02006f6f201b281155bb7fcaf8f096d3bb22eb0b2aa50dc8bd2c90d4ccb6",
-        "size_bytes": 4090
+        "sha256": "3102c55f5d6c649f2995490c34f5dc32781ea819426ab9abb9d906cdf88f1657",
+        "size_bytes": 5589
       },
       {
         "path": "schemas/release-build-provenance.schema.json",
@@ -45,8 +45,8 @@
   },
   "canonicalization": "json-sort-keys-compact-v1",
   "kind": "verifiable-ai-governance/release-build-provenance",
-  "provenance_digest": "b3ef18e39a6e54eb40001c142c70b8dc0f9d02a3f2191a369cbf592bd2c8da85",
-  "release_version": "0.2.0-rc1",
+  "provenance_digest": "eb30e80969c827f568a83e105af9e705c98af4f3ec3ab971f0c61bda3c7346c1",
+  "release_version": "0.2.0-rc2",
   "schema_version": "1.0",
   "source_bindings": {
     "a2a_otel_kit": {
@@ -55,7 +55,7 @@
       "repository": "brunovicco/a2a-otel-kit"
     },
     "governance": {
-      "commit": "74133daddc7b4a087ed8a7129dfa41d0ce50fecd",
+      "commit": "ef2c447e71638ee1cb0bedc6f39afd30bf8ba152",
       "lockfile_sha256": "5b81d5e73760c51dd68c311f3c7e4c73dff99092aee22b6a139b6961b1c5d35a",
       "repository": "brunovicco/verifiable-ai-governance"
     },
@@ -70,21 +70,21 @@
       "repository": "brunovicco/policy-model-router"
     }
   },
-  "source_date": "2026-08-09T23:13:31-03:00",
+  "source_date": "2026-08-11T09:11:36-03:00",
   "subjects": [
     {
       "media_type": "application/gzip",
-      "path": "artifacts/release/provenance/build-recipe-0.2.0-rc1.tar.gz",
+      "path": "artifacts/release/provenance/build-recipe-0.2.0-rc2.tar.gz",
       "role": "build_recipe_bundle",
-      "sha256": "94287af0659087787d0a7dd0fb3d79533cf3331b37bf99314a776e99858dac85",
-      "size_bytes": 9077
+      "sha256": "ae04474fb4a634f31137b4be72645839034d437151cddddde93927785f557801",
+      "size_bytes": 9216
     },
     {
       "media_type": "application/gzip",
-      "path": "artifacts/release/provenance/release-evidence-0.2.0-rc1.tar.gz",
+      "path": "artifacts/release/provenance/release-evidence-0.2.0-rc2.tar.gz",
       "role": "release_evidence_bundle",
-      "sha256": "87b11dd01dff76d98657d2c6324c80c7ef53c9ec54331283294924f477104078",
-      "size_bytes": 235305
+      "sha256": "35c1b6d6ba4a55f3ebb70d18686234e7f6894cfc3b36e0384b9f7bce1af7d82d",
+      "size_bytes": 236588
     },
     {
       "media_type": "application/gzip",
@@ -95,10 +95,10 @@
     },
     {
       "media_type": "application/gzip",
-      "path": "artifacts/release/provenance/sources/governance-74133daddc7b.tar.gz",
+      "path": "artifacts/release/provenance/sources/governance-ef2c447e7163.tar.gz",
       "role": "source_archive:governance",
-      "sha256": "7e57f896878b99bcf902d83d1838dd168425fc0b3836bb7e37aa604a6b94fa1d",
-      "size_bytes": 1563072
+      "sha256": "1ed3f525dfdad7dec81b0e4129c82d5f06aab59af9127c51e0c20e5bd164fbad",
+      "size_bytes": 10424865
     },
     {
       "media_type": "application/gzip",
@@ -117,11 +117,11 @@
   ],
   "upstream_roots": {
     "release_manifest": {
-      "digest": "ba55a969f86bd032c8f1babeb61e8831c58dd364ecbf29a6a5afcbda51f4c9bc",
+      "digest": "0f3dec44b3db519de74745f9dd39ee7c0995dc05706635baf25aefd1a2422c0b",
       "path": "artifacts/release/release-manifest.json"
     },
     "security_evidence": {
-      "digest": "021d8ae90d0a7bda4b717aa65c87518eadd60b37d15e3ccd406cb37f046d7db9",
+      "digest": "163a5274cc59268ae59f7888a03540358a9a798fd09abdf989f8c8013838fdbd",
       "path": "artifacts/release/security/security-evidence-bundle.json",
       "policy_digest": "3dc91c8db39076a67ee27d1b1b34792f31590ea65edf647db306669708e13bf9"
     }

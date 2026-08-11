@@ -633,7 +633,6 @@ RuntimeAssuranceActuationExecutionServiceDependency = Annotated[
 ]
 
 
-
 def get_runtime_assurance_restore_request_service(
     session: DatabaseSession,
 ) -> RuntimeAssuranceRestoreRequestService:

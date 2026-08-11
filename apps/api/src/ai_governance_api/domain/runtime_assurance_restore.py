@@ -183,9 +183,7 @@ def validate_restore_source_eligibility(context: RuntimeAssuranceRestoreSourceCo
         )
     _validate_remediation_snapshot(context)
     if not context.kill_switch_enabled:
-        raise RuntimeAssuranceRestoreDomainError(
-            "Agent does not declare an available kill switch"
-        )
+        raise RuntimeAssuranceRestoreDomainError("Agent does not declare an available kill switch")
     if not context.kill_switch_engaged:
         raise RuntimeAssuranceRestoreDomainError("Kill switch is not currently engaged")
     if context.agent_version <= 0:
@@ -313,9 +311,7 @@ def validate_restore_request_current(
     validate_restore_source_eligibility(source)
     current_digest = build_remediation_digest(source)
     if current_digest != request.remediation_digest:
-        raise RuntimeAssuranceRestoreDomainError(
-            "Restore request remediation evidence is stale"
-        )
+        raise RuntimeAssuranceRestoreDomainError("Restore request remediation evidence is stale")
 
 
 def build_restore_decision_digest(
@@ -404,17 +400,12 @@ def validate_restore_decision_binding(
 def restore_decision_evidence_reference(decision: RuntimeAssuranceRestoreDecision) -> str:
     """Return the Runtime Control evidence reference for one approved restore decision."""
     if decision.decision is not RuntimeAssuranceRestoreDecisionOutcome.APPROVED:
-        raise RuntimeAssuranceRestoreDomainError(
-            "Only approved restore decisions can be executed"
-        )
+        raise RuntimeAssuranceRestoreDomainError("Only approved restore decisions can be executed")
     if decision.action is not RuntimeAssuranceRestoreAction.RESTORE_KILL_SWITCH:
         raise RuntimeAssuranceRestoreDomainError("Unsupported restore decision action")
     if not decision.id.strip() or not _is_sha256(decision.decision_digest):
         raise RuntimeAssuranceRestoreDomainError("Restore decision identity or digest is invalid")
-    return (
-        f"{RUNTIME_ASSURANCE_RESTORE_EVIDENCE_PREFIX}:"
-        f"{decision.id}:{decision.decision_digest}"
-    )
+    return f"{RUNTIME_ASSURANCE_RESTORE_EVIDENCE_PREFIX}:{decision.id}:{decision.decision_digest}"
 
 
 def validate_new_restore_execution_preconditions(
@@ -554,8 +545,7 @@ def build_restore_execution_digest(
     """Return canonical SHA-256 over one applied restore execution receipt."""
     _require_schema_version(schema_version, version)
     if not all(
-        _is_sha256(value)
-        for value in (decision_digest, request_digest, source_execution_digest)
+        _is_sha256(value) for value in (decision_digest, request_digest, source_execution_digest)
     ):
         raise RuntimeAssuranceRestoreDomainError("Restore execution source digest is invalid")
     if action is not RuntimeAssuranceRestoreAction.RESTORE_KILL_SWITCH:
@@ -638,13 +628,9 @@ def _validate_remediation_snapshot(context: RuntimeAssuranceRestoreSourceContext
     if context.incident_version <= 0:
         raise RuntimeAssuranceRestoreDomainError("Incident version is invalid")
     if not context.remediation_owner_id or not context.remediation_description:
-        raise RuntimeAssuranceRestoreDomainError(
-            "Restore requires a recorded remediation plan"
-        )
+        raise RuntimeAssuranceRestoreDomainError("Restore requires a recorded remediation plan")
     if context.remediation_due_at is None:
-        raise RuntimeAssuranceRestoreDomainError(
-            "Restore requires a recorded remediation due date"
-        )
+        raise RuntimeAssuranceRestoreDomainError("Restore requires a recorded remediation due date")
     _require_aware(context.remediation_due_at, "Remediation due timestamp")
     if context.incident_status is IncidentStatus.CLOSED:
         if context.resolved_at is None:

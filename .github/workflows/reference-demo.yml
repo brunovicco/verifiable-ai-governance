@@ -1,0 +1,61 @@
+name: Reference Demo
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canonical-demo:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: governance_reference_demo
+          POSTGRES_USER: governance
+          POSTGRES_PASSWORD: governance
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U governance -d governance_reference_demo"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      APP_ENV: test
+      DATABASE_URL: >-
+        postgresql+asyncpg://governance:governance@127.0.0.1:5432/governance_reference_demo
+      AUTO_CREATE_SCHEMA: "false"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install locked workspace
+        run: uv sync --all-packages --locked
+      - name: Verify public repository hygiene
+        run: uv run python scripts/validate_repository_hygiene.py
+      - name: Migrate an empty reference database
+        run: uv run alembic -c apps/api/alembic.ini upgrade head
+      - name: Create deterministic canonical demo
+        run: >-
+          uv run python -m scripts.seed_canonical_demo
+          --output /tmp/canonical-demo-created.json
+      - name: Verify idempotent canonical demo
+        run: >-
+          uv run python -m scripts.seed_canonical_demo
+          --check
+          --output /tmp/canonical-demo-checked.json
+      - name: Run canonical identity and migration regression tests
+        run: >-
+          uv run pytest
+          apps/api/tests/test_canonical_demo_seed.py
+          apps/api/tests/test_migration_history.py
+          apps/api/tests/test_repository_hygiene.py

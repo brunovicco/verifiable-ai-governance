@@ -1,0 +1,50 @@
+{
+  "attestation": {
+    "action": "actions/attest@v4",
+    "provenance_subject_checksums": "artifacts/release/provenance/release-subjects.sha256",
+    "provider": "github-artifact-attestations",
+    "release_candidate_subject_checksums": "artifacts/release/release-candidate-subjects.sha256",
+    "workflow_path": ".github/workflows/release-provenance.yml"
+  },
+  "canonical_demo": {
+    "agent_id": "565aa2b9-ead9-59e6-89a9-18920cced7ce",
+    "ai_system_id": "eabfd874-b6ca-5319-b7e1-30cae5d798df",
+    "approved_model_id": "9a798288-ea72-5e4d-ac33-dfc7533d80cb",
+    "identity_scheme": "uuidv5",
+    "initiative_id": "e3095057-9408-561b-a755-cfc9f1453af5",
+    "out_of_scope_model_id": "150df55c-7ca6-551b-826d-545ccbe1dff5",
+    "scenario_id": "credit-pj-governed-runtime"
+  },
+  "canonicalization": "json-sort-keys-compact-v1",
+  "index_digest": "42d1dc5cda69c8ee5c104644091ab13b31207fb65048ad4c971f45306cc414a2",
+  "kind": "verifiable-ai-governance/release-candidate-evidence-index",
+  "release_version": "0.2.0-rc2",
+  "roots": {
+    "build_provenance": {
+      "digest": "eb30e80969c827f568a83e105af9e705c98af4f3ec3ab971f0c61bda3c7346c1",
+      "path": "artifacts/release/provenance/release-build-provenance.json"
+    },
+    "clean_install": {
+      "digest": "e8489819958d11f9aa82f2303b5429c67074031d41092b74a205e38946208b24",
+      "path": "artifacts/release/clean-install/clean-install-evidence.json",
+      "verdict": "pass"
+    },
+    "release_manifest": {
+      "digest": "0f3dec44b3db519de74745f9dd39ee7c0995dc05706635baf25aefd1a2422c0b",
+      "path": "artifacts/release/release-manifest.json"
+    },
+    "runtime_benchmark": {
+      "digest": "bdcf8f2bd80ab51948b3ecf521b746a359b155759b5e8493b537e24f043d05e0",
+      "path": "artifacts/release/benchmark/runtime-benchmark-bundle.json",
+      "verdict": "pass"
+    },
+    "security_evidence": {
+      "digest": "163a5274cc59268ae59f7888a03540358a9a798fd09abdf989f8c8013838fdbd",
+      "path": "artifacts/release/security/security-evidence-bundle.json",
+      "verdict": "pass"
+    }
+  },
+  "schema_version": "1.0",
+  "source_commit": "ef2c447e71638ee1cb0bedc6f39afd30bf8ba152",
+  "verdict": "pass"
+}

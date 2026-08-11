@@ -6,7 +6,7 @@ on:
       release_version:
         description: Frozen release version from P2.0a
         required: true
-        default: 0.2.0-rc1
+        default: 0.2.0-rc2
         type: string
 
 permissions:
@@ -89,11 +89,30 @@ jobs:
             --credit-desk-repo .release-sources/multi-agent-credit-desk \
             --a2a-otel-kit-repo .release-sources/a2a-otel-kit
 
+      - name: Verify coordinated rc2 release evidence
+        run: |
+          python -m scripts.verify_release_candidate_evidence_index \
+            --governance-repo . \
+            --policy-model-router-repo .release-sources/policy-model-router \
+            --credit-desk-repo .release-sources/multi-agent-credit-desk \
+            --a2a-otel-kit-repo .release-sources/a2a-otel-kit
+
       - name: Upload provenance bundle
         uses: actions/upload-artifact@v4
         with:
           name: release-provenance-${{ inputs.release_version }}
           path: artifacts/release/provenance
+          if-no-files-found: error
+
+      - name: Upload coordinated release candidate evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-evidence-${{ inputs.release_version }}
+          path: |
+            artifacts/release/release-candidate-evidence-index.json
+            artifacts/release/release-candidate-subjects.sha256
+            artifacts/release/clean-install
+            artifacts/release/benchmark
           if-no-files-found: error
 
       - name: Generate GitHub build provenance attestations
@@ -109,6 +128,19 @@ jobs:
           path: ${{ steps.attest.outputs.bundle-path }}
           if-no-files-found: error
 
+      - name: Generate release candidate root attestation
+        id: attest_candidate
+        uses: actions/attest@v4
+        with:
+          subject-checksums: artifacts/release/release-candidate-subjects.sha256
+
+      - name: Upload release candidate attestation bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-attestation-bundle-${{ inputs.release_version }}
+          path: ${{ steps.attest_candidate.outputs.bundle-path }}
+          if-no-files-found: error
+
       - name: Verify GitHub attestations
         env:
           GH_TOKEN: ${{ github.token }}
@@ -118,3 +150,6 @@ jobs:
             test -n "$digest"
             gh attestation verify "$path" -R "$GITHUB_REPOSITORY"
           done < artifacts/release/provenance/release-subjects.sha256
+          gh attestation verify \
+            artifacts/release/release-candidate-evidence-index.json \
+            -R "$GITHUB_REPOSITORY"

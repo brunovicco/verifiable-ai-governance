@@ -2,57 +2,72 @@
 
 - **Status:** Current
 - **Owner:** Product and architecture
-- **Last reviewed:** 2026-08-03
+- **Last reviewed:** 2026-08-11
 - **Review trigger:** Quarterly planning or material dependency change
 
-This roadmap communicates outcomes. The technical backlog remains authoritative for
-individual stories and tasks.
+This roadmap communicates product outcomes. Accepted ADRs, the capability matrix and the technical
+backlog remain authoritative for implemented behavior and individual work items.
 
-## Now - prove the complete reference workflow
+## Now - finish a reviewable v0.2.0 reference release
 
-### Outcome: a reviewer can understand the project in minutes
+### Outcome: a reviewer understands the proof in minutes
 
-- maintain an executive-first English README and Portuguese translation;
-- add a real product screenshot and short demo recording;
-- keep the capability matrix aligned with code;
-- publish a reproducible demo scenario;
-- add documentation ownership and review metadata.
+- keep the English and Brazilian Portuguese READMEs aligned with implemented behavior;
+- maintain a five-minute canonical walkthrough for technical and non-technical reviewers;
+- preserve real, synthetic-data visual evidence instead of decorative screenshots;
+- keep public engineering guidance independent of local coding tools;
+- enforce repository hygiene in tests and the quality gate;
+- run the deterministic canonical demo in dedicated CI.
+
+### Outcome: the v0.2.0 release is independently verifiable
+
+- freeze the public source tree only after repository hardening;
+- regenerate `0.2.0-rc2` manifest, security, provenance, benchmark and clean-install evidence;
+- bind those roots into the coordinated release-candidate evidence index;
+- verify the evidence offline before relying on GitHub attestations;
+- obtain GitHub OIDC/Sigstore attestations for the release subjects;
+- perform final release validation before creating the v0.2.0 tag.
+
+### Outcome: runtime governance remains demonstrably connected to execution
+
+Already implemented reference paths must remain regression-protected for:
+
+- signed authorization and approved-scope routing;
+- trusted fail-closed runtime violation evidence;
+- sanitized runtime telemetry ingestion;
+- bounded runtime assurance;
+- governed containment/restoration;
+- benchmark/SLO release evidence.
+
+New work in this area should improve evidence quality or operational depth rather than re-labeling
+existing deterministic fixtures as live integration proof.
+
+## Next - deepen enterprise integration and portable audit outcomes
 
 ### Outcome: enterprise identity is validated beyond local testing
 
 - validate Microsoft Entra login in a real tenant;
 - validate Conditional Access behavior and failure modes;
 - test group overage, guest policy and authorization mappings with real directory data;
-- document provider-side account, session and role revocation procedures.
+- document and exercise provider-side account, session and role revocation procedures.
 
-### Outcome: security posture is reviewable
+### Outcome: audits receive portable business evidence
 
-- adopt and maintain the threat model;
-- enable a private vulnerability reporting channel;
-- select a repository license;
-- add dependency and container security scanning where appropriate;
-- document secret rotation and production key-management expectations.
-
-## Next - connect governance to operational evidence
-
-### Outcome: runtime behavior feeds assurance
-
-- ingest sanitized telemetry from runtime adapters;
-- correlate runtime events with system, model, agent and approved-scope identifiers;
-- calculate drift only from defined observations and thresholds;
-- create control-effectiveness measures backed by evidence sources;
-- define SLOs and alert routing.
-
-### Outcome: audits receive portable evidence
-
-- export an evidence package with manifest, versions, decisions, digests and references;
-- support scoped exports by initiative, system and review round;
-- include verification instructions and redaction rules;
+- export a scoped evidence package by initiative, system and review round;
+- include decisions, versions, digests, references and verification instructions;
+- define redaction and minimization rules for export;
 - define retention and legal-hold integration points.
+
+### Outcome: runtime assurance gains historical depth
+
+- retain bounded, privacy-safe observations suitable for explicit time-window analysis;
+- distinguish policy/authorization violations from statistical model-quality drift;
+- define evidence-backed control-effectiveness measures without inventing unavailable signals;
+- connect alert routing and escalation to organization-specific operational ownership.
 
 ### Outcome: governance integrates with the enterprise lifecycle
 
-- expose stable APIs or webhooks for CMDB, data catalogs, CI/CD and GRC;
+- expose stable APIs/webhooks for CMDB, data catalogs, CI/CD and GRC;
 - import build, test and evaluation evidence without trusting arbitrary payloads;
 - define idempotency and replay behavior;
 - map external identifiers without making external systems the domain authority.
@@ -91,4 +106,5 @@ A roadmap item should move into implementation only when it has:
 - unreviewed LLM-based governance approval;
 - silent reuse of old approvals after material scope change;
 - storing prompts, documents or model responses by default for observability;
-- allowing external routers or integrations to expand governance authority.
+- allowing external routers or integrations to expand governance authority;
+- treating a deterministic demo adapter as evidence of a live third-party integration.
