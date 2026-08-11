@@ -48,8 +48,8 @@ current_output="$(
   "${compose[@]}" run --rm migrate alembic -c /workspace/alembic.ini current 2>&1
 )"
 printf '%s\n' "$current_output"
-if ! grep -Eq '0019 \(head\)' <<<"$current_output"; then
-  echo "Expected Alembic current revision 0019 (head)." >&2
+if ! grep -Eq '0020 \(head\)' <<<"$current_output"; then
+  echo "Expected Alembic current revision 0020 (head)." >&2
   exit 1
 fi
 
@@ -61,7 +61,7 @@ second_current_output="$(
   "${compose[@]}" run --rm migrate alembic -c /workspace/alembic.ini current 2>&1
 )"
 printf '%s\n' "$second_current_output"
-if ! grep -Eq '0019 \(head\)' <<<"$second_current_output"; then
+if ! grep -Eq '0020 \(head\)' <<<"$second_current_output"; then
   echo "Alembic head changed after the idempotence check." >&2
   exit 1
 fi
