@@ -53,6 +53,12 @@ jobs:
           uv run python -m scripts.seed_canonical_demo
           --check
           --output /tmp/canonical-demo-checked.json
+      - name: Run PostgreSQL migration contract regressions
+        run: >-
+          uv run pytest
+          apps/api/postgres_tests/test_postgres_status_column_contract.py
+          apps/api/postgres_tests/test_changes_requested_workflow.py
+
       - name: Run canonical identity and migration regression tests
         run: >-
           uv run pytest

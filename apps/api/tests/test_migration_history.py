@@ -7,7 +7,7 @@ from alembic.script import ScriptDirectory
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 ALEMBIC_CONFIG = REPOSITORY_ROOT / "apps" / "api" / "alembic.ini"
 MIGRATION_DIRECTORY = REPOSITORY_ROOT / "apps" / "api" / "alembic" / "versions"
-EXPECTED_REVISIONS = tuple(f"{number:04d}" for number in range(1, 20))
+EXPECTED_REVISIONS = tuple(f"{number:04d}" for number in range(1, 21))
 INITIAL_TABLES = {
     "agents",
     "ai_systems",
@@ -48,11 +48,11 @@ def _literal_create_tables(tree: ast.AST) -> set[str]:
     return tables
 
 
-def test_migration_chain_is_single_linear_history_through_0019() -> None:
+def test_migration_chain_is_single_linear_history_through_0020() -> None:
     scripts = _script_directory()
 
     assert scripts.get_bases() == ["0001"]
-    assert scripts.get_heads() == ["0019"]
+    assert scripts.get_heads() == ["0020"]
 
     revisions = list(scripts.walk_revisions(base="base", head="heads"))
     ordered = tuple(revision.revision for revision in reversed(revisions))
@@ -107,10 +107,11 @@ def test_initial_revision_is_explicit_historical_contract() -> None:
     assert "model_routing_decisions" not in source
 
 
-def test_existing_0019_database_remains_at_the_current_head() -> None:
+def test_0020_is_current_head_and_extends_0019() -> None:
     scripts = _script_directory()
-    revision = scripts.get_revision("0019")
+    revision = scripts.get_revision("0020")
 
     assert revision is not None
+    assert revision.down_revision == "0019"
     assert revision.is_head
-    assert scripts.get_heads() == ["0019"]
+    assert scripts.get_heads() == ["0020"]
