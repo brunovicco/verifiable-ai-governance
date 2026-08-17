@@ -2,7 +2,7 @@
 
 - **Status:** Current
 - **Owner:** Architecture and security
-- **Last reviewed:** 2026-08-03
+- **Last reviewed:** 2026-08-16
 - **Review trigger:** Network, identity, storage, runtime or deployment topology change
 
 ## Context diagram
@@ -39,6 +39,10 @@ flowchart LR
     OT[Sanitized telemetry adapter]
   end
 
+  subgraph IntelligenceZone[Untrusted Governance Intelligence boundary]
+    GI[Model, retrieval, document, tool or external output]
+  end
+
   B --> W
   B -->|Bearer token / local demo identity| A
   W --> A
@@ -53,6 +57,7 @@ flowchart LR
   A -. Governance decision .-> RT
   RT -. Sanitized evidence .-> OT
   OT -. Planned .-> A
+  GI -->|Advisory finding envelope| A
 ```
 
 ## Boundary assumptions
@@ -96,6 +101,42 @@ validated before acceptance.
 A future or external runtime must enforce or consume governance decisions correctly. A
 runtime that bypasses the governance API remains outside the assurance boundary.
 
+### Governance Intelligence
+
+Model output, external findings, retrieved content, uploaded documents and tool output are
+untrusted data. A structurally valid finding remains advisory and cannot approve a system or
+control, declare compliance, authorize or release runtime scope, sign an authorization, operate
+the kill switch, restore runtime or mutate a governed decision.
+
+The application-owned `GovernanceIntelligencePort` exposes analysis and recommendation operations
+only. Future provider, agent and retrieval implementations remain adapters outside the
+deterministic core.
+
+```mermaid
+flowchart TD
+  INPUT["LLM output / external finding / retrieved content / uploaded documents / tool output"]
+  INPUT --> UNTRUSTED["UNTRUSTED DATA"]
+  UNTRUSTED --> VALIDATE["Schema validation / source validation / reference resolution / digest verification"]
+  VALIDATE --> CANDIDATE["GovernanceFindingCandidate — advisory and untrusted"]
+  CANDIDATE --> REVIEW["Human or deterministic review"]
+  REVIEW --> DECISION["Governed decision"]
+```
+
+Schema validation establishes shape, not truth or authority. Source validation and digest
+verification bind a candidate to resolved bytes but do not prove that its interpretation is
+correct. An external finding is not an approved governance decision. An AI-generated
+interpretation is not evidence; the original artifact is the potential evidence.
+
+## Authority model
+
+| Layer | Authority |
+|---|---|
+| Governance Intelligence | Advisory, untrusted and non-authoritative |
+| Deterministic governance core | Authoritative for governed state transitions and decisions |
+| Runtime enforcement | Authoritative within the scope and lifetime of a verified signed authorization |
+| Evidence | Verifiable source artifact or proof; does not decide by itself |
+| Runtime evidence | Proof of observed behavior or execution; interpreted through governed assurance rules |
+
 ## Data-flow rules
 
 | Flow | Allowed data | Prohibited by default |
@@ -106,6 +147,7 @@ runtime that bypasses the governance API remains outside the assurance boundary.
 | API → Model router | Workload, risk, data class, approved group constraints, cost/latency metadata | Prompts, documents, credentials, model responses |
 | API → Logs | IDs, digests, categories, status, timing | Tokens, full assessment answers, evidence bodies, prompts and secrets |
 | Runtime → Governance | Sanitized identifiers, metrics, decisions and evidence references | Raw content unless separately approved |
+| Governance Intelligence → Governance | Versioned advisory finding, source references, bounded provenance and correlation IDs | Approval/compliance/authorization state, full prompts, chain-of-thought, document bodies, credentials and raw model responses |
 
 ## Deployment implications
 

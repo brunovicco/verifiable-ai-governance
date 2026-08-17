@@ -27,6 +27,15 @@ from governance_schemas.enums import (
     HostingModel,
     RiskTier,
 )
+from governance_schemas.governance_intelligence import (
+    GOVERNANCE_FINDING_SCHEMA_VERSION,
+    AgentRunProvenance,
+    ExternalTaxonomyReference,
+    GovernanceFindingCandidate,
+    GovernanceFindingEnvelope,
+    GovernanceFindingType,
+    GovernanceSourceReference,
+)
 from governance_schemas.policy import (
     ApprovalRequirement,
     PolicyContext,
@@ -54,6 +63,7 @@ from governance_schemas.runtime_violation import (
 )
 
 __all__ = [
+    "AgentRunProvenance",
     "ApprovalArea",
     "ApprovalRequirement",
     "ApprovalStatus",
@@ -73,6 +83,12 @@ __all__ = [
     "DataClassification",
     "DecisionImpact",
     "EntityStatus",
+    "ExternalTaxonomyReference",
+    "GOVERNANCE_FINDING_SCHEMA_VERSION",
+    "GovernanceFindingCandidate",
+    "GovernanceFindingEnvelope",
+    "GovernanceFindingType",
+    "GovernanceSourceReference",
     "HostingModel",
     "InitiativeControlReport",
     "PolicyContext",

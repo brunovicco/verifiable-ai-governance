@@ -57,6 +57,12 @@ separate so a deterministic fixture is never presented as proof of a real extern
 ADRs are authoritative for accepted engineering decisions. Narrative documents should link to the
 relevant ADR instead of duplicating detailed rationale.
 
+## Portable contracts
+
+- [Governance finding v1](contracts/governance-finding-v1.md)
+- [Runtime authorization v1](contracts/runtime-authorization-v1.md)
+- [Runtime violation v1](contracts/runtime-violation-v1.md)
+
 ## Operations
 
 - [Production readiness](operations/PRODUCTION_READINESS.md)

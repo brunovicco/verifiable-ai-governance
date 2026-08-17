@@ -2,7 +2,7 @@
 
 - **Status:** Current
 - **Owner:** Product and architecture
-- **Last reviewed:** 2026-08-11
+- **Last reviewed:** 2026-08-16
 - **Review trigger:** Feature merge, deprecation or scope change
 
 ## Status definitions
@@ -64,6 +64,8 @@
 | Resilience | Backup and restore verification | Implemented | Manifest, checksums and isolated restore test |
 | Engineering | Canonical deterministic reference demo | Implemented | Stable semantic identities plus dedicated reference-demo CI |
 | Engineering | Public repository hygiene gate | Implemented | Local coding-agent/editor state and generated paths are rejected when tracked |
+| Governance Intelligence | Advisory finding trust boundary and contracts | Implemented | Closed shared schemas and a consumer-owned port keep findings untrusted, non-authoritative and free of provider coupling |
+| Governance Intelligence | Governed knowledge and retrieval foundation | Planned | GI-1 must resolve versioned sources and verify digests before model or retrieval adapters are introduced |
 | Integration | CMDB and enterprise GRC | Planned | API/webhook integration roadmap |
 | Integration | Data catalog and CI/CD | Planned | API/webhook integration roadmap |
 | Sector | Financial-services overlay | Planned | Baseline remains sector-neutral; canonical credit scenario is a demo, not a policy overlay |
@@ -93,6 +95,8 @@ The platform does not claim to provide:
 - guaranteed production readiness for every deployment environment;
 - cryptographic non-repudiation or WORM storage solely from its hash chain;
 - storage of prompts/model responses as a prerequisite for runtime assurance.
+- authority for agents, models, retrieval results or external findings to approve, authorize or
+  declare compliance.
 
 ## Maintenance rule
 
