@@ -159,8 +159,8 @@ evidence adapter is not automatically connected to any model or external destina
 - verified bytes remain in memory within the existing GI-1 limits during analysis;
 - correlation IDs are not durable idempotency keys;
 - a concrete provider adapter and production consumer still require separate security review;
-- accepted findings remain ephemeral until a future product decision defines governed review and
-  retention behavior.
+- accepted finding content remains ephemeral; GI-3 can record a minimized digest-bound review
+  receipt, but a future product decision must still define queues, retention and delivery behavior.
 
 ## Rejected alternatives
 
