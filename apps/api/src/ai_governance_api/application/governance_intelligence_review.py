@@ -17,6 +17,10 @@ from governance_schemas import (
     GovernanceFindingType,
 )
 
+from ai_governance_api.application.governance_intelligence_integrity import (
+    governance_finding_envelope_digest,
+)
+
 GOVERNANCE_FINDING_REVIEW_RECEIPT_SCHEMA_VERSION = "1.0"
 _RECEIPT_VERSION = 1
 _LOWERCASE_HEX = frozenset("0123456789abcdef")
@@ -202,6 +206,24 @@ class GovernanceFindingReviewAuthorizerPort(Protocol):
         ...
 
 
+class GovernanceFindingReleaseVerifierPort(Protocol):
+    """Verify that an exact finding passed the governed GI-2 release boundary."""
+
+    async def was_released(
+        self,
+        *,
+        finding_schema_version: str,
+        finding_id: UUID,
+        finding_type: GovernanceFindingType,
+        agent_run_id: UUID,
+        candidate_digest: str,
+        subject_id: str,
+        correlation_id: str,
+    ) -> bool:
+        """Return only whether intact minimized release evidence matches exactly."""
+        ...
+
+
 class GovernanceFindingReviewStorePort(Protocol):
     """Persist and load minimized advisory review receipts by request identity."""
 
@@ -252,6 +274,7 @@ class ReviewGovernanceFinding:
     def __init__(
         self,
         authorizer: GovernanceFindingReviewAuthorizerPort,
+        release_verifier: GovernanceFindingReleaseVerifierPort,
         store: GovernanceFindingReviewStorePort,
         audit: GovernanceFindingReviewAuditPort,
         transaction: GovernanceFindingReviewTransactionPort,
@@ -261,6 +284,7 @@ class ReviewGovernanceFinding:
     ) -> None:
         """Initialize subject authorization and one durable receipt unit of work."""
         self._authorizer = authorizer
+        self._release_verifier = release_verifier
         self._store = store
         self._audit = audit
         self._transaction = transaction
@@ -285,6 +309,7 @@ class ReviewGovernanceFinding:
         await self._authorize(finding.candidate.finding_type, access)
         binding = self._binding(request_id, finding, disposition, access)
         try:
+            await self._require_released(binding)
             return await self._persist_or_replay(binding)
         except GovernanceFindingReviewWriteConflict:
             await self._rollback_quietly()
@@ -364,13 +389,27 @@ class ReviewGovernanceFinding:
             finding_id=candidate.finding_id,
             finding_type=candidate.finding_type,
             agent_run_id=candidate.provenance.agent_run_id,
-            candidate_digest=_candidate_digest(finding),
+            candidate_digest=governance_finding_envelope_digest(finding),
             subject_id=access.subject_id,
             correlation_id=access.correlation_id,
             disposition=disposition,
             reviewed_by=access.actor_id,
             administrator_access=access.is_admin,
         )
+
+    async def _require_released(self, binding: _GovernanceFindingReviewBinding) -> None:
+        """Fail closed unless exact intact GI-2 release evidence exists."""
+        released = await self._release_verifier.was_released(
+            finding_schema_version=binding.finding_schema_version,
+            finding_id=binding.finding_id,
+            finding_type=binding.finding_type,
+            agent_run_id=binding.agent_run_id,
+            candidate_digest=binding.candidate_digest,
+            subject_id=binding.subject_id,
+            correlation_id=binding.correlation_id,
+        )
+        if released is not True:
+            raise GovernanceFindingReviewError(GovernanceFindingReviewFailure.INVALID_REQUEST)
 
     async def _persist_or_replay(
         self,
@@ -498,17 +537,6 @@ class ReviewGovernanceFinding:
         """Best-effort cleanup without replacing the bounded primary failure."""
         with suppress(GovernanceFindingReviewDependencyError):
             await self._transaction.rollback()
-
-
-def _candidate_digest(finding: GovernanceFindingEnvelope) -> str:
-    """Bind a receipt to the complete envelope without retaining its content."""
-    canonical = json.dumps(
-        finding.model_dump(mode="json"),
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode()
-    return hashlib.sha256(canonical).hexdigest()
 
 
 def _receipt_digest(

@@ -7,7 +7,17 @@ from uuid import UUID
 
 import pytest
 from ai_governance_api import dependencies
-from ai_governance_api.adapters import SqlAlchemyInitiativeFindingReviewAuthorizer
+from ai_governance_api.adapters import (
+    SqlAlchemyGovernanceIntelligenceUnitOfWork,
+    SqlAlchemyInitiativeFindingReviewAuthorizer,
+)
+from ai_governance_api.application.governance_intelligence import (
+    GovernanceIntelligenceAnalysisType,
+    GovernanceIntelligenceAuditRecord,
+    GovernanceIntelligenceAuditStage,
+    GovernanceIntelligenceFindingAudit,
+    GovernanceIntelligenceFindingRelease,
+)
 from ai_governance_api.application.governance_intelligence_review import (
     GovernanceFindingReviewAccess,
     GovernanceFindingReviewDependencyError,
@@ -38,6 +48,7 @@ MISSING_INITIATIVE_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
 FINDING_ID = UUID("33333333-3333-4333-8333-333333333333")
 RUN_ID = UUID("44444444-4444-4444-8444-444444444444")
 REVIEW_REQUEST_ID = UUID("77777777-7777-4777-8777-777777777777")
+RELEASE_ID = UUID("88888888-8888-4888-8888-888888888888")
 OWNER_ID = "initiative-owner"
 ADMIN_ID = "governance-admin"
 CORRELATION_ID = "corr:gi-3a-review"
@@ -96,6 +107,42 @@ def _finding() -> GovernanceFindingEnvelope:
             ),
         )
     )
+
+
+async def _persist_release() -> None:
+    """Persist intact minimized GI-2 release and completion audit evidence."""
+    envelope = _finding()
+    release = GovernanceIntelligenceFindingRelease.create(
+        release_id=RELEASE_ID,
+        envelope=envelope,
+        subject_id=INITIATIVE_ID,
+        correlation_id=CORRELATION_ID,
+        released_at=NOW,
+    )
+    record = GovernanceIntelligenceAuditRecord(
+        stage=GovernanceIntelligenceAuditStage.ANALYSIS_COMPLETED,
+        sequence=3,
+        analysis_type=GovernanceIntelligenceAnalysisType.RISK_IDENTIFICATION,
+        subject_id=INITIATIVE_ID,
+        correlation_id=CORRELATION_ID,
+        administrator_access=False,
+        references=envelope.candidate.sources,
+        findings=(
+            GovernanceIntelligenceFindingAudit(
+                finding_id=str(release.finding_id),
+                finding_type=release.finding_type,
+                agent_run_id=str(release.agent_run_id),
+                release_id=str(release.release_id),
+                candidate_digest=release.candidate_digest,
+                release_digest=release.release_digest,
+                released_at=release.released_at,
+            ),
+        ),
+    )
+    unit = SqlAlchemyGovernanceIntelligenceUnitOfWork(SessionFactory)
+    await unit.save_releases((release,))
+    await unit.append(actor_id=OWNER_ID, record=record)
+    await unit.commit()
 
 
 @pytest.mark.parametrize("finding_type", list(GovernanceFindingType))
@@ -260,6 +307,7 @@ async def test_initiative_composition_records_only_an_authorized_minimized_recei
 ) -> None:
     """The concrete policy composes with the GI-3 audit without delivery exposure."""
     await _persist_initiative()
+    await _persist_release()
     service = dependencies.build_initiative_governance_finding_review()
 
     receipt = await service.execute(

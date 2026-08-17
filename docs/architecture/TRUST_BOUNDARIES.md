@@ -125,10 +125,11 @@ flowchart TD
   VERIFY --> ACCESS_AUDIT["Verified source-access audit"]
   ACCESS_AUDIT --> ANALYZE["Explicit advisory analysis purpose"]
   ANALYZE --> VALIDATE["Schema + purpose + citation + provenance validation"]
-  VALIDATE --> OUTCOME_AUDIT["Content-minimized outcome audit"]
-  OUTCOME_AUDIT --> CANDIDATE["GovernanceFindingEnvelope — advisory and untrusted"]
+  VALIDATE --> RELEASE["Atomic minimized release registry + outcome audit"]
+  RELEASE --> CANDIDATE["GovernanceFindingEnvelope — advisory and untrusted"]
   CANDIDATE --> REVIEW_AUTH["Content-free reviewer authorization"]
-  REVIEW_AUTH --> REVIEW["Non-authoritative review disposition"]
+  REVIEW_AUTH --> RELEASE_VERIFY["Exact release provenance verification"]
+  RELEASE_VERIFY --> REVIEW["Non-authoritative review disposition"]
   REVIEW --> REVIEW_AUDIT["Digest-bound minimized review receipt"]
   REVIEW_AUDIT -. separate governed workflow .-> DECISION["Governed decision"]
 ```
@@ -179,6 +180,14 @@ content-minimized receipt and its hash-chained audit event commit in the same tr
 receipt without a second audit event, while changed finding, actor, subject, disposition or trace
 facts fail closed with a content-free conflict. There is still no review endpoint, listing, queue,
 provider, finding-content table or governed-state transition.
+
+GI-3C closes the release-provenance gap between analysis and review. GI-2 atomically persists one
+content-minimized, digest-bound release row per validated finding with its completion audit event.
+After current authorization, every GI-3 attempt—including exact replay—must match an intact release
+by finding schema/identity/type, agent run, canonical envelope digest, subject and correlation
+before any receipt lookup. Missing or mismatched evidence is invalid input; corrupt or unavailable
+evidence fails as a dependency. The registry stores no finding statement, source or provider
+content and adds no delivery path or governance authority.
 
 ## Authority model
 

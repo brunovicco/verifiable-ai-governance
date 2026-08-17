@@ -3,8 +3,8 @@
 - **Status:** Current
 - **Owner:** Platform engineering, security and AI Governance
 - **Last reviewed:** 2026-08-17
-- **Review trigger:** Analysis purpose, source, audit, provider or consumer change
-- **Authoritative sources:** ADR 0059 and the GI-2 application tests
+- **Review trigger:** Analysis purpose, source, release, audit, provider or consumer change
+- **Authoritative sources:** ADR 0059, ADR 0063 and the GI-2/GI-3C application tests
 
 GI-2 defines the application boundary between verified Governance Knowledge and an untrusted
 Governance Intelligence adapter. GI-2A composes that boundary with deployment-owned limits and its
@@ -14,9 +14,9 @@ request-scoped audit unit. Neither increment exposes an endpoint nor configures 
 
 `build_governance_intelligence_analysis` accepts a governed knowledge resolver and an explicitly
 supplied `GovernanceIntelligencePort`. It constructs `RunGovernanceIntelligenceAnalysis` with one
-new `SqlAlchemyGovernanceIntelligenceAudit` instance used for both audit append and transaction
-control. Never split those two ports across different instances: the adapter deliberately permits
-only one active audit-stage transaction.
+`SqlAlchemyGovernanceIntelligenceUnitOfWork` instance used for release persistence, audit append
+and transaction control. Never split those three ports across different instances: the terminal
+release set and completion event must share one transaction.
 
 The builder is not a FastAPI dependency and has no registered route, task or scheduler. Merely
 configuring its limits does not enable analysis, choose a model or create network egress.
@@ -41,12 +41,12 @@ analysis_requested audit committed
   → sources_verified audit committed
   → one explicit advisory port operation under a bounded timeout
   → candidate schema, purpose, citation and provenance validation
-  → terminal audit committed
+  → atomically commit minimized release records + terminal audit
   → versioned advisory envelopes returned
 ```
 
 If an audit stage cannot be committed, the next sensitive stage does not run. Findings are not
-released unless the completion event is durable.
+released unless their unique release records and the completion event are durable together.
 
 ## Explicit purposes
 
@@ -82,13 +82,14 @@ An empty tuple is a valid advisory result. Confidence never grants authority.
 | `analysis_requested` | 1 | Purpose and requested content-free references were recorded before source access |
 | `source_resolution_failed` | 2 | GI-1 failed without releasing a source set |
 | `sources_verified` | 2 | The complete authorized source set passed actual-byte verification |
-| `analysis_completed` | 3 | All candidates passed validation, including an empty result |
+| `analysis_completed` | 3 | All candidates passed validation and their minimized release set committed atomically, including an empty result |
 | `analysis_rejected` | 3 | Untrusted output failed schema, purpose, citation, provenance or count policy |
 | `analysis_dependency_failed` | 3 | The adapter failed or exceeded the bounded timeout |
 
-Audit payloads may contain source IDs, versions, digests, finding IDs/types, agent-run IDs, byte
-counts and failure categories. They must not contain source content, filenames, bucket/key/URI,
-finding statements, prompts, chain-of-thought or raw provider responses.
+Audit payloads may contain source IDs, versions/digests, finding/type/run/release IDs, candidate and
+release digests, release time, byte counts and failure categories. They must not contain source
+content, filenames, bucket/key/URI, finding statements, prompts, chain-of-thought or raw provider
+responses.
 
 Cancellation propagates. If cancellation occurs during source or analysis work, an existing
 requested or sources-verified event without a terminal event is the durable interrupted-execution
@@ -101,8 +102,8 @@ signal.
 | GI-1 `source_unavailable` | actor/subject authorization, exact source identity and metadata |
 | GI-1 `integrity_mismatch` | persisted digest versus actual object bytes |
 | `dependency_unavailable` before source access | audit database/transaction availability |
-| `dependency_unavailable` after source verification | adapter dependency, timeout or terminal audit commit |
-| `output_rejected` | schema, allowed type, correlation, citations and provenance source set |
+| `dependency_unavailable` after source verification | adapter dependency, timeout, release store or terminal commit |
+| `output_rejected` | schema, allowed type, correlation, citations, provenance source set or duplicate durable finding ID |
 | `limit_exceeded` | configured maximum findings returned by the adapter |
 
 Do not log or persist rejected payloads while investigating. Reproduce with synthetic content and
@@ -113,6 +114,7 @@ the content-free correlation ID.
 ```bash
 uv run pytest -q \
   apps/api/tests/test_governance_intelligence_application.py \
+  apps/api/tests/test_governance_intelligence_release_persistence.py \
   apps/api/tests/test_governance_intelligence_contract.py \
   apps/api/tests/test_governance_knowledge_application.py \
   apps/api/tests/test_governance_knowledge_evidence_adapter.py \
@@ -129,8 +131,8 @@ uv run python scripts/quality_gate.py
 
 1. supply the provider only through `GovernanceIntelligencePort` to the existing composition-root
    builder;
-2. preserve its single request-scoped `SqlAlchemyGovernanceIntelligenceAudit` instance for both
-   audit and transaction ports;
+2. preserve its single request-scoped `SqlAlchemyGovernanceIntelligenceUnitOfWork` instance for
+   release, audit and transaction ports;
 3. review the shared source limit, finding limit and analysis timeout for the intended workload;
 4. configure transport connection/read timeouts and bounded retry behavior;
 5. verify authenticated actor, subject and administrator mapping at the delivery boundary;
@@ -141,5 +143,6 @@ uv run python scripts/quality_gate.py
 10. keep findings advisory and route any accepted recommendation through an existing governed
    human or deterministic decision path.
 
-Correlation IDs are trace identifiers, not idempotency keys. GI-2 persists neither findings nor
-agent-run records and makes no claim of replay suppression.
+Correlation IDs are trace identifiers, not idempotency keys. GI-2 persists one minimized release
+row per finding, but neither complete findings nor agent-run records. `finding_id` is globally
+single-use in the release registry; a duplicate is rejected rather than treated as replay.

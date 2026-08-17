@@ -74,6 +74,7 @@
 | Governance Intelligence | Advisory finding review boundary | Implemented | Revalidated, authorized review produces only closed non-authoritative dispositions and a digest-bound minimized audit receipt; no finding content or governed state is persisted |
 | Governance Intelligence | Initiative finding review authorization | Implemented | Canonical initiative owner/admin policy uses a minimal short-lived ownership read; denial is content-free and the internal builder has no delivery exposure |
 | Governance Intelligence | Durable finding review replay | Implemented | Unique caller request identity binds an immutable minimized receipt and atomic audit event; exact authorized replay is stable and divergent or corrupted reuse fails closed |
+| Governance Intelligence | Verified finding release provenance | Implemented | Atomic minimized GI-2 release evidence and exact post-authorization GI-3 verification prevent fabricated or rebound findings from creating review receipts |
 | Integration | CMDB and enterprise GRC | Planned | API/webhook integration roadmap |
 | Integration | Data catalog and CI/CD | Planned | API/webhook integration roadmap |
 | Sector | Financial-services overlay | Planned | Baseline remains sector-neutral; canonical credit scenario is a demo, not a policy overlay |

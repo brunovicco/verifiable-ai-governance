@@ -1302,6 +1302,70 @@ class RuntimeTelemetryEventEntry(Base):
     version: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
+class GovernanceIntelligenceFindingReleaseEntry(Base):
+    """Append-only content-minimized evidence of one released advisory finding."""
+
+    __tablename__ = "governance_intelligence_finding_releases"
+    __table_args__ = (
+        Index(
+            "ix_governance_intelligence_finding_release_subject_time",
+            "subject_id",
+            "released_at",
+        ),
+        Index(
+            "ix_governance_intelligence_finding_release_correlation",
+            "correlation_id",
+        ),
+        Index(
+            "ix_governance_intelligence_finding_release_candidate_digest",
+            "candidate_digest",
+        ),
+        UniqueConstraint(
+            "finding_id",
+            name="uq_governance_intelligence_finding_release_finding",
+        ),
+        CheckConstraint(
+            "schema_version = '1.0'",
+            name="ck_governance_intelligence_finding_release_schema",
+        ),
+        CheckConstraint(
+            "finding_schema_version = '1.0'",
+            name="ck_governance_intelligence_finding_release_finding_schema",
+        ),
+        CheckConstraint(
+            "finding_type IN ('policy_interpretation', 'risk_candidate', "
+            "'control_candidate', 'evidence_gap', 'evidence_interpretation', "
+            "'intake_suggestion')",
+            name="ck_governance_intelligence_finding_release_type",
+        ),
+        CheckConstraint(
+            "length(candidate_digest) = 64",
+            name="ck_governance_intelligence_finding_release_candidate_digest",
+        ),
+        CheckConstraint(
+            "length(release_digest) = 64",
+            name="ck_governance_intelligence_finding_release_digest",
+        ),
+        CheckConstraint(
+            "version = 1",
+            name="ck_governance_intelligence_finding_release_version",
+        ),
+    )
+
+    release_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    schema_version: Mapped[str] = mapped_column(String(10), nullable=False)
+    finding_schema_version: Mapped[str] = mapped_column(String(10), nullable=False)
+    finding_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    finding_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    agent_run_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    candidate_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    subject_id: Mapped[str] = mapped_column(String(200), nullable=False)
+    correlation_id: Mapped[str] = mapped_column(String(200), nullable=False)
+    released_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    release_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
 class GovernanceFindingReviewReceiptEntry(Base):
     """Append-only content-minimized advisory finding review receipt."""
 

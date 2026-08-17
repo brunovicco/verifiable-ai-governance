@@ -4,8 +4,8 @@
 - **Owner:** Platform engineering, security and AI Governance
 - **Last reviewed:** 2026-08-17
 - **Review trigger:** Disposition, authorization, audit, persistence or delivery change
-- **Authoritative sources:** ADR 0060, ADR 0061, ADR 0062 and the GI-3 application/architecture
-  tests
+- **Authoritative sources:** ADR 0060 through ADR 0063, migrations 0021/0022 and the GI-3
+  application/architecture tests
 
 GI-3 records an authorized, content-minimized review disposition for one advisory finding. It does
 not approve a governed subject and exposes no delivery path.
@@ -18,14 +18,17 @@ GovernanceFindingEnvelope (still untrusted)
   → require provenance correlation to match authenticated review context
   → authorize actor + subject + finding type through a consumer-owned port
   → hash the complete canonical envelope
+  → require an intact exact GI-2 release binding
   → resolve caller request identity against durable minimized receipts
   → atomically commit one content-minimized receipt and review audit event
   → return a non-authoritative GovernanceFindingReviewReceipt
 ```
 
-Validation and current authorization occur before every durable lookup, including replay. Denial
-occurs before persistence or audit. An insert, audit append or commit failure withholds the receipt.
-Cancellation propagates and performs best-effort rollback if a transaction was opened.
+Validation and current authorization occur before release and receipt lookups, including replay.
+Authorization denial therefore cannot reveal whether a finding was released. An absent or
+mismatched release is invalid; corrupt or unavailable release evidence fails closed. An insert,
+audit append or commit failure withholds the receipt. Cancellation propagates and performs
+best-effort rollback if a transaction was opened.
 
 ## Dispositions
 
@@ -68,11 +71,11 @@ SHA-256 over the complete envelope serialized as sorted compact JSON.
 
 | Public failure | Check |
 |---|---|
-| `invalid_request` | envelope reconstruction, fixed advisory fields and correlation match |
+| `invalid_request` | envelope reconstruction, advisory fields, correlation, or absent/mismatched GI-2 release |
 | `forbidden` | reviewer authorization for the exact subject and finding type |
 | `conflict` | reused request identity changed binding or durable receipt integrity failure |
 | `dependency_unavailable` before audit | authorization dependency |
-| `dependency_unavailable` after authorization | receipt/audit database, append, commit or local clock/ID seam |
+| `dependency_unavailable` after authorization | corrupt/unavailable release evidence, receipt/audit database, append, commit or local clock/ID seam |
 
 Do not log the finding payload while investigating. Use the content-free review/finding IDs,
 correlation ID and candidate digest.
@@ -83,6 +86,7 @@ correlation ID and candidate digest.
 uv run pytest -q \
   apps/api/tests/test_governance_intelligence_review_application.py \
   apps/api/tests/test_governance_intelligence_application.py \
+  apps/api/tests/test_governance_intelligence_release_persistence.py \
   apps/api/tests/test_architecture.py
 ```
 
@@ -97,15 +101,17 @@ uv run python scripts/quality_gate.py
 1. preserve the concrete subject authorization policy or define a separately reviewed policy for
    every additional subject class;
 2. configure bounded timeout and retry behavior for any remote authorization adapter;
-3. preserve the distinction between consideration and authoritative approval;
-4. define review supersession and response semantics beyond exact request replay;
-5. decide whether finding content must be retained and for how long;
-6. define deletion, legal hold, export and reviewer-access rules for derived content;
-7. render statements as untrusted text without active markup or tool execution;
-8. add rate, size and abuse limits at the delivery boundary;
-9. keep provider/model execution behind the existing GI-2 boundary;
-10. map accepted recommendations through separate existing governed use cases and test denial,
+3. preserve exact GI-2 release verification after authorization and before every receipt lookup;
+4. preserve the distinction between consideration and authoritative approval;
+5. define review supersession and response semantics beyond exact request replay;
+6. decide whether finding content must be retained and for how long;
+7. define deletion, legal hold, export and reviewer-access rules for derived content;
+8. render statements as untrusted text without active markup or tool execution;
+9. add rate, size and abuse limits at the delivery boundary;
+10. keep provider/model execution behind the existing GI-2 boundary;
+11. map accepted recommendations through separate existing governed use cases and test denial,
     replay, races, audit outage and cancellation behavior.
 
-GI-3B adds a minimized receipt migration and exact durable replay. GI-3 still has no endpoint,
-listing, queue, provider, finding-content persistence or governed-state transition.
+GI-3B adds a minimized receipt migration and exact durable replay. GI-3C adds minimized release
+provenance and verification. GI-3 still has no endpoint, listing, queue, provider, finding-content
+persistence or governed-state transition.

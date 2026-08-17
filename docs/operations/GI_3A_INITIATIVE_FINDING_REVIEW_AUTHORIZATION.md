@@ -67,4 +67,6 @@ uv run python scripts/quality_gate.py
 
 GI-3A itself adds no endpoint, queue, provider, full finding table or governed-state transition.
 GI-3B separately adds minimized receipt persistence and exact replay; it does not change this
-owner/administrator policy or expose it through a delivery boundary.
+owner/administrator policy or expose it through a delivery boundary. GI-3C separately verifies
+exact GI-2 release provenance after this policy allows access, preserving
+denial-before-existence-check behavior.

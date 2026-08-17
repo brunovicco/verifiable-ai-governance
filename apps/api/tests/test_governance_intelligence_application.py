@@ -5,13 +5,14 @@ import hashlib
 import json
 from datetime import UTC, datetime
 from io import BytesIO
-from typing import cast
+from typing import Any, cast
 from uuid import UUID
 
 import pytest
 from ai_governance_api import dependencies
-from ai_governance_api.adapters.governance_intelligence_audit import (
-    SqlAlchemyGovernanceIntelligenceAudit,
+from ai_governance_api.adapters import governance_intelligence_persistence
+from ai_governance_api.adapters.governance_intelligence_persistence import (
+    SqlAlchemyGovernanceIntelligenceUnitOfWork,
 )
 from ai_governance_api.application.governance_intelligence import (
     GovernanceIntelligenceAnalysisError,
@@ -21,7 +22,12 @@ from ai_governance_api.application.governance_intelligence import (
     GovernanceIntelligenceDependencyError,
     GovernanceIntelligenceFailure,
     GovernanceIntelligenceFindingAudit,
+    GovernanceIntelligenceFindingRelease,
+    GovernanceIntelligenceReleaseConflict,
     RunGovernanceIntelligenceAnalysis,
+)
+from ai_governance_api.application.governance_intelligence_integrity import (
+    governance_finding_envelope_digest,
 )
 from ai_governance_api.application.governance_knowledge import (
     GovernanceKnowledgeAccess,
@@ -33,14 +39,16 @@ from ai_governance_api.application.governance_knowledge import (
 )
 from ai_governance_api.config import Settings
 from ai_governance_api.database import SessionFactory
-from ai_governance_api.models import AuditEvent
+from ai_governance_api.models import AuditEvent, GovernanceIntelligenceFindingReleaseEntry
 from governance_schemas import (
     AgentRunProvenance,
     GovernanceFindingCandidate,
+    GovernanceFindingEnvelope,
     GovernanceFindingType,
     GovernanceSourceReference,
 )
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 CONTENT = b'{"control": "GOV-EVD-001", "passed": true}'
 CORRELATION_ID = "corr:gi-2-test"
@@ -48,6 +56,7 @@ SUBJECT_ID = "22222222-2222-4222-8222-222222222222"
 ACTOR_ID = "owner-1"
 FINDING_ID = UUID("33333333-3333-4333-8333-333333333333")
 RUN_ID = UUID("44444444-4444-4444-8444-444444444444")
+RELEASE_ID = UUID("55555555-5555-4555-8555-555555555555")
 NOW = datetime(2026, 8, 17, 5, 0, tzinfo=UTC)
 
 
@@ -307,6 +316,33 @@ class FakeIntelligence:
         )
 
 
+class FakeReleaseStore:
+    """Capture minimized releases and deterministic persistence failures."""
+
+    def __init__(
+        self,
+        trace: list[str],
+        *,
+        fail: bool = False,
+        conflict: bool = False,
+    ) -> None:
+        self.trace = trace
+        self.fail = fail
+        self.conflict = conflict
+        self.releases: list[GovernanceIntelligenceFindingRelease] = []
+
+    async def save_releases(
+        self,
+        releases: tuple[GovernanceIntelligenceFindingRelease, ...],
+    ) -> None:
+        self.trace.append("release")
+        if self.conflict:
+            raise GovernanceIntelligenceReleaseConflict("release detail must not escape")
+        if self.fail:
+            raise GovernanceIntelligenceDependencyError("release detail must not escape")
+        self.releases.extend(releases)
+
+
 class FakeAudit:
     """Capture minimized lifecycle records and deterministic failures."""
 
@@ -374,6 +410,7 @@ def use_case(
     audit: FakeAudit,
     transaction: FakeTransaction,
     *,
+    release_store: FakeReleaseStore | None = None,
     max_sources: int = 4,
     max_findings: int = 5,
     timeout: float = 1,
@@ -382,11 +419,14 @@ def use_case(
     return RunGovernanceIntelligenceAnalysis(
         knowledge,
         intelligence,
+        release_store or FakeReleaseStore(audit.trace),
         audit,
         transaction,
         max_sources=max_sources,
         max_findings=max_findings,
         analysis_timeout_seconds=timeout,
+        clock=lambda: NOW,
+        release_id_factory=lambda: RELEASE_ID,
     )
 
 
@@ -397,8 +437,15 @@ async def test_verified_sources_are_audited_before_advisory_analysis_and_release
     intelligence = FakeIntelligence((candidate(source_reference),), trace)
     audit = FakeAudit(trace)
     transaction = FakeTransaction(trace)
+    release_store = FakeReleaseStore(trace)
 
-    result = await use_case(knowledge, intelligence, audit, transaction).execute(
+    result = await use_case(
+        knowledge,
+        intelligence,
+        audit,
+        transaction,
+        release_store=release_store,
+    ).execute(
         analysis_type=GovernanceIntelligenceAnalysisType.EVIDENCE_ANALYSIS,
         references=(source_reference,),
         access=access(),
@@ -419,6 +466,7 @@ async def test_verified_sources_are_audited_before_advisory_analysis_and_release
         "audit:sources_verified",
         "commit",
         "analysis",
+        "release",
         "audit:analysis_completed",
         "commit",
     ]
@@ -429,6 +477,13 @@ async def test_verified_sources_are_audited_before_advisory_analysis_and_release
     ]
     assert audit.records[1][1].source_total_bytes == len(CONTENT)
     assert audit.records[2][1].findings[0].finding_id == str(FINDING_ID)
+    assert audit.records[2][1].findings[0].candidate_digest == (
+        governance_finding_envelope_digest(result[0])
+    )
+    assert release_store.releases[0].has_valid_digest()
+    assert release_store.releases[0].candidate_digest == (
+        governance_finding_envelope_digest(result[0])
+    )
     assert CONTENT.decode() not in repr(audit.records)
 
 
@@ -781,6 +836,66 @@ async def test_completion_audit_failure_withholds_valid_findings() -> None:
     assert transaction.rollbacks == 1
 
 
+async def test_release_persistence_failure_withholds_valid_findings() -> None:
+    trace: list[str] = []
+    source_reference = reference()
+    knowledge, _ = governed_knowledge(source_reference, trace)
+    audit = FakeAudit(trace)
+    transaction = FakeTransaction(trace)
+    release_store = FakeReleaseStore(trace, fail=True)
+
+    with pytest.raises(GovernanceIntelligenceAnalysisError) as captured:
+        await use_case(
+            knowledge,
+            FakeIntelligence((candidate(source_reference),), trace),
+            audit,
+            transaction,
+            release_store=release_store,
+        ).execute(
+            analysis_type=GovernanceIntelligenceAnalysisType.EVIDENCE_ANALYSIS,
+            references=(source_reference,),
+            access=access(),
+        )
+
+    assert captured.value.reason is GovernanceIntelligenceFailure.DEPENDENCY_UNAVAILABLE
+    assert transaction.commits == 2
+    assert transaction.rollbacks == 1
+    assert release_store.releases == []
+    assert GovernanceIntelligenceAuditStage.ANALYSIS_COMPLETED not in {
+        record.stage for _, record in audit.records
+    }
+
+
+async def test_release_identity_conflict_is_rejected_and_audited() -> None:
+    trace: list[str] = []
+    source_reference = reference()
+    knowledge, _ = governed_knowledge(source_reference, trace)
+    audit = FakeAudit(trace)
+    transaction = FakeTransaction(trace)
+    release_store = FakeReleaseStore(trace, conflict=True)
+
+    with pytest.raises(GovernanceIntelligenceAnalysisError) as captured:
+        await use_case(
+            knowledge,
+            FakeIntelligence((candidate(source_reference),), trace),
+            audit,
+            transaction,
+            release_store=release_store,
+        ).execute(
+            analysis_type=GovernanceIntelligenceAnalysisType.EVIDENCE_ANALYSIS,
+            references=(source_reference,),
+            access=access(),
+        )
+
+    assert captured.value.reason is GovernanceIntelligenceFailure.OUTPUT_REJECTED
+    assert transaction.commits == 3
+    assert transaction.rollbacks == 1
+    assert release_store.releases == []
+    assert audit.records[-1][1].stage is GovernanceIntelligenceAuditStage.ANALYSIS_REJECTED
+    assert audit.records[-1][1].failure_reason == "output_rejected"
+    assert audit.records[-1][1].findings == ()
+
+
 async def test_cancellation_propagates_after_durable_source_access_audit() -> None:
     trace: list[str] = []
     source_reference = reference()
@@ -886,8 +1001,16 @@ async def test_invalid_source_requests_are_rejected_before_audit_or_resolution(
     assert knowledge.calls == 0
 
 
-async def test_sqlalchemy_audit_persists_only_content_minimized_analysis_facts() -> None:
+async def test_sqlalchemy_unit_persists_release_and_minimized_audit_atomically() -> None:
     source_reference = reference()
+    envelope = GovernanceFindingEnvelope(candidate=candidate(source_reference))
+    release = GovernanceIntelligenceFindingRelease.create(
+        release_id=RELEASE_ID,
+        envelope=envelope,
+        subject_id=SUBJECT_ID,
+        correlation_id=CORRELATION_ID,
+        released_at=NOW,
+    )
     record = GovernanceIntelligenceAuditRecord(
         stage=GovernanceIntelligenceAuditStage.ANALYSIS_COMPLETED,
         sequence=3,
@@ -902,13 +1025,18 @@ async def test_sqlalchemy_audit_persists_only_content_minimized_analysis_facts()
                 finding_id=str(FINDING_ID),
                 finding_type=GovernanceFindingType.EVIDENCE_INTERPRETATION,
                 agent_run_id=str(RUN_ID),
+                release_id=str(RELEASE_ID),
+                candidate_digest=release.candidate_digest,
+                release_digest=release.release_digest,
+                released_at=NOW,
             ),
         ),
     )
 
-    audit = SqlAlchemyGovernanceIntelligenceAudit(SessionFactory)
-    await audit.append(actor_id=ACTOR_ID, record=record)
-    await audit.commit()
+    unit = SqlAlchemyGovernanceIntelligenceUnitOfWork(SessionFactory)
+    await unit.save_releases((release,))
+    await unit.append(actor_id=ACTOR_ID, record=record)
+    await unit.commit()
     async with SessionFactory() as session:
         event = await session.scalar(
             select(AuditEvent).where(
@@ -916,13 +1044,24 @@ async def test_sqlalchemy_audit_persists_only_content_minimized_analysis_facts()
                 AuditEvent.entity_id == CORRELATION_ID,
             )
         )
+        stored = await session.scalar(
+            select(GovernanceIntelligenceFindingReleaseEntry).where(
+                GovernanceIntelligenceFindingReleaseEntry.finding_id == str(FINDING_ID)
+            )
+        )
 
     assert event is not None
+    assert stored is not None
+    assert stored.release_id == str(RELEASE_ID)
+    assert stored.candidate_digest == release.candidate_digest
+    assert stored.release_digest == release.release_digest
     assert event.entity_type == "governance_intelligence_analysis"
     assert event.entity_version == 3
     assert event.payload["analysis_type"] == "evidence_analysis"
     assert event.payload["source_count"] == 1
     assert event.payload["finding_count"] == 1
+    assert event.payload["findings"][0]["release_id"] == str(RELEASE_ID)
+    assert event.payload["findings"][0]["candidate_digest"] == release.candidate_digest
     serialized = json.dumps(event.payload, sort_keys=True)
     assert CONTENT.decode() not in serialized
     assert "uploaded artifact may support" not in serialized.lower()
@@ -930,6 +1069,53 @@ async def test_sqlalchemy_audit_persists_only_content_minimized_analysis_facts()
     assert "storage_bucket" not in serialized
     assert "storage_key" not in serialized
     assert "prompt" not in serialized
+
+
+async def test_sqlalchemy_unit_rolls_back_release_when_completion_audit_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source_reference = reference()
+    envelope = GovernanceFindingEnvelope(candidate=candidate(source_reference))
+    release = GovernanceIntelligenceFindingRelease.create(
+        release_id=RELEASE_ID,
+        envelope=envelope,
+        subject_id=SUBJECT_ID,
+        correlation_id=CORRELATION_ID,
+        released_at=NOW,
+    )
+    record = GovernanceIntelligenceAuditRecord(
+        stage=GovernanceIntelligenceAuditStage.ANALYSIS_COMPLETED,
+        sequence=3,
+        analysis_type=GovernanceIntelligenceAnalysisType.EVIDENCE_ANALYSIS,
+        subject_id=SUBJECT_ID,
+        correlation_id=CORRELATION_ID,
+        administrator_access=False,
+        references=(source_reference,),
+    )
+
+    async def fail_audit(*args: object, **kwargs: object) -> None:
+        del args, kwargs
+        raise SQLAlchemyError("forced audit failure")
+
+    monkeypatch.setattr(
+        governance_intelligence_persistence,
+        "append_audit_event",
+        fail_audit,
+    )
+    unit = SqlAlchemyGovernanceIntelligenceUnitOfWork(SessionFactory)
+    await unit.save_releases((release,))
+    with pytest.raises(GovernanceIntelligenceDependencyError):
+        await unit.append(actor_id=ACTOR_ID, record=record)
+    await unit.rollback()
+
+    async with SessionFactory() as session:
+        stored = await session.scalar(
+            select(GovernanceIntelligenceFindingReleaseEntry).where(
+                GovernanceIntelligenceFindingReleaseEntry.finding_id == str(FINDING_ID)
+            )
+        )
+
+    assert stored is None
 
 
 @pytest.mark.parametrize(
@@ -947,7 +1133,7 @@ def test_governance_intelligence_composition_limits_fail_closed(
 ) -> None:
     """Reject deployment values outside the use-case policy boundary."""
     with pytest.raises(ValueError):
-        Settings(**{override: value})
+        Settings(**cast(Any, {override: value}))
 
 
 async def test_composition_root_runs_verified_analysis_with_durable_stage_audit(
@@ -974,6 +1160,7 @@ async def test_composition_root_runs_verified_analysis_with_durable_stage_audit(
         intelligence,
     )
     composition = vars(service)
+    assert composition["_release_store"] is composition["_audit"]
     assert composition["_audit"] is composition["_transaction"]
     assert composition["_max_sources"] == 4
     assert composition["_max_findings"] == 5
@@ -999,9 +1186,18 @@ async def test_composition_root_runs_verified_analysis_with_durable_stage_audit(
                 .order_by(AuditEvent.entity_version)
             )
         ).all()
+        stored = await session.scalar(
+            select(GovernanceIntelligenceFindingReleaseEntry).where(
+                GovernanceIntelligenceFindingReleaseEntry.finding_id == str(FINDING_ID)
+            )
+        )
 
     assert [event.action for event in events] == [
         "governance_intelligence.analysis_requested",
         "governance_intelligence.sources_verified",
         "governance_intelligence.analysis_completed",
     ]
+    assert stored is not None
+    assert stored.subject_id == SUBJECT_ID
+    assert stored.correlation_id == correlation_id
+    assert stored.candidate_digest == governance_finding_envelope_digest(result[0])

@@ -32,8 +32,9 @@ from ai_governance_api.adapters import (
     SqlAlchemyDirectoryAuthorizationCacheTransaction,
     SqlAlchemyEvidenceAudit,
     SqlAlchemyEvidenceStore,
+    SqlAlchemyGovernanceFindingReleaseVerifier,
     SqlAlchemyGovernanceFindingReviewUnitOfWork,
-    SqlAlchemyGovernanceIntelligenceAudit,
+    SqlAlchemyGovernanceIntelligenceUnitOfWork,
     SqlAlchemyIncidentAudit,
     SqlAlchemyIncidentRepository,
     SqlAlchemyInitiativeControlContextStore,
@@ -100,6 +101,7 @@ from ai_governance_api.application import (
     DirectoryAuthorizationCacheUnavailable,
     EvaluateInitiativeControls,
     GetControlCrosswalk,
+    GovernanceFindingReleaseVerifierPort,
     GovernanceFindingReviewAuthorizerPort,
     GovernanceIntelligencePort,
     GovernedKnowledgeResolutionPort,
@@ -993,13 +995,14 @@ def build_governance_intelligence_analysis(
 ) -> RunGovernanceIntelligenceAnalysis:
     """Compose governed analysis without exposing a provider or HTTP dependency."""
     settings = get_settings()
-    audit = SqlAlchemyGovernanceIntelligenceAudit(SessionFactory)
+    unit = SqlAlchemyGovernanceIntelligenceUnitOfWork(SessionFactory)
     analysis_timeout_seconds = settings.governance_intelligence_analysis_timeout_seconds
     return RunGovernanceIntelligenceAnalysis(
         knowledge,
         intelligence,
-        audit,
-        audit,
+        unit,
+        unit,
+        unit,
         max_sources=settings.governance_knowledge_max_sources,
         max_findings=settings.governance_intelligence_max_findings,
         analysis_timeout_seconds=analysis_timeout_seconds,
@@ -1008,14 +1011,16 @@ def build_governance_intelligence_analysis(
 
 def build_governance_finding_review(
     authorizer: GovernanceFindingReviewAuthorizerPort,
+    release_verifier: GovernanceFindingReleaseVerifierPort,
 ) -> ReviewGovernanceFinding:
     """Compose internal advisory review without exposing a delivery dependency."""
     unit = SqlAlchemyGovernanceFindingReviewUnitOfWork(SessionFactory)
-    return ReviewGovernanceFinding(authorizer, unit, unit, unit)
+    return ReviewGovernanceFinding(authorizer, release_verifier, unit, unit, unit)
 
 
 def build_initiative_governance_finding_review() -> ReviewGovernanceFinding:
     """Compose internal initiative review with owner/admin authorization."""
     return build_governance_finding_review(
-        SqlAlchemyInitiativeFindingReviewAuthorizer(SessionFactory)
+        SqlAlchemyInitiativeFindingReviewAuthorizer(SessionFactory),
+        SqlAlchemyGovernanceFindingReleaseVerifier(SessionFactory),
     )

@@ -141,6 +141,13 @@ replays return the original receipt after current authorization; divergent reuse
 conflict. The minimized receipt table and audit event remain outside Governance Finding `1.0` and
 store no statement, confidence, source reference, prompt, provider or model content.
 
+GI-3C adds separate application-side release evidence without changing Governance Finding `1.0`.
+GI-2 and GI-3 calculate the same canonical complete-envelope digest. GI-2 stores that digest with
+finding/run, subject and correlation identities in an atomic minimized release/completion-audit
+transaction; GI-3 requires the exact intact binding after authorization and before review receipt
+lookup. The release registry is provenance evidence inside the trusted database boundary, not a
+portable finding field, bearer token, truth claim or authority grant.
+
 ## Provenance and minimization
 
 `AgentRunProvenance` records stable run, agent, model/configuration, source, tool-call, time and

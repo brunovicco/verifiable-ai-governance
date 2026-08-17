@@ -70,6 +70,8 @@ existing deterministic fixtures as live integration proof.
   ownership lookup, while keeping the composition internal and every disposition non-authoritative;
 - GI-3B adds durable, digest-bound request receipts, atomic audit persistence and exact replay under
   concurrent duplicates, without retaining finding content or exposing a delivery path;
+- GI-3C binds every review and replay to an intact, atomic GI-2 finding release record, preventing
+  fabricated schema-valid findings from entering review without retaining finding content;
 - keep agent/model output untrusted and route every accepted recommendation through existing human
   or deterministic governance decisions.
 

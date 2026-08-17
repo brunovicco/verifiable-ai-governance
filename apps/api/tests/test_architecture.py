@@ -19,8 +19,11 @@ GOVERNANCE_INTELLIGENCE_SCHEMA_SOURCE = (
 GOVERNANCE_INTELLIGENCE_APPLICATION_SOURCE = (
     API_SOURCE / "application/governance_intelligence.py"
 )
-GOVERNANCE_INTELLIGENCE_AUDIT_ADAPTER_SOURCE = (
-    API_SOURCE / "adapters/governance_intelligence_audit.py"
+GOVERNANCE_INTELLIGENCE_PERSISTENCE_ADAPTER_SOURCE = (
+    API_SOURCE / "adapters/governance_intelligence_persistence.py"
+)
+GOVERNANCE_INTELLIGENCE_INTEGRITY_SOURCE = (
+    API_SOURCE / "application/governance_intelligence_integrity.py"
 )
 GOVERNANCE_FINDING_REVIEW_APPLICATION_SOURCE = (
     API_SOURCE / "application/governance_intelligence_review.py"
@@ -499,7 +502,7 @@ def test_governance_intelligence_composition_has_no_delivery_exposure() -> None:
 
 
 def test_governance_intelligence_audit_adapter_cannot_persist_content_fields() -> None:
-    source = GOVERNANCE_INTELLIGENCE_AUDIT_ADAPTER_SOURCE.read_text(encoding="utf-8")
+    source = GOVERNANCE_INTELLIGENCE_PERSISTENCE_ADAPTER_SOURCE.read_text(encoding="utf-8")
 
     assert "source.content" not in source
     assert "finding.statement" not in source
@@ -507,6 +510,46 @@ def test_governance_intelligence_audit_adapter_cannot_persist_content_fields() -
     assert "chain_of_thought" not in source
     assert "storage_bucket" not in source
     assert "storage_key" not in source
+
+
+def test_governance_intelligence_persistence_exposes_minimized_release_unit() -> None:
+    source = GOVERNANCE_INTELLIGENCE_PERSISTENCE_ADAPTER_SOURCE.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    unit = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef)
+        and node.name == "SqlAlchemyGovernanceIntelligenceUnitOfWork"
+    )
+    verifier = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef)
+        and node.name == "SqlAlchemyGovernanceFindingReleaseVerifier"
+    )
+
+    assert {
+        node.name
+        for node in unit.body
+        if isinstance(node, ast.AsyncFunctionDef) and not node.name.startswith("_")
+    } == {"append", "commit", "rollback", "save_releases"}
+    assert {
+        node.name
+        for node in verifier.body
+        if isinstance(node, ast.AsyncFunctionDef) and not node.name.startswith("_")
+    } == {"was_released"}
+
+
+def test_analysis_and_review_share_one_canonical_finding_digest() -> None:
+    integrity = GOVERNANCE_INTELLIGENCE_INTEGRITY_SOURCE.read_text(encoding="utf-8")
+    analysis = GOVERNANCE_INTELLIGENCE_APPLICATION_SOURCE.read_text(encoding="utf-8")
+    review = GOVERNANCE_FINDING_REVIEW_APPLICATION_SOURCE.read_text(encoding="utf-8")
+
+    assert "def governance_finding_envelope_digest" in integrity
+    assert "governance_finding_envelope_digest(envelope)" in analysis
+    assert "governance_finding_envelope_digest(finding)" in review
+    assert "def _candidate_digest" not in analysis
+    assert "def _candidate_digest" not in review
 
 
 def test_finding_review_persistence_exposes_one_minimized_unit_of_work() -> None:
