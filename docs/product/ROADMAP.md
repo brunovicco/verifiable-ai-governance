@@ -58,6 +58,9 @@ existing deterministic fixtures as live integration proof.
 - GI-1A connects that gate to clean private evidence uploads with canonical source identity,
   initiative owner/admin authorization and exact S3 object resolution, without exposing a content
   endpoint or model path;
+- GI-2 adds an audited, purpose-bound application orchestrator that accepts only verified sources
+  and releases only source-bound, provenance-consistent advisory envelopes, without adding a
+  provider or endpoint;
 - keep agent/model output untrusted and route every accepted recommendation through existing human
   or deterministic governance decisions.
 

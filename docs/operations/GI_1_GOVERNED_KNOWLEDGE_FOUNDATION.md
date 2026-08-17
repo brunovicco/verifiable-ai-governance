@@ -13,6 +13,10 @@ external knowledge provider.
 GI-1A adds the first concrete adapter for clean, trusted uploaded evidence while preserving this
 gate. It still adds no HTTP, retrieval or model consumer. See ADR 0058 and the GI-1A runbook.
 
+GI-2 adds the audited application consumer boundary while preserving verified-only input and
+advisory-only output. It still adds no endpoint or concrete provider. See ADR 0059 and the GI-2
+runbook.
+
 ## Guaranteed sequence
 
 ```text

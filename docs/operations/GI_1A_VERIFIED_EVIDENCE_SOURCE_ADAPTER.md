@@ -91,8 +91,10 @@ artifact.
 - external URI evidence is never resolved by this adapter;
 - S3 response metadata does not replace application SHA-256 verification;
 - stream cleanup runs after success and failure;
-- current code has no HTTP or model consumer, so no content is exposed by a production request path.
+- GI-2 supplies an audited internal analysis boundary, but no HTTP path or concrete model/provider
+  adapter consumes evidence content.
 
-Before adding a consumer, define and test content-access audit events, cancellation behavior,
-purpose limitation, data classification, model/provider egress, retention and reviewer access. A
-matching digest proves byte integrity, not evidence truth, control effectiveness or compliance.
+GI-2 defines content-access audit stages, cancellation behavior and explicit analysis purposes.
+Before adding a provider or delivery consumer, review data classification, model/provider egress,
+retention, credentials, rate/cost limits and reviewer access. A matching digest proves byte
+integrity, not evidence truth, control effectiveness or compliance.

@@ -2,7 +2,7 @@
 
 - **Status:** Current
 - **Owner:** Architecture and security
-- **Last reviewed:** 2026-08-16
+- **Last reviewed:** 2026-08-17
 - **Review trigger:** Network, identity, storage, runtime or deployment topology change
 
 ## Context diagram
@@ -118,11 +118,15 @@ flowchart TD
   INPUT["LLM output / external finding / retrieved content / uploaded documents / tool output"]
   INPUT --> UNTRUSTED["UNTRUSTED DATA"]
   UNTRUSTED --> REFERENCE["Closed source reference"]
-  REFERENCE --> AUTHORIZE["Actor + subject + exact-reference authorization"]
+  REFERENCE --> REQUEST_AUDIT["Purpose + source-request audit"]
+  REQUEST_AUDIT --> AUTHORIZE["Actor + subject + exact-reference authorization"]
   AUTHORIZE --> RESOLVE["Exact artifact/version resolution"]
   RESOLVE --> VERIFY["Bounded read + actual-byte digest verification"]
-  VERIFY --> VALIDATE["Verified source + finding schema validation"]
-  VALIDATE --> CANDIDATE["GovernanceFindingCandidate — advisory and untrusted"]
+  VERIFY --> ACCESS_AUDIT["Verified source-access audit"]
+  ACCESS_AUDIT --> ANALYZE["Explicit advisory analysis purpose"]
+  ANALYZE --> VALIDATE["Schema + purpose + citation + provenance validation"]
+  VALIDATE --> OUTCOME_AUDIT["Content-minimized outcome audit"]
+  OUTCOME_AUDIT --> CANDIDATE["GovernanceFindingEnvelope — advisory and untrusted"]
   CANDIDATE --> REVIEW["Human or deterministic review"]
   REVIEW --> DECISION["Governed decision"]
 ```
@@ -142,6 +146,12 @@ maps only canonical `evidence:<uuid>` references, preserves initiative owner/adm
 requires the canonical private storage key and exposes no bucket, key or URI. External evidence
 references and fragment selectors remain unresolved. No current HTTP, retrieval or model path
 consumes the verified bytes.
+
+GI-2 provides the application-owned consumer boundary without adding a provider or delivery path.
+It commits purpose and source-access audit stages before invoking one explicit advisory port
+operation, then rejects candidates whose type, citations, retrieved-source provenance or
+correlation do not match the verified input. Only a completed content-minimized audit permits
+release of versioned advisory envelopes.
 
 ## Authority model
 

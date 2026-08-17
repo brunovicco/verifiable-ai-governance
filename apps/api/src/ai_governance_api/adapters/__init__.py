@@ -28,6 +28,9 @@ from ai_governance_api.adapters.evidence_persistence import (
     SqlAlchemyEvidenceAudit,
     SqlAlchemyEvidenceStore,
 )
+from ai_governance_api.adapters.governance_intelligence_audit import (
+    SqlAlchemyGovernanceIntelligenceAudit,
+)
 from ai_governance_api.adapters.governance_knowledge_evidence import (
     VerifiedEvidenceKnowledgeAdapter,
     governance_reference_for_evidence,
@@ -62,6 +65,7 @@ __all__ = [
     "SqlAlchemyDashboardStore",
     "SqlAlchemyEvidenceAudit",
     "SqlAlchemyEvidenceStore",
+    "SqlAlchemyGovernanceIntelligenceAudit",
     "SqlAlchemyIncidentAudit",
     "SqlAlchemyIncidentRepository",
     "SqlAlchemyInitiativeControlContextStore",
