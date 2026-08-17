@@ -60,6 +60,7 @@ relevant ADR instead of duplicating detailed rationale.
 ## Portable contracts
 
 - [Governance finding v1](contracts/governance-finding-v1.md)
+- [Governance Intelligence compatibility gate](operations/PH_1_GOVERNANCE_INTELLIGENCE_COMPATIBILITY.md)
 - [Runtime authorization v1](contracts/runtime-authorization-v1.md)
 - [Runtime violation v1](contracts/runtime-violation-v1.md)
 

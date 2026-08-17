@@ -32,6 +32,10 @@ CHECKS = (
             "packages/policy-engine/src",
         ),
     ),
+    Check(
+        "governance-intelligence-compatibility",
+        (sys.executable, "scripts/verify_governance_intelligence_compatibility.py"),
+    ),
     Check("pytest", (sys.executable, "-m", "pytest", "-q")),
     Check("web-test", ("npm", "run", "test:web")),
     Check("web-lint", ("npm", "run", "lint:web")),

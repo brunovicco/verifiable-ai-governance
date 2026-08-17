@@ -65,6 +65,7 @@
 | Engineering | Canonical deterministic reference demo | Implemented | Stable semantic identities plus dedicated reference-demo CI |
 | Engineering | Public repository hygiene gate | Implemented | Local coding-agent/editor state and generated paths are rejected when tracked |
 | Governance Intelligence | Advisory finding trust boundary and contracts | Implemented | Closed shared schemas and a consumer-owned port keep findings untrusted, non-authoritative and free of provider coupling |
+| Governance Intelligence | Cross-repository contract compatibility gate | Implemented | Built-wheel inspection and isolated probes protect v1 against current Policy Model Router and Credit Desk checkouts; version evolution remains PH-2 |
 | Governance Intelligence | Governed knowledge and retrieval foundation | Planned | GI-1 must resolve versioned sources and verify digests before model or retrieval adapters are introduced |
 | Integration | CMDB and enterprise GRC | Planned | API/webhook integration roadmap |
 | Integration | Data catalog and CI/CD | Planned | API/webhook integration roadmap |

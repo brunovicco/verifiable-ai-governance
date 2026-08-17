@@ -118,6 +118,15 @@ full prompts, document bodies or complete model responses, and rejects those une
 
 - Python models: `packages/governance-schemas/src/governance_schemas/governance_intelligence.py`;
 - application port: `apps/api/src/ai_governance_api/application/governance_intelligence.py`;
+- portable example: `contracts/governance-intelligence/examples/risk-candidate-v1.json`;
 - contract tests: `apps/api/tests/test_governance_intelligence_contract.py`;
+- cross-repository compatibility gate:
+  `scripts/verify_governance_intelligence_compatibility.py`;
 - architecture tests: `apps/api/tests/test_architecture.py`;
-- architectural decision: `docs/adr/0054-governance-intelligence-trust-boundary.md`.
+- architectural decisions: `docs/adr/0054-governance-intelligence-trust-boundary.md` and
+  `docs/adr/0055-governance-intelligence-cross-repository-compatibility-gate.md`.
+
+The PH-1 gate builds and installs the wheel into an ephemeral target, then validates this fixture
+from isolated Python processes rooted in current external consumer checkouts. It protects the v1
+advisory boundary and artifact portability. Cross-version compatibility and evolution rules remain
+PH-2.

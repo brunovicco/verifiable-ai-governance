@@ -1,0 +1,67 @@
+name: Governance Intelligence compatibility
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/governance-intelligence-compatibility.yml
+      - contracts/governance-intelligence/**
+      - packages/governance-schemas/**
+      - scripts/governance_intelligence_consumer_probe.py
+      - scripts/verify_governance_intelligence_compatibility.py
+      - uv.lock
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/governance-intelligence-compatibility.yml
+      - contracts/governance-intelligence/**
+      - packages/governance-schemas/**
+      - scripts/governance_intelligence_consumer_probe.py
+      - scripts/verify_governance_intelligence_compatibility.py
+      - uv.lock
+  schedule:
+    - cron: "17 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  current-consumers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Governance
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Checkout Policy Model Router
+        uses: actions/checkout@v7
+        with:
+          repository: brunovicco/policy-model-router
+          path: .compatibility/policy-model-router
+          persist-credentials: false
+
+      - name: Checkout Credit Desk
+        uses: actions/checkout@v7
+        with:
+          repository: brunovicco/multi-agent-credit-desk
+          path: .compatibility/multi-agent-credit-desk
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Synchronize locked Governance environment
+        run: uv sync --all-packages --locked
+
+      - name: Verify wheel against current external consumers
+        run: >-
+          uv run --frozen python scripts/verify_governance_intelligence_compatibility.py
+          --consumer-repo policy-model-router=.compatibility/policy-model-router
+          --consumer-repo multi-agent-credit-desk=.compatibility/multi-agent-credit-desk
