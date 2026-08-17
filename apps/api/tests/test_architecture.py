@@ -382,6 +382,18 @@ def test_governed_analysis_orchestration_exposes_advisory_execution_only() -> No
     assert "Approval" not in source
 
 
+def test_governance_intelligence_composition_has_no_delivery_exposure() -> None:
+    delivery_paths = (
+        API_SOURCE / "main.py",
+        *(API_SOURCE / "routers").glob("*.py"),
+    )
+
+    for path in delivery_paths:
+        source = path.read_text(encoding="utf-8")
+        assert "build_governance_intelligence_analysis" not in source
+        assert "RunGovernanceIntelligenceAnalysis" not in source
+
+
 def test_governance_intelligence_audit_adapter_cannot_persist_content_fields() -> None:
     source = GOVERNANCE_INTELLIGENCE_AUDIT_ADAPTER_SOURCE.read_text(encoding="utf-8")
 

@@ -112,14 +112,31 @@ Analysis timeout is mandatory and constrained to more than zero and at most 300 
 provider adapters must still configure transport connection/read timeouts, retry policy and
 cancellation behavior appropriate to their dependency.
 
+### Internal composition policy
+
+GI-2A adds one composition-root builder for the existing use case. The builder accepts an already
+governed knowledge resolver and an explicitly supplied `GovernanceIntelligencePort`; it does not
+select or instantiate a provider. It applies deployment policy from `Settings`:
+
+- `GOVERNANCE_KNOWLEDGE_MAX_SOURCES` is reused as the complete-set source-count limit, so GI-1 and
+  GI-2 cannot silently disagree about request cardinality;
+- `GOVERNANCE_INTELLIGENCE_MAX_FINDINGS` bounds the complete candidate set;
+- `GOVERNANCE_INTELLIGENCE_ANALYSIS_TIMEOUT_SECONDS` bounds advisory execution independently from
+  any future provider transport timeout.
+
+Invalid values fail during settings validation. The builder creates exactly one request-scoped
+`SqlAlchemyGovernanceIntelligenceAudit` and supplies that same object as both audit and transaction
+port. This preserves the adapter's one-stage-at-a-time unit-of-work invariant. Container defaults
+are explicit, but there is no enable flag because no consumer path exists.
+
 ### Exposure boundary
 
-GI-2 adds no HTTP endpoint, task, scheduler, provider adapter, model call, retrieval engine, prompt,
-finding persistence or governed decision transition. The orchestration and audit adapter remain
-inert until a separately reviewed composition supplies a concrete `GovernanceIntelligencePort`
-and consumer.
+GI-2/GI-2A add no HTTP endpoint, FastAPI dependency, task, scheduler, provider adapter, model call,
+retrieval engine, prompt, finding persistence or governed decision transition. The internal
+composition remains inert until a separately reviewed consumer supplies a concrete
+`GovernanceIntelligencePort`.
 
-Before that composition is exposed, it still requires provider/model egress, data-classification,
+Before that consumer is exposed, it still requires provider/model egress, data-classification,
 retention, rate-limit, credential, reviewer-access and abuse-case review. The existing verified
 evidence adapter is not automatically connected to any model or external destination.
 
@@ -132,6 +149,8 @@ evidence adapter is not automatically connected to any model or external destina
 - hallucinated citations, mismatched provenance and purpose-inappropriate finding types fail closed;
 - audit metadata supports independent tracing without retaining content or model responses;
 - timeout, cancellation and all-or-nothing result behavior are executable application policy;
+- composition applies one fail-closed deployment policy and one audit unit of work without choosing
+  a provider;
 - the deterministic governance core and runtime authority paths remain unchanged.
 
 ### Costs and follow-ups

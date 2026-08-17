@@ -1,4 +1,4 @@
-# GI-2 governed advisory analysis
+# GI-2/GI-2A governed advisory analysis
 
 - **Status:** Current
 - **Owner:** Platform engineering, security and AI Governance
@@ -7,7 +7,31 @@
 - **Authoritative sources:** ADR 0059 and the GI-2 application tests
 
 GI-2 defines the application boundary between verified Governance Knowledge and an untrusted
-Governance Intelligence adapter. It does not expose an endpoint or configure a provider.
+Governance Intelligence adapter. GI-2A composes that boundary with deployment-owned limits and its
+request-scoped audit unit. Neither increment exposes an endpoint nor configures a provider.
+
+## Internal composition
+
+`build_governance_intelligence_analysis` accepts a governed knowledge resolver and an explicitly
+supplied `GovernanceIntelligencePort`. It constructs `RunGovernanceIntelligenceAnalysis` with one
+new `SqlAlchemyGovernanceIntelligenceAudit` instance used for both audit append and transaction
+control. Never split those two ports across different instances: the adapter deliberately permits
+only one active audit-stage transaction.
+
+The builder is not a FastAPI dependency and has no registered route, task or scheduler. Merely
+configuring its limits does not enable analysis, choose a model or create network egress.
+
+## Deployment policy
+
+| Environment variable | Default | Accepted range | Purpose |
+|---|---:|---:|---|
+| `GOVERNANCE_KNOWLEDGE_MAX_SOURCES` | `10` | `1..100` | Shared GI-1/GI-2 complete-set source limit |
+| `GOVERNANCE_INTELLIGENCE_MAX_FINDINGS` | `10` | `1..100` | Maximum complete candidate set before release |
+| `GOVERNANCE_INTELLIGENCE_ANALYSIS_TIMEOUT_SECONDS` | `30` | `> 0..300` | Maximum advisory execution time in seconds |
+
+Settings validation fails closed outside these ranges. A future provider must still define shorter
+or equal transport connection/read timeouts, bounded retries and cancellation behavior; this
+application timeout is not a transport policy.
 
 ## Guaranteed sequence
 
@@ -103,10 +127,11 @@ uv run python scripts/quality_gate.py
 
 ## Before adding a provider or consumer
 
-1. compose the provider only through `GovernanceIntelligencePort`;
-2. create one request-scoped `SqlAlchemyGovernanceIntelligenceAudit` instance and use that same
-   object for both the audit and transaction ports;
-3. provide explicit `max_sources`, `max_findings` and timeout values within the application bounds;
+1. supply the provider only through `GovernanceIntelligencePort` to the existing composition-root
+   builder;
+2. preserve its single request-scoped `SqlAlchemyGovernanceIntelligenceAudit` instance for both
+   audit and transaction ports;
+3. review the shared source limit, finding limit and analysis timeout for the intended workload;
 4. configure transport connection/read timeouts and bounded retry behavior;
 5. verify authenticated actor, subject and administrator mapping at the delivery boundary;
 6. document data classification, purpose and provider/model egress;

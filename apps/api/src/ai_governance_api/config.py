@@ -145,6 +145,12 @@ class Settings(BaseSettings):
         ge=1,
         le=100 * 1024 * 1024,
     )
+    governance_intelligence_max_findings: int = Field(default=10, ge=1, le=100)
+    governance_intelligence_analysis_timeout_seconds: float = Field(
+        default=30.0,
+        gt=0,
+        le=300,
+    )
     malware_scanner_host: str = "localhost"
     malware_scanner_port: int = Field(default=3310, ge=1, le=65535)
     malware_scanner_connect_timeout_seconds: float = Field(default=2.0, gt=0, le=30)
