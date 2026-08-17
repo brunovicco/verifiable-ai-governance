@@ -16,6 +16,12 @@ GOVERNANCE_INTELLIGENCE_SCHEMA_SOURCE = (
     Path(__file__).parents[3]
     / "packages/governance-schemas/src/governance_schemas/governance_intelligence.py"
 )
+GOVERNANCE_INTELLIGENCE_APPLICATION_SOURCE = (
+    API_SOURCE / "application/governance_intelligence.py"
+)
+GOVERNANCE_INTELLIGENCE_AUDIT_ADAPTER_SOURCE = (
+    API_SOURCE / "adapters/governance_intelligence_audit.py"
+)
 VERIFIED_EVIDENCE_KNOWLEDGE_ADAPTER_SOURCE = (
     API_SOURCE / "adapters/governance_knowledge_evidence.py"
 )
@@ -263,9 +269,17 @@ def test_governance_intelligence_port_exposes_advisory_capabilities_only() -> No
 
 def test_governance_intelligence_port_requires_verified_knowledge_sources() -> None:
     source = (API_SOURCE / "application/governance_intelligence.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    port = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef) and node.name == "GovernanceIntelligencePort"
+    )
+    port_source = ast.get_source_segment(source, port)
 
-    assert "VerifiedGovernanceKnowledgeSource" in source
-    assert "GovernanceSourceReference" not in source
+    assert port_source is not None
+    assert "VerifiedGovernanceKnowledgeSource" in port_source
+    assert "GovernanceSourceReference" not in port_source
 
 
 def test_verified_evidence_knowledge_adapter_has_no_probabilistic_dependencies() -> None:
@@ -313,3 +327,67 @@ def test_verified_evidence_knowledge_adapter_exposes_resolution_only() -> None:
 
     assert methods == {"can_read", "resolve"}
     assert "GovernanceFindingCandidate" not in source
+
+
+def test_governed_analysis_orchestration_has_no_probabilistic_dependencies() -> None:
+    source = GOVERNANCE_INTELLIGENCE_APPLICATION_SOURCE.read_text(encoding="utf-8")
+    imports = {
+        node.module.split(".")[0]
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+    imports.update(
+        alias.name.split(".")[0]
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    )
+
+    assert imports.isdisjoint(
+        {
+            "anthropic",
+            "chromadb",
+            "deep_agents",
+            "deepagents",
+            "langchain",
+            "langgraph",
+            "llama_index",
+            "openai",
+            "pinecone",
+            "qdrant_client",
+            "weaviate",
+        }
+    )
+
+
+def test_governed_analysis_orchestration_exposes_advisory_execution_only() -> None:
+    source = GOVERNANCE_INTELLIGENCE_APPLICATION_SOURCE.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    use_case = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef) and node.name == "RunGovernanceIntelligenceAnalysis"
+    )
+    public_async_methods = {
+        node.name
+        for node in use_case.body
+        if isinstance(node, ast.AsyncFunctionDef) and not node.name.startswith("_")
+    }
+
+    assert public_async_methods == {"execute"}
+    assert "GovernanceFindingEnvelope" in source
+    assert "VerifiedGovernanceKnowledgeSource" in source
+    assert "SignedRuntimeAuthorization" not in source
+    assert "RuntimeControl" not in source
+    assert "Approval" not in source
+
+
+def test_governance_intelligence_audit_adapter_cannot_persist_content_fields() -> None:
+    source = GOVERNANCE_INTELLIGENCE_AUDIT_ADAPTER_SOURCE.read_text(encoding="utf-8")
+
+    assert "source.content" not in source
+    assert "finding.statement" not in source
+    assert "full_prompt" not in source
+    assert "chain_of_thought" not in source
+    assert "storage_bucket" not in source
+    assert "storage_key" not in source

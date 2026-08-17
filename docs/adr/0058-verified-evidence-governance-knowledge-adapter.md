@@ -89,9 +89,10 @@ authorization and resolver ports, then wraps it with `ResolveGovernanceKnowledge
 explicit environment-backed limits.
 
 GI-1A adds no HTTP endpoint, background job, retrieval index, model call, prompt, agent runtime or
-content persistence. No current request path invokes the adapter. A future governed consumer must
-define its own authorization-preserving API/use case, audit requirement, timeout/cancellation
-tests, and content-egress review before production exposure.
+content persistence. GI-2 now defines an application-owned audited analysis use case with bounded
+timeout/cancellation and fail-closed output validation, but no current request path or concrete
+analysis provider invokes either adapter. Provider/model egress and delivery exposure still require
+a separate review.
 
 ### Evidence and authority remain distinct
 
@@ -115,7 +116,7 @@ advisory output and cannot mutate a decision or authorization.
 - the adapter is deliberately limited to whole uploaded files;
 - verified bytes are buffered only within the GI-1 configured limits;
 - request-scoped authorization cache requires the same adapter instance on both ports;
-- future production consumption still needs an explicit content-access audit decision.
+- future production consumption still needs an explicit provider/egress and delivery decision.
 
 ## Rejected alternatives
 

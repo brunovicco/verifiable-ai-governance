@@ -120,6 +120,13 @@ The first concrete mapping is GI-1A verified uploaded evidence:
 SHA-256 digest, without node/section selectors or storage coordinates. Eligibility and access are
 adapter rules, not new fields in the Governance Finding `1.0` wire contract.
 
+GI-2 orchestrates the first application-owned consumption boundary. It records purpose and source
+access before analysis, supplies only verified source wrappers to one explicit advisory method,
+then revalidates every candidate. Candidate citations must be a subset of the verified input;
+provenance `retrieved_sources` must equal the complete verified input; provenance correlation must
+match the authenticated request. Findings are returned only after a content-minimized completion
+audit is committed. These are application invariants and do not change the `1.0` wire schema.
+
 ## Provenance and minimization
 
 `AgentRunProvenance` records stable run, agent, model/configuration, source, tool-call, time and
@@ -147,6 +154,7 @@ See ADR 0056 and the PH-2 contract-evolution runbook for the complete lifecycle 
 
 - Python models: `packages/governance-schemas/src/governance_schemas/governance_intelligence.py`;
 - application port: `apps/api/src/ai_governance_api/application/governance_intelligence.py`;
+- governed analysis tests: `apps/api/tests/test_governance_intelligence_application.py`;
 - portable example: `contracts/governance-intelligence/examples/risk-candidate-v1.json`;
 - contract tests: `apps/api/tests/test_governance_intelligence_contract.py`;
 - cross-repository compatibility gate:
@@ -158,7 +166,8 @@ See ADR 0056 and the PH-2 contract-evolution runbook for the complete lifecycle 
 - architecture tests: `apps/api/tests/test_architecture.py`;
 - architectural decisions: `docs/adr/0054-governance-intelligence-trust-boundary.md`,
   `docs/adr/0055-governance-intelligence-cross-repository-compatibility-gate.md` and
-  `docs/adr/0056-governance-intelligence-versioned-contract-evolution.md`.
+  `docs/adr/0056-governance-intelligence-versioned-contract-evolution.md`, plus the downstream
+  source/orchestration decisions in ADRs 0057 through 0059.
 
 The PH-1 gate builds and installs the wheel into an ephemeral target, then validates this fixture
 from isolated Python processes rooted in current external consumer checkouts. PH-2 separately
