@@ -72,6 +72,7 @@
 | Governance Intelligence | Governed advisory analysis orchestration | Implemented | Purpose and source access are audited before analysis; candidate type, citations, provenance, limits and terminal audit are validated before advisory envelopes are released |
 | Governance Intelligence | Governed advisory analysis composition policy | Implemented | Settings-backed source, finding and timeout limits plus one request-scoped audit unit compose GI-2 internally without selecting a provider or exposing a consumer path |
 | Governance Intelligence | Advisory finding review boundary | Implemented | Revalidated, authorized review produces only closed non-authoritative dispositions and a digest-bound minimized audit receipt; no finding content or governed state is persisted |
+| Governance Intelligence | Initiative finding review authorization | Implemented | Canonical initiative owner/admin policy uses a minimal short-lived ownership read; denial is content-free and the internal builder has no delivery exposure |
 | Integration | CMDB and enterprise GRC | Planned | API/webhook integration roadmap |
 | Integration | Data catalog and CI/CD | Planned | API/webhook integration roadmap |
 | Sector | Financial-services overlay | Planned | Baseline remains sector-neutral; canonical credit scenario is a demo, not a policy overlay |

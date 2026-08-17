@@ -4,7 +4,7 @@
 - **Owner:** Platform engineering, security and AI Governance
 - **Last reviewed:** 2026-08-17
 - **Review trigger:** Disposition, authorization, audit, persistence or delivery change
-- **Authoritative sources:** ADR 0060 and the GI-3 application/architecture tests
+- **Authoritative sources:** ADR 0060, ADR 0061 and the GI-3 application/architecture tests
 
 GI-3 records an authorized, content-minimized review disposition for one advisory finding. It does
 not approve a governed subject and exposes no delivery path.
@@ -45,8 +45,10 @@ evidence state.
 - administrator-access assertion.
 
 The port must return exactly `True` to permit review. A concrete consumer must derive these facts
-from authenticated identity and subject-specific policy. GI-3 deliberately provides no default
-owner/admin mapping because the subject class is not yet fixed.
+from authenticated identity and subject-specific policy. The generic GI-3 builder deliberately
+provides no default mapping. GI-3A adds a separate internal initiative builder whose concrete
+policy permits the exact initiative owner or an authenticated administrator; other subject classes
+still require separately reviewed policies.
 
 ## Audit minimization
 
@@ -87,7 +89,8 @@ uv run python scripts/quality_gate.py
 
 ## Before adding persistence or delivery
 
-1. define the concrete governed subject and reviewer authorization policy;
+1. preserve the concrete subject authorization policy or define a separately reviewed policy for
+   every additional subject class;
 2. configure bounded timeout and retry behavior for any remote authorization adapter;
 3. preserve the distinction between consideration and authoritative approval;
 4. define request idempotency, concurrent review and supersession behavior;

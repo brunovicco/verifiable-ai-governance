@@ -66,6 +66,8 @@ existing deterministic fixtures as live integration proof.
 - GI-3 adds a consumer-owned, authorized advisory review boundary with closed non-authoritative
   dispositions and digest-bound minimized receipts, without finding-content persistence or
   delivery exposure;
+- GI-3A supplies an initiative-specific owner/admin review policy through a minimal short-lived
+  ownership lookup, while keeping the composition internal and every disposition non-authoritative;
 - keep agent/model output untrusted and route every accepted recommendation through existing human
   or deterministic governance decisions.
 
