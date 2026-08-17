@@ -29,12 +29,15 @@ from governance_schemas.enums import (
 )
 from governance_schemas.governance_intelligence import (
     GOVERNANCE_FINDING_SCHEMA_VERSION,
+    SUPPORTED_GOVERNANCE_FINDING_SCHEMA_VERSIONS,
     AgentRunProvenance,
     ExternalTaxonomyReference,
     GovernanceFindingCandidate,
     GovernanceFindingEnvelope,
     GovernanceFindingType,
     GovernanceSourceReference,
+    UnsupportedGovernanceFindingSchemaVersion,
+    parse_governance_finding,
 )
 from governance_schemas.policy import (
     ApprovalRequirement,
@@ -89,6 +92,8 @@ __all__ = [
     "GovernanceFindingEnvelope",
     "GovernanceFindingType",
     "GovernanceSourceReference",
+    "SUPPORTED_GOVERNANCE_FINDING_SCHEMA_VERSIONS",
+    "UnsupportedGovernanceFindingSchemaVersion",
     "HostingModel",
     "InitiativeControlReport",
     "PolicyContext",
@@ -110,4 +115,5 @@ __all__ = [
     "RuntimeRequestBinding",
     "SignedRuntimeAuthorization",
     "canonical_json_bytes",
+    "parse_governance_finding",
 ]

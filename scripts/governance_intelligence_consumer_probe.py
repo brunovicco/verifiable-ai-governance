@@ -21,6 +21,9 @@ PUBLIC_EXPORTS = frozenset(
         "GovernanceFindingEnvelope",
         "GovernanceFindingType",
         "GovernanceSourceReference",
+        "SUPPORTED_GOVERNANCE_FINDING_SCHEMA_VERSIONS",
+        "UnsupportedGovernanceFindingSchemaVersion",
+        "parse_governance_finding",
     }
 )
 AUTHORITY_FIELDS = frozenset(
@@ -178,7 +181,7 @@ def run_probe(package_root: Path, fixture: Path, consumer_name: str) -> dict[str
     """Run the portable contract assertions and return a bounded result."""
     package, origin = _load_installed_package(package_root)
     payload = _load_fixture(fixture)
-    envelope = package.GovernanceFindingEnvelope.model_validate(payload)
+    envelope = package.parse_governance_finding(payload)
 
     if package.GOVERNANCE_FINDING_SCHEMA_VERSION != "1.0":
         raise ProbeFailure("public schema version is not 1.0")
@@ -188,6 +191,24 @@ def run_probe(package_root: Path, fixture: Path, consumer_name: str) -> dict[str
         raise ProbeFailure("candidate trust level is not untrusted")
     if envelope.candidate.advisory_only is not True:
         raise ProbeFailure("candidate is not advisory-only")
+    supported_versions = package.SUPPORTED_GOVERNANCE_FINDING_SCHEMA_VERSIONS
+    if not isinstance(supported_versions, frozenset):
+        raise ProbeFailure("public supported-version registry is not an immutable frozenset")
+    if package.GOVERNANCE_FINDING_SCHEMA_VERSION not in supported_versions:
+        raise ProbeFailure("public current schema version is absent from the supported registry")
+
+    unsupported = copy.deepcopy(payload)
+    unknown_major = 999_999
+    while f"{unknown_major}.0" in supported_versions:
+        unknown_major += 1
+    unknown_version = f"{unknown_major}.0"
+    unsupported["schema_version"] = unknown_version
+    try:
+        package.parse_governance_finding(unsupported)
+    except package.UnsupportedGovernanceFindingSchemaVersion:
+        pass
+    else:
+        raise ProbeFailure(f"public parser accepted unsupported schema version {unknown_version}")
 
     _verify_closed_authority_boundary(package, payload)
     return {

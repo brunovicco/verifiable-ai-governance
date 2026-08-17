@@ -114,6 +114,23 @@ finding is a derived representation.
 correlation references needed for review and audit. The schema has no field for chain-of-thought,
 full prompts, document bodies or complete model responses, and rejects those unexpected fields.
 
+## Version and evolution policy
+
+Governance Finding wire versions use `MAJOR.MINOR` independently from the Python package version.
+Generic ingestion must call `parse_governance_finding`, which requires an explicit supported
+`schema_version` and fails closed for missing or unknown versions.
+
+Version `1.0` is immutable. Its generated schema is checked in at
+`contracts/governance-intelligence/v1.schema.json` and bound by SHA-256 in
+`contracts/governance-intelligence/compatibility-policy.json`.
+
+Within a major, a newer consumer must retain and dispatch every earlier supported minor model.
+Older consumers are not expected to accept newer minor payloads. Changes to existing meaning,
+required fields or accepted data require a new major. No version increment permits authority state
+or weakens `trust_level="untrusted"` and `advisory_only=true`.
+
+See ADR 0056 and the PH-2 contract-evolution runbook for the complete lifecycle and change process.
+
 ## Checked-in implementation
 
 - Python models: `packages/governance-schemas/src/governance_schemas/governance_intelligence.py`;
@@ -122,11 +139,15 @@ full prompts, document bodies or complete model responses, and rejects those une
 - contract tests: `apps/api/tests/test_governance_intelligence_contract.py`;
 - cross-repository compatibility gate:
   `scripts/verify_governance_intelligence_compatibility.py`;
+- version-evolution gate:
+  `scripts/verify_governance_intelligence_contract_evolution.py`;
+- version-evolution tests:
+  `apps/api/tests/test_governance_intelligence_contract_evolution.py`;
 - architecture tests: `apps/api/tests/test_architecture.py`;
-- architectural decisions: `docs/adr/0054-governance-intelligence-trust-boundary.md` and
-  `docs/adr/0055-governance-intelligence-cross-repository-compatibility-gate.md`.
+- architectural decisions: `docs/adr/0054-governance-intelligence-trust-boundary.md`,
+  `docs/adr/0055-governance-intelligence-cross-repository-compatibility-gate.md` and
+  `docs/adr/0056-governance-intelligence-versioned-contract-evolution.md`.
 
 The PH-1 gate builds and installs the wheel into an ephemeral target, then validates this fixture
-from isolated Python processes rooted in current external consumer checkouts. It protects the v1
-advisory boundary and artifact portability. Cross-version compatibility and evolution rules remain
-PH-2.
+from isolated Python processes rooted in current external consumer checkouts. PH-2 separately
+protects immutable version artifacts, public dispatch and evolution rules.

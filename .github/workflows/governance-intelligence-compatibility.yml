@@ -7,6 +7,7 @@ on:
       - contracts/governance-intelligence/**
       - packages/governance-schemas/**
       - scripts/governance_intelligence_consumer_probe.py
+      - scripts/verify_governance_intelligence_contract_evolution.py
       - scripts/verify_governance_intelligence_compatibility.py
       - uv.lock
   push:
@@ -17,6 +18,7 @@ on:
       - contracts/governance-intelligence/**
       - packages/governance-schemas/**
       - scripts/governance_intelligence_consumer_probe.py
+      - scripts/verify_governance_intelligence_contract_evolution.py
       - scripts/verify_governance_intelligence_compatibility.py
       - uv.lock
   schedule:
@@ -60,8 +62,9 @@ jobs:
       - name: Synchronize locked Governance environment
         run: uv sync --all-packages --locked
 
-      - name: Verify wheel against current external consumers
-        run: >-
-          uv run --frozen python scripts/verify_governance_intelligence_compatibility.py
-          --consumer-repo policy-model-router=.compatibility/policy-model-router
-          --consumer-repo multi-agent-credit-desk=.compatibility/multi-agent-credit-desk
+      - name: Verify contract evolution and current external consumers
+        run: |
+          uv run --frozen python scripts/verify_governance_intelligence_contract_evolution.py
+          uv run --frozen python scripts/verify_governance_intelligence_compatibility.py \
+            --consumer-repo policy-model-router=.compatibility/policy-model-router \
+            --consumer-repo multi-agent-credit-desk=.compatibility/multi-agent-credit-desk

@@ -2,7 +2,7 @@
 
 - **Status:** Current
 - **Owner:** Product and architecture
-- **Last reviewed:** 2026-08-16
+- **Last reviewed:** 2026-08-17
 - **Review trigger:** Quarterly planning or material dependency change
 
 This roadmap communicates product outcomes. Accepted ADRs, the capability matrix and the technical
@@ -50,7 +50,8 @@ existing deterministic fixtures as live integration proof.
   consumer-owned application port;
 - PH-1 establishes an artifact-first cross-repository compatibility gate against the current
   Policy Model Router and Credit Desk checkouts;
-- PH-2 defines versioned contract compatibility and evolution rules;
+- PH-2 establishes immutable schema snapshots, fail-closed version dispatch and explicit
+  backward-reader compatibility/evolution rules;
 - GI-1 introduces a governed knowledge foundation with source resolution, version and digest
   verification before any agent or retrieval adapter is connected;
 - keep agent/model output untrusted and route every accepted recommendation through existing human
