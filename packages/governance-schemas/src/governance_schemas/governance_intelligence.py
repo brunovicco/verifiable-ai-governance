@@ -1,7 +1,9 @@
 """Strict advisory contracts for untrusted Governance Intelligence findings."""
 
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
+from types import MappingProxyType
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -116,3 +118,40 @@ class GovernanceFindingEnvelope(_AdvisoryContractModel):
 
     schema_version: Literal["1.0"] = GOVERNANCE_FINDING_SCHEMA_VERSION
     candidate: GovernanceFindingCandidate
+
+
+class UnsupportedGovernanceFindingSchemaVersion(ValueError):
+    """Report an absent or unsupported Governance Finding wire version."""
+
+    def __init__(self, received_version: object) -> None:
+        rendered = repr(received_version)
+        if len(rendered) > 80:
+            rendered = f"{rendered[:77]}..."
+        super().__init__(f"Unsupported Governance Finding schema version: {rendered}")
+
+
+_GOVERNANCE_FINDING_ENVELOPE_MODELS: Mapping[
+    str, type[GovernanceFindingEnvelope]
+] = MappingProxyType(
+    {
+        GOVERNANCE_FINDING_SCHEMA_VERSION: GovernanceFindingEnvelope,
+    }
+)
+SUPPORTED_GOVERNANCE_FINDING_SCHEMA_VERSIONS: frozenset[str] = frozenset(
+    _GOVERNANCE_FINDING_ENVELOPE_MODELS
+)
+
+
+def parse_governance_finding(
+    payload: Mapping[str, object],
+) -> GovernanceFindingEnvelope:
+    """Parse one explicitly versioned finding or fail closed for unknown versions."""
+    schema_version = payload.get("schema_version")
+    model = (
+        _GOVERNANCE_FINDING_ENVELOPE_MODELS.get(schema_version)
+        if isinstance(schema_version, str)
+        else None
+    )
+    if model is None:
+        raise UnsupportedGovernanceFindingSchemaVersion(schema_version)
+    return model.model_validate(dict(payload))

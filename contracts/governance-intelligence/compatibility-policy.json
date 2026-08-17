@@ -1,0 +1,21 @@
+{
+  "policy_version": "1.0",
+  "contract": "governance-finding",
+  "current_schema_version": "1.0",
+  "versions": [
+    {
+      "schema_version": "1.0",
+      "status": "current",
+      "model": "governance_schemas:GovernanceFindingEnvelope",
+      "schema": "v1.schema.json",
+      "schema_sha256": "b46b60cc38b0dfad3f45bcdfdcff5ec87317f2d4d2dfdc4c6fde6b8e5da82af3",
+      "examples": [
+        "examples/risk-candidate-v1.json"
+      ],
+      "read_compatible_with": [
+        "1.0"
+      ],
+      "introduced_in_package": "0.1.0"
+    }
+  ]
+}

@@ -77,7 +77,8 @@ The normal repository quality gate also runs the artifact proof with an ephemera
 | consumer path invalid | checkout path and `pyproject.toml` presence |
 
 Do not weaken a negative assertion to make an incompatible change pass. If the intended change
-alters v1 compatibility or package boundaries, stop and make the PH-2 evolution decision first.
+alters v1 compatibility or package boundaries, follow ADR 0056 and the PH-2 evolution runbook;
+introduce a new version instead of overwriting an existing snapshot.
 
 Temporary build/install directories are removed automatically. A failed run does not require
 consumer cleanup.

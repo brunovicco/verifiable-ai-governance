@@ -33,6 +33,10 @@ CHECKS = (
         ),
     ),
     Check(
+        "governance-intelligence-evolution",
+        (sys.executable, "scripts/verify_governance_intelligence_contract_evolution.py"),
+    ),
+    Check(
         "governance-intelligence-compatibility",
         (sys.executable, "scripts/verify_governance_intelligence_compatibility.py"),
     ),

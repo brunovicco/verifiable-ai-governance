@@ -1,0 +1,331 @@
+{
+  "$defs": {
+    "AgentRunProvenance": {
+      "additionalProperties": false,
+      "description": "Content-minimized provenance for the agent run that produced a finding.",
+      "properties": {
+        "agent_name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Agent Name",
+          "type": "string"
+        },
+        "agent_run_id": {
+          "format": "uuid",
+          "title": "Agent Run Id",
+          "type": "string"
+        },
+        "correlation_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "model_version": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Version"
+        },
+        "prompt_config_version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Prompt Config Version",
+          "type": "string"
+        },
+        "provider": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Provider",
+          "type": "string"
+        },
+        "retrieval_query_reference": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Retrieval Query Reference"
+        },
+        "retrieved_sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/GovernanceSourceReference"
+          },
+          "title": "Retrieved Sources",
+          "type": "array"
+        },
+        "tool_call_references": {
+          "default": [],
+          "items": {
+            "maxLength": 200,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+            "type": "string"
+          },
+          "title": "Tool Call References",
+          "type": "array"
+        }
+      },
+      "required": [
+        "agent_run_id",
+        "agent_name",
+        "provider",
+        "model",
+        "prompt_config_version",
+        "created_at",
+        "correlation_id"
+      ],
+      "title": "AgentRunProvenance",
+      "type": "object"
+    },
+    "ExternalTaxonomyReference": {
+      "additionalProperties": false,
+      "description": "Vendor-neutral locator for an item in an external taxonomy.",
+      "properties": {
+        "identifier": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Identifier",
+          "type": "string"
+        },
+        "provider": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Provider",
+          "type": "string"
+        },
+        "reference_uri": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "minLength": 3,
+              "pattern": "^(?:https?://|urn:)[^\\s]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reference Uri"
+        },
+        "taxonomy": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Taxonomy",
+          "type": "string"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        }
+      },
+      "required": [
+        "provider",
+        "taxonomy",
+        "identifier"
+      ],
+      "title": "ExternalTaxonomyReference",
+      "type": "object"
+    },
+    "GovernanceFindingCandidate": {
+      "additionalProperties": false,
+      "description": "Validated recommendation that has no governance decision authority.",
+      "properties": {
+        "advisory_only": {
+          "const": true,
+          "default": true,
+          "title": "Advisory Only",
+          "type": "boolean"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "external_taxonomy_references": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ExternalTaxonomyReference"
+          },
+          "title": "External Taxonomy References",
+          "type": "array"
+        },
+        "finding_id": {
+          "format": "uuid",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "finding_type": {
+          "$ref": "#/$defs/GovernanceFindingType"
+        },
+        "provenance": {
+          "$ref": "#/$defs/AgentRunProvenance"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/GovernanceSourceReference"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "statement": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        },
+        "trust_level": {
+          "const": "untrusted",
+          "default": "untrusted",
+          "title": "Trust Level",
+          "type": "string"
+        }
+      },
+      "required": [
+        "finding_id",
+        "finding_type",
+        "statement",
+        "confidence",
+        "sources",
+        "provenance"
+      ],
+      "title": "GovernanceFindingCandidate",
+      "type": "object"
+    },
+    "GovernanceFindingType": {
+      "description": "Small initial taxonomy of advisory Governance Intelligence findings.",
+      "enum": [
+        "policy_interpretation",
+        "risk_candidate",
+        "control_candidate",
+        "evidence_gap",
+        "evidence_interpretation",
+        "intake_suggestion"
+      ],
+      "title": "GovernanceFindingType",
+      "type": "string"
+    },
+    "GovernanceSourceReference": {
+      "additionalProperties": false,
+      "description": "Content-free locator for a versioned source supporting a finding.",
+      "properties": {
+        "artifact_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Digest",
+          "type": "string"
+        },
+        "node_id": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Node Id"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section"
+        },
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "version",
+        "content_digest"
+      ],
+      "title": "GovernanceSourceReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Versioned wire envelope for one untrusted advisory finding candidate.",
+  "properties": {
+    "candidate": {
+      "$ref": "#/$defs/GovernanceFindingCandidate"
+    },
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "candidate"
+  ],
+  "title": "GovernanceFindingEnvelope",
+  "type": "object"
+}
