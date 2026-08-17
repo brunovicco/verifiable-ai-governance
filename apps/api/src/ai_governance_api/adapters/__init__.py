@@ -34,6 +34,9 @@ from ai_governance_api.adapters.governance_intelligence_audit import (
 from ai_governance_api.adapters.governance_intelligence_review_audit import (
     SqlAlchemyGovernanceFindingReviewAudit,
 )
+from ai_governance_api.adapters.governance_intelligence_review_authorization import (
+    SqlAlchemyInitiativeFindingReviewAuthorizer,
+)
 from ai_governance_api.adapters.governance_knowledge_evidence import (
     VerifiedEvidenceKnowledgeAdapter,
     governance_reference_for_evidence,
@@ -70,6 +73,7 @@ __all__ = [
     "SqlAlchemyEvidenceStore",
     "SqlAlchemyGovernanceFindingReviewAudit",
     "SqlAlchemyGovernanceIntelligenceAudit",
+    "SqlAlchemyInitiativeFindingReviewAuthorizer",
     "SqlAlchemyIncidentAudit",
     "SqlAlchemyIncidentRepository",
     "SqlAlchemyInitiativeControlContextStore",

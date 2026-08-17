@@ -28,6 +28,9 @@ GOVERNANCE_FINDING_REVIEW_APPLICATION_SOURCE = (
 GOVERNANCE_FINDING_REVIEW_AUDIT_ADAPTER_SOURCE = (
     API_SOURCE / "adapters/governance_intelligence_review_audit.py"
 )
+GOVERNANCE_FINDING_REVIEW_AUTHORIZATION_ADAPTER_SOURCE = (
+    API_SOURCE / "adapters/governance_intelligence_review_authorization.py"
+)
 VERIFIED_EVIDENCE_KNOWLEDGE_ADAPTER_SOURCE = (
     API_SOURCE / "adapters/governance_knowledge_evidence.py"
 )
@@ -424,6 +427,62 @@ def test_finding_review_exposes_non_authoritative_dispositions_only() -> None:
     assert "ApprovalStatus" not in source
 
 
+def test_initiative_finding_review_authorizer_exposes_content_free_policy_only() -> None:
+    source = GOVERNANCE_FINDING_REVIEW_AUTHORIZATION_ADAPTER_SOURCE.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    adapter = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef)
+        and node.name == "SqlAlchemyInitiativeFindingReviewAuthorizer"
+    )
+    public_async_methods = {
+        node.name
+        for node in adapter.body
+        if isinstance(node, ast.AsyncFunctionDef) and not node.name.startswith("_")
+    }
+
+    assert public_async_methods == {"can_review"}
+    assert "Initiative.business_owner_id" in source
+    assert "Initiative.name" not in source
+    assert "Initiative.description" not in source
+    assert "GovernanceFindingCandidate" not in source
+    assert "GovernanceFindingEnvelope" not in source
+    assert "SignedRuntimeAuthorization" not in source
+    assert "ApprovalStatus" not in source
+
+
+def test_initiative_finding_review_authorizer_has_no_probabilistic_dependencies() -> None:
+    source = GOVERNANCE_FINDING_REVIEW_AUTHORIZATION_ADAPTER_SOURCE.read_text(encoding="utf-8")
+    imports = {
+        node.module.split(".")[0]
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+    imports.update(
+        alias.name.split(".")[0]
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    )
+
+    assert imports.isdisjoint(
+        {
+            "anthropic",
+            "chromadb",
+            "deep_agents",
+            "deepagents",
+            "langchain",
+            "langgraph",
+            "llama_index",
+            "openai",
+            "pinecone",
+            "qdrant_client",
+            "weaviate",
+        }
+    )
+
+
 def test_governance_intelligence_composition_has_no_delivery_exposure() -> None:
     delivery_paths = (
         API_SOURCE / "main.py",
@@ -435,6 +494,7 @@ def test_governance_intelligence_composition_has_no_delivery_exposure() -> None:
         assert "build_governance_intelligence_analysis" not in source
         assert "RunGovernanceIntelligenceAnalysis" not in source
         assert "build_governance_finding_review" not in source
+        assert "build_initiative_governance_finding_review" not in source
         assert "ReviewGovernanceFinding" not in source
 
 

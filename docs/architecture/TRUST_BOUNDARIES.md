@@ -165,6 +165,13 @@ reviewer authorization and commits a SHA-256-bound minimized receipt. A disposit
 an authoritative use case, and the receipt stores no finding content. There is still no review
 endpoint, queue, provider or finding table.
 
+GI-3A supplies the first concrete review policy for initiative subjects. Only the exact initiative
+owner or an authenticated administrator may review, after a minimal ownership lookup in a
+short-lived session. Missing subjects and unauthorized actors are indistinguishable, every finding
+type uses the same policy and denial writes no receipt. Owner review is advisory triage, not an
+exception to segregation of duties in later authoritative decisions. The internal builder remains
+unregistered at every delivery boundary.
+
 ## Authority model
 
 | Layer | Authority |
