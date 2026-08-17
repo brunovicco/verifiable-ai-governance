@@ -153,6 +153,10 @@ operation, then rejects candidates whose type, citations, retrieved-source prove
 correlation do not match the verified input. Only a completed content-minimized audit permits
 release of versioned advisory envelopes.
 
+GI-2A adds only an internal composition policy: fail-closed source, finding and timeout settings
+and one request-scoped audit unit shared by the audit and transaction ports. It still selects no
+provider and registers no endpoint, task or scheduler.
+
 ## Authority model
 
 | Layer | Authority |

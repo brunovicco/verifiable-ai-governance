@@ -32,6 +32,7 @@ from ai_governance_api.adapters import (
     SqlAlchemyDirectoryAuthorizationCacheTransaction,
     SqlAlchemyEvidenceAudit,
     SqlAlchemyEvidenceStore,
+    SqlAlchemyGovernanceIntelligenceAudit,
     SqlAlchemyIncidentAudit,
     SqlAlchemyIncidentRepository,
     SqlAlchemyInitiativeControlContextStore,
@@ -97,6 +98,8 @@ from ai_governance_api.application import (
     DirectoryAuthorizationCacheUnavailable,
     EvaluateInitiativeControls,
     GetControlCrosswalk,
+    GovernanceIntelligencePort,
+    GovernedKnowledgeResolutionPort,
     IncidentService,
     InvalidateDirectoryAuthorization,
     ListAssessments,
@@ -111,6 +114,7 @@ from ai_governance_api.application import (
     ResolveGovernanceKnowledgeSources,
     RestoreDirectoryAccess,
     ReuseDirectoryAuthorization,
+    RunGovernanceIntelligenceAnalysis,
     SaveAssessment,
     SubmitAssessment,
     UploadEvidence,
@@ -976,4 +980,23 @@ def get_resolve_verified_evidence_knowledge(
         max_sources=settings.governance_knowledge_max_sources,
         max_source_bytes=settings.governance_knowledge_max_source_bytes,
         max_total_bytes=settings.governance_knowledge_max_total_bytes,
+    )
+
+
+def build_governance_intelligence_analysis(
+    knowledge: GovernedKnowledgeResolutionPort,
+    intelligence: GovernanceIntelligencePort,
+) -> RunGovernanceIntelligenceAnalysis:
+    """Compose governed analysis without exposing a provider or HTTP dependency."""
+    settings = get_settings()
+    audit = SqlAlchemyGovernanceIntelligenceAudit(SessionFactory)
+    analysis_timeout_seconds = settings.governance_intelligence_analysis_timeout_seconds
+    return RunGovernanceIntelligenceAnalysis(
+        knowledge,
+        intelligence,
+        audit,
+        audit,
+        max_sources=settings.governance_knowledge_max_sources,
+        max_findings=settings.governance_intelligence_max_findings,
+        analysis_timeout_seconds=analysis_timeout_seconds,
     )

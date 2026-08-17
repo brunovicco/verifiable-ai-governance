@@ -61,6 +61,8 @@ existing deterministic fixtures as live integration proof.
 - GI-2 adds an audited, purpose-bound application orchestrator that accepts only verified sources
   and releases only source-bound, provenance-consistent advisory envelopes, without adding a
   provider or endpoint;
+- GI-2A composes that orchestrator with fail-closed deployment limits and one request-scoped audit
+  unit, while remaining inert without an explicitly supplied provider and consumer;
 - keep agent/model output untrusted and route every accepted recommendation through existing human
   or deterministic governance decisions.
 

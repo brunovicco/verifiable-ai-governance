@@ -9,6 +9,7 @@ from typing import cast
 from uuid import UUID
 
 import pytest
+from ai_governance_api import dependencies
 from ai_governance_api.adapters.governance_intelligence_audit import (
     SqlAlchemyGovernanceIntelligenceAudit,
 )
@@ -30,6 +31,7 @@ from ai_governance_api.application.governance_knowledge import (
     ResolveGovernanceKnowledgeSources,
     VerifiedGovernanceKnowledgeSource,
 )
+from ai_governance_api.config import Settings
 from ai_governance_api.database import SessionFactory
 from ai_governance_api.models import AuditEvent
 from governance_schemas import (
@@ -928,3 +930,78 @@ async def test_sqlalchemy_audit_persists_only_content_minimized_analysis_facts()
     assert "storage_bucket" not in serialized
     assert "storage_key" not in serialized
     assert "prompt" not in serialized
+
+
+@pytest.mark.parametrize(
+    ("override", "value"),
+    [
+        ("governance_intelligence_max_findings", 0),
+        ("governance_intelligence_max_findings", 101),
+        ("governance_intelligence_analysis_timeout_seconds", 0),
+        ("governance_intelligence_analysis_timeout_seconds", 301),
+    ],
+)
+def test_governance_intelligence_composition_limits_fail_closed(
+    override: str,
+    value: int,
+) -> None:
+    """Reject deployment values outside the use-case policy boundary."""
+    with pytest.raises(ValueError):
+        Settings(**{override: value})
+
+
+async def test_composition_root_runs_verified_analysis_with_durable_stage_audit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Wire GI-1, GI-2, bounded policy, and one request-scoped audit unit together."""
+    correlation_id = "corr:gi-2a-composition"
+    settings = Settings(
+        governance_knowledge_max_sources=4,
+        governance_intelligence_max_findings=5,
+        governance_intelligence_analysis_timeout_seconds=1,
+    )
+    monkeypatch.setattr(dependencies, "get_settings", lambda: settings)
+    trace: list[str] = []
+    source_reference = reference()
+    knowledge, content = governed_knowledge(source_reference, trace)
+    intelligence = FakeIntelligence(
+        (candidate(source_reference, correlation_id=correlation_id),),
+        trace,
+    )
+
+    service = dependencies.build_governance_intelligence_analysis(
+        knowledge,
+        intelligence,
+    )
+    composition = vars(service)
+    assert composition["_audit"] is composition["_transaction"]
+    assert composition["_max_sources"] == 4
+    assert composition["_max_findings"] == 5
+    assert composition["_analysis_timeout_seconds"] == 1
+
+    result = await service.execute(
+        analysis_type=GovernanceIntelligenceAnalysisType.EVIDENCE_ANALYSIS,
+        references=(source_reference,),
+        access=GovernanceKnowledgeAccess(
+            actor_id=ACTOR_ID,
+            subject_id=SUBJECT_ID,
+            correlation_id=correlation_id,
+        ),
+    )
+
+    assert result[0].candidate.finding_id == FINDING_ID
+    assert content.closed
+    async with SessionFactory() as session:
+        events = (
+            await session.scalars(
+                select(AuditEvent)
+                .where(AuditEvent.entity_id == correlation_id)
+                .order_by(AuditEvent.entity_version)
+            )
+        ).all()
+
+    assert [event.action for event in events] == [
+        "governance_intelligence.analysis_requested",
+        "governance_intelligence.sources_verified",
+        "governance_intelligence.analysis_completed",
+    ]
