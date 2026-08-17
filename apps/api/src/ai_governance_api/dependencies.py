@@ -32,6 +32,7 @@ from ai_governance_api.adapters import (
     SqlAlchemyDirectoryAuthorizationCacheTransaction,
     SqlAlchemyEvidenceAudit,
     SqlAlchemyEvidenceStore,
+    SqlAlchemyGovernanceFindingReviewAudit,
     SqlAlchemyGovernanceIntelligenceAudit,
     SqlAlchemyIncidentAudit,
     SqlAlchemyIncidentRepository,
@@ -98,6 +99,7 @@ from ai_governance_api.application import (
     DirectoryAuthorizationCacheUnavailable,
     EvaluateInitiativeControls,
     GetControlCrosswalk,
+    GovernanceFindingReviewAuthorizerPort,
     GovernanceIntelligencePort,
     GovernedKnowledgeResolutionPort,
     IncidentService,
@@ -114,6 +116,7 @@ from ai_governance_api.application import (
     ResolveGovernanceKnowledgeSources,
     RestoreDirectoryAccess,
     ReuseDirectoryAuthorization,
+    ReviewGovernanceFinding,
     RunGovernanceIntelligenceAnalysis,
     SaveAssessment,
     SubmitAssessment,
@@ -1000,3 +1003,11 @@ def build_governance_intelligence_analysis(
         max_findings=settings.governance_intelligence_max_findings,
         analysis_timeout_seconds=analysis_timeout_seconds,
     )
+
+
+def build_governance_finding_review(
+    authorizer: GovernanceFindingReviewAuthorizerPort,
+) -> ReviewGovernanceFinding:
+    """Compose internal advisory review without exposing a delivery dependency."""
+    audit = SqlAlchemyGovernanceFindingReviewAudit(SessionFactory)
+    return ReviewGovernanceFinding(authorizer, audit, audit)

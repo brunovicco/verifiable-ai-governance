@@ -127,8 +127,10 @@ flowchart TD
   ANALYZE --> VALIDATE["Schema + purpose + citation + provenance validation"]
   VALIDATE --> OUTCOME_AUDIT["Content-minimized outcome audit"]
   OUTCOME_AUDIT --> CANDIDATE["GovernanceFindingEnvelope — advisory and untrusted"]
-  CANDIDATE --> REVIEW["Human or deterministic review"]
-  REVIEW --> DECISION["Governed decision"]
+  CANDIDATE --> REVIEW_AUTH["Content-free reviewer authorization"]
+  REVIEW_AUTH --> REVIEW["Non-authoritative review disposition"]
+  REVIEW --> REVIEW_AUDIT["Digest-bound minimized review receipt"]
+  REVIEW_AUDIT -. separate governed workflow .-> DECISION["Governed decision"]
 ```
 
 Schema validation establishes shape, not truth or authority. Source validation and digest
@@ -156,6 +158,12 @@ release of versioned advisory envelopes.
 GI-2A adds only an internal composition policy: fail-closed source, finding and timeout settings
 and one request-scoped audit unit shared by the audit and transaction ports. It still selects no
 provider and registers no endpoint, task or scheduler.
+
+GI-3 adds an internal review boundary with closed `accepted_for_consideration`, `rejected` and
+`deferred` dispositions. It revalidates advisory fields and correlation, requires consumer-owned
+reviewer authorization and commits a SHA-256-bound minimized receipt. A disposition does not call
+an authoritative use case, and the receipt stores no finding content. There is still no review
+endpoint, queue, provider or finding table.
 
 ## Authority model
 

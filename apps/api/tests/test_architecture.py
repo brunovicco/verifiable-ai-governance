@@ -22,6 +22,12 @@ GOVERNANCE_INTELLIGENCE_APPLICATION_SOURCE = (
 GOVERNANCE_INTELLIGENCE_AUDIT_ADAPTER_SOURCE = (
     API_SOURCE / "adapters/governance_intelligence_audit.py"
 )
+GOVERNANCE_FINDING_REVIEW_APPLICATION_SOURCE = (
+    API_SOURCE / "application/governance_intelligence_review.py"
+)
+GOVERNANCE_FINDING_REVIEW_AUDIT_ADAPTER_SOURCE = (
+    API_SOURCE / "adapters/governance_intelligence_review_audit.py"
+)
 VERIFIED_EVIDENCE_KNOWLEDGE_ADAPTER_SOURCE = (
     API_SOURCE / "adapters/governance_knowledge_evidence.py"
 )
@@ -173,6 +179,7 @@ def test_policy_model_router_requires_explicit_per_agent_credentials() -> None:
         "application/incidents.py",
         "application/dashboard.py",
         "application/governance_intelligence.py",
+        "application/governance_intelligence_review.py",
         "application/governance_knowledge.py",
     ],
 )
@@ -198,6 +205,7 @@ def test_application_core_does_not_import_delivery_or_persistence_frameworks(
 def test_governance_intelligence_core_has_no_agentic_framework_dependencies() -> None:
     sources = (
         (API_SOURCE / "application/governance_intelligence.py").read_text(encoding="utf-8"),
+        GOVERNANCE_FINDING_REVIEW_APPLICATION_SOURCE.read_text(encoding="utf-8"),
         (API_SOURCE / "application/governance_knowledge.py").read_text(encoding="utf-8"),
         GOVERNANCE_INTELLIGENCE_SCHEMA_SOURCE.read_text(encoding="utf-8"),
     )
@@ -382,6 +390,40 @@ def test_governed_analysis_orchestration_exposes_advisory_execution_only() -> No
     assert "Approval" not in source
 
 
+def test_finding_review_exposes_non_authoritative_dispositions_only() -> None:
+    source = GOVERNANCE_FINDING_REVIEW_APPLICATION_SOURCE.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    use_case = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef) and node.name == "ReviewGovernanceFinding"
+    )
+    disposition = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef) and node.name == "GovernanceFindingReviewDisposition"
+    )
+    public_async_methods = {
+        node.name
+        for node in use_case.body
+        if isinstance(node, ast.AsyncFunctionDef) and not node.name.startswith("_")
+    }
+    disposition_names = {
+        target.id
+        for node in disposition.body
+        if isinstance(node, ast.Assign)
+        for target in node.targets
+        if isinstance(target, ast.Name)
+    }
+
+    assert public_async_methods == {"execute"}
+    assert disposition_names == {"ACCEPTED_FOR_CONSIDERATION", "REJECTED", "DEFERRED"}
+    assert disposition_names.isdisjoint({"APPROVED", "AUTHORIZED", "COMPLIANT", "RELEASED"})
+    assert "SignedRuntimeAuthorization" not in source
+    assert "RuntimeControl" not in source
+    assert "ApprovalStatus" not in source
+
+
 def test_governance_intelligence_composition_has_no_delivery_exposure() -> None:
     delivery_paths = (
         API_SOURCE / "main.py",
@@ -392,6 +434,8 @@ def test_governance_intelligence_composition_has_no_delivery_exposure() -> None:
         source = path.read_text(encoding="utf-8")
         assert "build_governance_intelligence_analysis" not in source
         assert "RunGovernanceIntelligenceAnalysis" not in source
+        assert "build_governance_finding_review" not in source
+        assert "ReviewGovernanceFinding" not in source
 
 
 def test_governance_intelligence_audit_adapter_cannot_persist_content_fields() -> None:
@@ -399,6 +443,21 @@ def test_governance_intelligence_audit_adapter_cannot_persist_content_fields() -
 
     assert "source.content" not in source
     assert "finding.statement" not in source
+    assert "full_prompt" not in source
+    assert "chain_of_thought" not in source
+    assert "storage_bucket" not in source
+    assert "storage_key" not in source
+
+
+def test_finding_review_audit_adapter_cannot_persist_finding_content() -> None:
+    source = GOVERNANCE_FINDING_REVIEW_AUDIT_ADAPTER_SOURCE.read_text(encoding="utf-8")
+
+    assert "finding.statement" not in source
+    assert '"statement"' not in source
+    assert '"confidence"' not in source
+    assert '"sources"' not in source
+    assert '"provider"' not in source
+    assert '"model"' not in source
     assert "full_prompt" not in source
     assert "chain_of_thought" not in source
     assert "storage_bucket" not in source

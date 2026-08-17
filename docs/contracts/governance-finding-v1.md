@@ -127,6 +127,14 @@ provenance `retrieved_sources` must equal the complete verified input; provenanc
 match the authenticated request. Findings are returned only after a content-minimized completion
 audit is committed. These are application invariants and do not change the `1.0` wire schema.
 
+GI-3 adds a consumer-owned review boundary without changing this wire contract. It reconstructs
+the envelope through the closed schema, requires provenance correlation to match authenticated
+review context, authorizes the reviewer through a content-free port and records a digest-bound
+minimized receipt. `accepted_for_consideration`, `rejected` and `deferred` describe review of the
+advisory finding only. None represents a governed approval, authorization, compliance conclusion
+or subject lifecycle transition. Finding content remains ephemeral; the audit receipt stores only
+identities, disposition, trace facts and the SHA-256 envelope digest.
+
 ## Provenance and minimization
 
 `AgentRunProvenance` records stable run, agent, model/configuration, source, tool-call, time and
@@ -167,7 +175,7 @@ See ADR 0056 and the PH-2 contract-evolution runbook for the complete lifecycle 
 - architectural decisions: `docs/adr/0054-governance-intelligence-trust-boundary.md`,
   `docs/adr/0055-governance-intelligence-cross-repository-compatibility-gate.md` and
   `docs/adr/0056-governance-intelligence-versioned-contract-evolution.md`, plus the downstream
-  source/orchestration decisions in ADRs 0057 through 0059.
+  source/orchestration/review decisions in ADRs 0057 through 0060.
 
 The PH-1 gate builds and installs the wheel into an ephemeral target, then validates this fixture
 from isolated Python processes rooted in current external consumer checkouts. PH-2 separately

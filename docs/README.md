@@ -65,6 +65,7 @@ relevant ADR instead of duplicating detailed rationale.
 - [Governed knowledge foundation](operations/GI_1_GOVERNED_KNOWLEDGE_FOUNDATION.md)
 - [Verified evidence source adapter](operations/GI_1A_VERIFIED_EVIDENCE_SOURCE_ADAPTER.md)
 - [Governed advisory analysis](operations/GI_2_GOVERNED_ADVISORY_ANALYSIS.md)
+- [Advisory finding review boundary](operations/GI_3_ADVISORY_FINDING_REVIEW.md)
 - [Runtime authorization v1](contracts/runtime-authorization-v1.md)
 - [Runtime violation v1](contracts/runtime-violation-v1.md)
 

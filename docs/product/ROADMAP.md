@@ -63,6 +63,9 @@ existing deterministic fixtures as live integration proof.
   provider or endpoint;
 - GI-2A composes that orchestrator with fail-closed deployment limits and one request-scoped audit
   unit, while remaining inert without an explicitly supplied provider and consumer;
+- GI-3 adds a consumer-owned, authorized advisory review boundary with closed non-authoritative
+  dispositions and digest-bound minimized receipts, without finding-content persistence or
+  delivery exposure;
 - keep agent/model output untrusted and route every accepted recommendation through existing human
   or deterministic governance decisions.
 
