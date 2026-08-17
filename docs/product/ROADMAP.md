@@ -2,7 +2,7 @@
 
 - **Status:** Current
 - **Owner:** Product and architecture
-- **Last reviewed:** 2026-08-11
+- **Last reviewed:** 2026-08-16
 - **Review trigger:** Quarterly planning or material dependency change
 
 This roadmap communicates product outcomes. Accepted ADRs, the capability matrix and the technical
@@ -43,6 +43,17 @@ New work in this area should improve evidence quality or operational depth rathe
 existing deterministic fixtures as live integration proof.
 
 ## Next - deepen enterprise integration and portable audit outcomes
+
+### Outcome: Governance Intelligence grows from an explicit non-authoritative boundary
+
+- GI-0 establishes closed, versioned advisory finding/source/provenance contracts and a
+  consumer-owned application port;
+- PH-1 adds a cross-repository compatibility gate before external consumers rely on the contract;
+- PH-2 defines versioned contract compatibility and evolution rules;
+- GI-1 introduces a governed knowledge foundation with source resolution, version and digest
+  verification before any agent or retrieval adapter is connected;
+- keep agent/model output untrusted and route every accepted recommendation through existing human
+  or deterministic governance decisions.
 
 ### Outcome: enterprise identity is validated beyond local testing
 

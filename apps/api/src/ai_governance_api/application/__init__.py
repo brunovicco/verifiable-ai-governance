@@ -72,6 +72,7 @@ from ai_governance_api.application.evidence import (
     ObjectStoragePort,
     UploadEvidence,
 )
+from ai_governance_api.application.governance_intelligence import GovernanceIntelligencePort
 from ai_governance_api.application.incidents import (
     IncidentAuditPort,
     IncidentRepositoryPort,
@@ -128,6 +129,7 @@ __all__ = [
     "EvidenceStore",
     "EvidenceTransactionPort",
     "GetControlCrosswalk",
+    "GovernanceIntelligencePort",
     "InitiativeControlContextStore",
     "IdentityProviderUnavailable",
     "IncidentAuditPort",
