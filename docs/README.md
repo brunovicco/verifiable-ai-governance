@@ -62,6 +62,7 @@ relevant ADR instead of duplicating detailed rationale.
 - [Governance finding v1](contracts/governance-finding-v1.md)
 - [Governance Intelligence compatibility gate](operations/PH_1_GOVERNANCE_INTELLIGENCE_COMPATIBILITY.md)
 - [Governance Intelligence contract evolution](operations/PH_2_GOVERNANCE_INTELLIGENCE_CONTRACT_EVOLUTION.md)
+- [Governed knowledge foundation](operations/GI_1_GOVERNED_KNOWLEDGE_FOUNDATION.md)
 - [Runtime authorization v1](contracts/runtime-authorization-v1.md)
 - [Runtime violation v1](contracts/runtime-violation-v1.md)
 

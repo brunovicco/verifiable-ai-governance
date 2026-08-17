@@ -2,7 +2,11 @@
 
 from typing import Protocol
 
-from governance_schemas import GovernanceFindingCandidate, GovernanceSourceReference
+from governance_schemas import GovernanceFindingCandidate
+
+from ai_governance_api.application.governance_knowledge import (
+    VerifiedGovernanceKnowledgeSource,
+)
 
 
 class GovernanceIntelligencePort(Protocol):
@@ -12,7 +16,7 @@ class GovernanceIntelligencePort(Protocol):
         self,
         *,
         subject_id: str,
-        sources: tuple[GovernanceSourceReference, ...],
+        sources: tuple[VerifiedGovernanceKnowledgeSource, ...],
         correlation_id: str,
     ) -> tuple[GovernanceFindingCandidate, ...]:
         """Suggest policy interpretations without deciding policy applicability."""
@@ -22,7 +26,7 @@ class GovernanceIntelligencePort(Protocol):
         self,
         *,
         subject_id: str,
-        sources: tuple[GovernanceSourceReference, ...],
+        sources: tuple[VerifiedGovernanceKnowledgeSource, ...],
         correlation_id: str,
     ) -> tuple[GovernanceFindingCandidate, ...]:
         """Suggest risk candidates without assigning a governed risk state."""
@@ -32,7 +36,7 @@ class GovernanceIntelligencePort(Protocol):
         self,
         *,
         subject_id: str,
-        sources: tuple[GovernanceSourceReference, ...],
+        sources: tuple[VerifiedGovernanceKnowledgeSource, ...],
         correlation_id: str,
     ) -> tuple[GovernanceFindingCandidate, ...]:
         """Suggest control candidates without approving or activating controls."""
@@ -42,7 +46,7 @@ class GovernanceIntelligencePort(Protocol):
         self,
         *,
         subject_id: str,
-        sources: tuple[GovernanceSourceReference, ...],
+        sources: tuple[VerifiedGovernanceKnowledgeSource, ...],
         correlation_id: str,
     ) -> tuple[GovernanceFindingCandidate, ...]:
         """Interpret source references without converting interpretations into evidence."""
@@ -52,7 +56,7 @@ class GovernanceIntelligencePort(Protocol):
         self,
         *,
         subject_id: str,
-        sources: tuple[GovernanceSourceReference, ...],
+        sources: tuple[VerifiedGovernanceKnowledgeSource, ...],
         correlation_id: str,
     ) -> tuple[GovernanceFindingCandidate, ...]:
         """Suggest intake data without mutating the governed system of record."""

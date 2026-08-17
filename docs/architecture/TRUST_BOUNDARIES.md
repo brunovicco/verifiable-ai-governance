@@ -110,13 +110,18 @@ the kill switch, restore runtime or mutate a governed decision.
 
 The application-owned `GovernanceIntelligencePort` exposes analysis and recommendation operations
 only. Future provider, agent and retrieval implementations remain adapters outside the
-deterministic core.
+deterministic core. It accepts only `VerifiedGovernanceKnowledgeSource` values released by the
+GI-1 application gate; raw source references are not valid analysis inputs.
 
 ```mermaid
 flowchart TD
   INPUT["LLM output / external finding / retrieved content / uploaded documents / tool output"]
   INPUT --> UNTRUSTED["UNTRUSTED DATA"]
-  UNTRUSTED --> VALIDATE["Schema validation / source validation / reference resolution / digest verification"]
+  UNTRUSTED --> REFERENCE["Closed source reference"]
+  REFERENCE --> AUTHORIZE["Actor + subject + exact-reference authorization"]
+  AUTHORIZE --> RESOLVE["Exact artifact/version resolution"]
+  RESOLVE --> VERIFY["Bounded read + actual-byte digest verification"]
+  VERIFY --> VALIDATE["Verified source + finding schema validation"]
   VALIDATE --> CANDIDATE["GovernanceFindingCandidate — advisory and untrusted"]
   CANDIDATE --> REVIEW["Human or deterministic review"]
   REVIEW --> DECISION["Governed decision"]
@@ -126,6 +131,11 @@ Schema validation establishes shape, not truth or authority. Source validation a
 verification bind a candidate to resolved bytes but do not prove that its interpretation is
 correct. An external finding is not an approved governance decision. An AI-generated
 interpretation is not evidence; the original artifact is the potential evidence.
+
+Authorization denial occurs before resolution. Denied and absent sources are indistinguishable to
+callers, batch resolution is all-or-nothing, and source content is bounded and excluded from error
+messages and object representations. Verified bytes remain ephemeral unless a separately governed
+adapter defines persistence.
 
 ## Authority model
 
@@ -147,6 +157,7 @@ interpretation is not evidence; the original artifact is the potential evidence.
 | API → Model router | Workload, risk, data class, approved group constraints, cost/latency metadata | Prompts, documents, credentials, model responses |
 | API → Logs | IDs, digests, categories, status, timing | Tokens, full assessment answers, evidence bodies, prompts and secrets |
 | Runtime → Governance | Sanitized identifiers, metrics, decisions and evidence references | Raw content unless separately approved |
+| Knowledge source → Governance Intelligence | Authorized exact-version bytes after bounded SHA-256 verification | Unresolved references, substituted versions, partial source sets and unbounded content |
 | Governance Intelligence → Governance | Versioned advisory finding, source references, bounded provenance and correlation IDs | Approval/compliance/authorization state, full prompts, chain-of-thought, document bodies, credentials and raw model responses |
 
 ## Deployment implications

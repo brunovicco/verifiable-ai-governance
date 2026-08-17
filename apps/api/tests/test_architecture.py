@@ -164,6 +164,7 @@ def test_policy_model_router_requires_explicit_per_agent_credentials() -> None:
         "application/incidents.py",
         "application/dashboard.py",
         "application/governance_intelligence.py",
+        "application/governance_knowledge.py",
     ],
 )
 def test_application_core_does_not_import_delivery_or_persistence_frameworks(
@@ -188,6 +189,7 @@ def test_application_core_does_not_import_delivery_or_persistence_frameworks(
 def test_governance_intelligence_core_has_no_agentic_framework_dependencies() -> None:
     sources = (
         (API_SOURCE / "application/governance_intelligence.py").read_text(encoding="utf-8"),
+        (API_SOURCE / "application/governance_knowledge.py").read_text(encoding="utf-8"),
         GOVERNANCE_INTELLIGENCE_SCHEMA_SOURCE.read_text(encoding="utf-8"),
     )
     for source in sources:
@@ -207,11 +209,16 @@ def test_governance_intelligence_core_has_no_agentic_framework_dependencies() ->
             {
                 "anthropic",
                 "asago",
+                "chromadb",
                 "deep_agents",
                 "deepagents",
                 "langchain",
                 "langgraph",
+                "llama_index",
                 "openai",
+                "pinecone",
+                "qdrant_client",
+                "weaviate",
             }
         )
 
@@ -249,3 +256,10 @@ def test_governance_intelligence_port_exposes_advisory_capabilities_only() -> No
             "sign_authorization",
         }
     )
+
+
+def test_governance_intelligence_port_requires_verified_knowledge_sources() -> None:
+    source = (API_SOURCE / "application/governance_intelligence.py").read_text(encoding="utf-8")
+
+    assert "VerifiedGovernanceKnowledgeSource" in source
+    assert "GovernanceSourceReference" not in source
