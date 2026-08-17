@@ -115,6 +115,11 @@ over bounded source bytes. Only `VerifiedGovernanceKnowledgeSource` values may e
 the reference but does not prove authenticity, applicability, evidentiary sufficiency or the truth
 of a generated interpretation.
 
+The first concrete mapping is GI-1A verified uploaded evidence:
+`artifact_id="evidence:<canonical UUID>"`, the decimal evidence record version and its persisted
+SHA-256 digest, without node/section selectors or storage coordinates. Eligibility and access are
+adapter rules, not new fields in the Governance Finding `1.0` wire contract.
+
 ## Provenance and minimization
 
 `AgentRunProvenance` records stable run, agent, model/configuration, source, tool-call, time and

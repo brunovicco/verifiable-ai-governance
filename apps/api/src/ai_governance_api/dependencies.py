@@ -39,6 +39,7 @@ from ai_governance_api.adapters import (
     SqlAlchemyModelRoutingDecisionStore,
     SqlAlchemyModelRoutingScopeReader,
     SqlAlchemyTransaction,
+    VerifiedEvidenceKnowledgeAdapter,
     YamlDirectoryAuthorizationCatalog,
 )
 from ai_governance_api.adapters.runtime_assurance_actuation_decision_persistence import (
@@ -107,6 +108,7 @@ from ai_governance_api.application import (
     RequireActiveDirectoryAccess,
     ResolveCorporateDirectory,
     ResolveDirectoryAuthorization,
+    ResolveGovernanceKnowledgeSources,
     RestoreDirectoryAccess,
     ReuseDirectoryAuthorization,
     SaveAssessment,
@@ -956,3 +958,22 @@ def get_list_evidence(session: DatabaseSession) -> ListEvidence:
 
 UploadEvidenceDependency = Annotated[UploadEvidence, Depends(get_upload_evidence)]
 ListEvidenceDependency = Annotated[ListEvidence, Depends(get_list_evidence)]
+
+
+def get_resolve_verified_evidence_knowledge(
+    session: DatabaseSession,
+    object_storage: ObjectStorageDependency,
+) -> ResolveGovernanceKnowledgeSources:
+    """Compose the verified-evidence knowledge gate without exposing it through HTTP."""
+    settings = get_settings()
+    adapter = VerifiedEvidenceKnowledgeAdapter(
+        SqlAlchemyEvidenceStore(session),
+        object_storage,
+    )
+    return ResolveGovernanceKnowledgeSources(
+        adapter,
+        adapter,
+        max_sources=settings.governance_knowledge_max_sources,
+        max_source_bytes=settings.governance_knowledge_max_source_bytes,
+        max_total_bytes=settings.governance_knowledge_max_total_bytes,
+    )

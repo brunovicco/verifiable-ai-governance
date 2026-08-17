@@ -134,6 +134,17 @@ class Settings(BaseSettings):
     evidence_allowed_content_types: str = (
         "application/pdf,image/png,image/jpeg,text/plain,text/csv,application/json"
     )
+    governance_knowledge_max_sources: int = Field(default=10, ge=1, le=100)
+    governance_knowledge_max_source_bytes: int = Field(
+        default=10 * 1024 * 1024,
+        ge=1,
+        le=50 * 1024 * 1024,
+    )
+    governance_knowledge_max_total_bytes: int = Field(
+        default=20 * 1024 * 1024,
+        ge=1,
+        le=100 * 1024 * 1024,
+    )
     malware_scanner_host: str = "localhost"
     malware_scanner_port: int = Field(default=3310, ge=1, le=65535)
     malware_scanner_connect_timeout_seconds: float = Field(default=2.0, gt=0, le=30)
@@ -316,6 +327,11 @@ class Settings(BaseSettings):
             raise ValueError("Credentialed CORS cannot use a wildcard origin")
         if not self.evidence_allowed_content_type_set:
             raise ValueError("EVIDENCE_ALLOWED_CONTENT_TYPES must not be empty")
+        if self.governance_knowledge_max_total_bytes < self.governance_knowledge_max_source_bytes:
+            raise ValueError(
+                "GOVERNANCE_KNOWLEDGE_MAX_TOTAL_BYTES must be greater than or equal to "
+                "GOVERNANCE_KNOWLEDGE_MAX_SOURCE_BYTES"
+            )
         if bool(self.object_storage_access_key) != bool(self.object_storage_secret_key):
             raise ValueError("Object-storage access and secret keys must be configured together")
         if not is_local and self.object_storage_auto_create_bucket:

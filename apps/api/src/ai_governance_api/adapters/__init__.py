@@ -28,6 +28,10 @@ from ai_governance_api.adapters.evidence_persistence import (
     SqlAlchemyEvidenceAudit,
     SqlAlchemyEvidenceStore,
 )
+from ai_governance_api.adapters.governance_knowledge_evidence import (
+    VerifiedEvidenceKnowledgeAdapter,
+    governance_reference_for_evidence,
+)
 from ai_governance_api.adapters.incident_persistence import (
     SqlAlchemyIncidentAudit,
     SqlAlchemyIncidentRepository,
@@ -71,5 +75,7 @@ __all__ = [
     "PolicyModelRouterHttpAdapter",
     "PyJwtOidcVerifier",
     "S3ObjectStorage",
+    "VerifiedEvidenceKnowledgeAdapter",
     "YamlDirectoryAuthorizationCatalog",
+    "governance_reference_for_evidence",
 ]

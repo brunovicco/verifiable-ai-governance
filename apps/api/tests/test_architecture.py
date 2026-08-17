@@ -16,6 +16,9 @@ GOVERNANCE_INTELLIGENCE_SCHEMA_SOURCE = (
     Path(__file__).parents[3]
     / "packages/governance-schemas/src/governance_schemas/governance_intelligence.py"
 )
+VERIFIED_EVIDENCE_KNOWLEDGE_ADAPTER_SOURCE = (
+    API_SOURCE / "adapters/governance_knowledge_evidence.py"
+)
 
 
 class FixedPolicyEvaluator:
@@ -263,3 +266,50 @@ def test_governance_intelligence_port_requires_verified_knowledge_sources() -> N
 
     assert "VerifiedGovernanceKnowledgeSource" in source
     assert "GovernanceSourceReference" not in source
+
+
+def test_verified_evidence_knowledge_adapter_has_no_probabilistic_dependencies() -> None:
+    source = VERIFIED_EVIDENCE_KNOWLEDGE_ADAPTER_SOURCE.read_text(encoding="utf-8")
+    imports = {
+        node.module.split(".")[0]
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+    imports.update(
+        alias.name.split(".")[0]
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    )
+
+    assert imports.isdisjoint(
+        {
+            "anthropic",
+            "chromadb",
+            "deep_agents",
+            "deepagents",
+            "langchain",
+            "langgraph",
+            "llama_index",
+            "openai",
+            "pinecone",
+            "qdrant_client",
+            "weaviate",
+        }
+    )
+
+
+def test_verified_evidence_knowledge_adapter_exposes_resolution_only() -> None:
+    source = VERIFIED_EVIDENCE_KNOWLEDGE_ADAPTER_SOURCE.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    adapter = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef) and node.name == "VerifiedEvidenceKnowledgeAdapter"
+    )
+    methods = {
+        node.name for node in adapter.body if isinstance(node, ast.AsyncFunctionDef)
+    }
+
+    assert methods == {"can_read", "resolve"}
+    assert "GovernanceFindingCandidate" not in source
