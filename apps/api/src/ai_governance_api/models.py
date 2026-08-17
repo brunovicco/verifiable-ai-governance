@@ -1302,6 +1302,78 @@ class RuntimeTelemetryEventEntry(Base):
     version: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
+class GovernanceFindingReviewReceiptEntry(Base):
+    """Append-only content-minimized advisory finding review receipt."""
+
+    __tablename__ = "governance_finding_review_receipts"
+    __table_args__ = (
+        Index(
+            "ix_governance_finding_review_receipt_subject_time",
+            "subject_id",
+            "reviewed_at",
+        ),
+        Index(
+            "ix_governance_finding_review_receipt_finding",
+            "finding_id",
+        ),
+        Index(
+            "ix_governance_finding_review_receipt_candidate_digest",
+            "candidate_digest",
+        ),
+        UniqueConstraint(
+            "request_id",
+            name="uq_governance_finding_review_receipt_request",
+        ),
+        CheckConstraint(
+            "schema_version = '1.0'",
+            name="ck_governance_finding_review_receipt_schema",
+        ),
+        CheckConstraint(
+            "finding_schema_version = '1.0'",
+            name="ck_governance_finding_review_receipt_finding_schema",
+        ),
+        CheckConstraint(
+            "finding_type IN ('policy_interpretation', 'risk_candidate', "
+            "'control_candidate', 'evidence_gap', 'evidence_interpretation', "
+            "'intake_suggestion')",
+            name="ck_governance_finding_review_receipt_type",
+        ),
+        CheckConstraint(
+            "disposition IN ('accepted_for_consideration', 'rejected', 'deferred')",
+            name="ck_governance_finding_review_receipt_disposition",
+        ),
+        CheckConstraint(
+            "length(candidate_digest) = 64",
+            name="ck_governance_finding_review_receipt_candidate_digest",
+        ),
+        CheckConstraint(
+            "length(receipt_digest) = 64",
+            name="ck_governance_finding_review_receipt_digest",
+        ),
+        CheckConstraint(
+            "version = 1",
+            name="ck_governance_finding_review_receipt_version",
+        ),
+    )
+
+    review_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    request_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    schema_version: Mapped[str] = mapped_column(String(10), nullable=False)
+    finding_schema_version: Mapped[str] = mapped_column(String(10), nullable=False)
+    finding_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    finding_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    agent_run_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    candidate_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    subject_id: Mapped[str] = mapped_column(String(200), nullable=False)
+    correlation_id: Mapped[str] = mapped_column(String(200), nullable=False)
+    disposition: Mapped[str] = mapped_column(String(40), nullable=False)
+    reviewed_by: Mapped[str] = mapped_column(String(200), nullable=False)
+    administrator_access: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    reviewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    receipt_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
 class AuditEvent(Base):
     """Append-only event linked into a tamper-evident hash chain."""
 

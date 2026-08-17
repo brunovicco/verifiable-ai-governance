@@ -4,7 +4,8 @@
 - **Owner:** Platform engineering, security and AI Governance
 - **Last reviewed:** 2026-08-17
 - **Review trigger:** Disposition, authorization, audit, persistence or delivery change
-- **Authoritative sources:** ADR 0060, ADR 0061 and the GI-3 application/architecture tests
+- **Authoritative sources:** ADR 0060, ADR 0061, ADR 0062 and the GI-3 application/architecture
+  tests
 
 GI-3 records an authorized, content-minimized review disposition for one advisory finding. It does
 not approve a governed subject and exposes no delivery path.
@@ -17,12 +18,14 @@ GovernanceFindingEnvelope (still untrusted)
   → require provenance correlation to match authenticated review context
   → authorize actor + subject + finding type through a consumer-owned port
   → hash the complete canonical envelope
-  → commit one content-minimized review audit receipt
+  → resolve caller request identity against durable minimized receipts
+  → atomically commit one content-minimized receipt and review audit event
   → return a non-authoritative GovernanceFindingReviewReceipt
 ```
 
-Denial occurs before audit. An audit append or commit failure withholds the receipt. Cancellation
-propagates and performs best-effort rollback if an audit transaction was opened.
+Validation and current authorization occur before every durable lookup, including replay. Denial
+occurs before persistence or audit. An insert, audit append or commit failure withholds the receipt.
+Cancellation propagates and performs best-effort rollback if a transaction was opened.
 
 ## Dispositions
 
@@ -52,9 +55,10 @@ still require separately reviewed policies.
 
 ## Audit minimization
 
-The `governance_intelligence.finding_reviewed` event may contain review/finding/run IDs, finding
-type, schema version, candidate digest, actor/subject/correlation, administrator-access assertion,
-disposition and UTC review time.
+The append-only `governance_finding_review_receipts` row and the
+`governance_intelligence.finding_reviewed` event may contain request/review/finding/run IDs,
+receipt and finding schema versions, finding type, candidate and receipt digests,
+actor/subject/correlation, administrator-access assertion, disposition and UTC review time.
 
 It must not contain statement, confidence, source references, source bytes, provider/model identity,
 prompts, chain-of-thought, tool output, storage locations or raw responses. The candidate digest is
@@ -66,8 +70,9 @@ SHA-256 over the complete envelope serialized as sorted compact JSON.
 |---|---|
 | `invalid_request` | envelope reconstruction, fixed advisory fields and correlation match |
 | `forbidden` | reviewer authorization for the exact subject and finding type |
+| `conflict` | reused request identity changed binding or durable receipt integrity failure |
 | `dependency_unavailable` before audit | authorization dependency |
-| `dependency_unavailable` after authorization | audit database, append, commit or local clock/ID seam |
+| `dependency_unavailable` after authorization | receipt/audit database, append, commit or local clock/ID seam |
 
 Do not log the finding payload while investigating. Use the content-free review/finding IDs,
 correlation ID and candidate digest.
@@ -87,13 +92,13 @@ Run the complete repository gate before merging:
 uv run python scripts/quality_gate.py
 ```
 
-## Before adding persistence or delivery
+## Before adding delivery
 
 1. preserve the concrete subject authorization policy or define a separately reviewed policy for
    every additional subject class;
 2. configure bounded timeout and retry behavior for any remote authorization adapter;
 3. preserve the distinction between consideration and authoritative approval;
-4. define request idempotency, concurrent review and supersession behavior;
+4. define review supersession and response semantics beyond exact request replay;
 5. decide whether finding content must be retained and for how long;
 6. define deletion, legal hold, export and reviewer-access rules for derived content;
 7. render statements as untrusted text without active markup or tool execution;
@@ -102,4 +107,5 @@ uv run python scripts/quality_gate.py
 10. map accepted recommendations through separate existing governed use cases and test denial,
     replay, races, audit outage and cancellation behavior.
 
-GI-3 has no endpoint, queue, provider, finding-content persistence, migration or replay guarantee.
+GI-3B adds a minimized receipt migration and exact durable replay. GI-3 still has no endpoint,
+listing, queue, provider, finding-content persistence or governed-state transition.

@@ -68,6 +68,8 @@ existing deterministic fixtures as live integration proof.
   delivery exposure;
 - GI-3A supplies an initiative-specific owner/admin review policy through a minimal short-lived
   ownership lookup, while keeping the composition internal and every disposition non-authoritative;
+- GI-3B adds durable, digest-bound request receipts, atomic audit persistence and exact replay under
+  concurrent duplicates, without retaining finding content or exposing a delivery path;
 - keep agent/model output untrusted and route every accepted recommendation through existing human
   or deterministic governance decisions.
 

@@ -87,6 +87,7 @@ from ai_governance_api.application.governance_intelligence import (
     RunGovernanceIntelligenceAnalysis,
 )
 from ai_governance_api.application.governance_intelligence_review import (
+    GOVERNANCE_FINDING_REVIEW_RECEIPT_SCHEMA_VERSION,
     GovernanceFindingReviewAccess,
     GovernanceFindingReviewAuditPort,
     GovernanceFindingReviewAuditRecord,
@@ -95,8 +96,11 @@ from ai_governance_api.application.governance_intelligence_review import (
     GovernanceFindingReviewDisposition,
     GovernanceFindingReviewError,
     GovernanceFindingReviewFailure,
+    GovernanceFindingReviewIntegrityError,
     GovernanceFindingReviewReceipt,
+    GovernanceFindingReviewStorePort,
     GovernanceFindingReviewTransactionPort,
+    GovernanceFindingReviewWriteConflict,
     ReviewGovernanceFinding,
 )
 from ai_governance_api.application.governance_knowledge import (
@@ -167,6 +171,7 @@ __all__ = [
     "EvidenceStore",
     "EvidenceTransactionPort",
     "GetControlCrosswalk",
+    "GOVERNANCE_FINDING_REVIEW_RECEIPT_SCHEMA_VERSION",
     "GovernanceFindingReviewAccess",
     "GovernanceFindingReviewAuditPort",
     "GovernanceFindingReviewAuditRecord",
@@ -175,8 +180,11 @@ __all__ = [
     "GovernanceFindingReviewDisposition",
     "GovernanceFindingReviewError",
     "GovernanceFindingReviewFailure",
+    "GovernanceFindingReviewIntegrityError",
     "GovernanceFindingReviewReceipt",
+    "GovernanceFindingReviewStorePort",
     "GovernanceFindingReviewTransactionPort",
+    "GovernanceFindingReviewWriteConflict",
     "GovernanceKnowledgeAccess",
     "GovernanceKnowledgeAuthorizerPort",
     "GovernanceKnowledgeContent",

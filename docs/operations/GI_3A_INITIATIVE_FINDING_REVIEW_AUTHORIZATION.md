@@ -65,5 +65,6 @@ Run the complete repository gate before merging:
 uv run python scripts/quality_gate.py
 ```
 
-GI-3A adds no endpoint, queue, provider, full finding table, migration, idempotency guarantee or
-governed-state transition.
+GI-3A itself adds no endpoint, queue, provider, full finding table or governed-state transition.
+GI-3B separately adds minimized receipt persistence and exact replay; it does not change this
+owner/administrator policy or expose it through a delivery boundary.
