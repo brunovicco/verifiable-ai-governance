@@ -6,9 +6,20 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 import pytest
-from ai_governance_api.adapters import SqlAlchemyInitiativeFindingReviewAuthorizer
+from ai_governance_api.adapters import (
+    SqlAlchemyGovernanceFindingReleaseVerifier,
+    SqlAlchemyGovernanceIntelligenceUnitOfWork,
+    SqlAlchemyInitiativeFindingReviewAuthorizer,
+)
 from ai_governance_api.adapters.governance_intelligence_review_persistence import (
     SqlAlchemyGovernanceFindingReviewUnitOfWork,
+)
+from ai_governance_api.application.governance_intelligence import (
+    GovernanceIntelligenceAnalysisType,
+    GovernanceIntelligenceAuditRecord,
+    GovernanceIntelligenceAuditStage,
+    GovernanceIntelligenceFindingAudit,
+    GovernanceIntelligenceFindingRelease,
 )
 from ai_governance_api.application.governance_intelligence_review import (
     GovernanceFindingReviewAccess,
@@ -44,8 +55,10 @@ INITIATIVE_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 REQUEST_ID = UUID("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
 FINDING_ID = UUID("cccccccc-cccc-4ccc-8ccc-cccccccccccc")
 RUN_ID = UUID("dddddddd-dddd-4ddd-8ddd-dddddddddddd")
+RELEASE_ID = UUID("ffffffff-ffff-4fff-8fff-ffffffffffff")
 CORRELATION_ID = "corr:gi-3b-postgres-concurrency"
 OWNER_ID = "initiative-owner"
+RELEASED_AT = datetime(2026, 8, 17, 18, 1, tzinfo=UTC)
 
 
 @pytest.mark.skipif(
@@ -62,6 +75,7 @@ async def test_concurrent_identical_review_requests_converge_to_one_receipt() ->
             await connection.run_sync(Base.metadata.drop_all)
             await connection.run_sync(Base.metadata.create_all)
         await _seed_initiative(session_factory)
+        await _seed_release(session_factory)
         start = asyncio.Event()
 
         async def review() -> object:
@@ -115,6 +129,7 @@ async def test_concurrent_divergent_review_requests_preserve_one_winner() -> Non
             await connection.run_sync(Base.metadata.drop_all)
             await connection.run_sync(Base.metadata.create_all)
         await _seed_initiative(session_factory)
+        await _seed_release(session_factory)
         start = asyncio.Event()
 
         async def review(
@@ -177,8 +192,9 @@ def _service(
 ) -> ReviewGovernanceFinding:
     """Compose independent units sharing only the PostgreSQL database."""
     authorizer = SqlAlchemyInitiativeFindingReviewAuthorizer(session_factory)
+    release_verifier = SqlAlchemyGovernanceFindingReleaseVerifier(session_factory)
     unit = SqlAlchemyGovernanceFindingReviewUnitOfWork(session_factory)
-    return ReviewGovernanceFinding(authorizer, unit, unit, unit)
+    return ReviewGovernanceFinding(authorizer, release_verifier, unit, unit, unit)
 
 
 async def _seed_initiative(
@@ -206,6 +222,44 @@ async def _seed_initiative(
             )
         )
         await session.commit()
+
+
+async def _seed_release(
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    """Persist exact minimized release provenance consumed by both requests."""
+    envelope = _finding()
+    release = GovernanceIntelligenceFindingRelease.create(
+        release_id=RELEASE_ID,
+        envelope=envelope,
+        subject_id=INITIATIVE_ID,
+        correlation_id=CORRELATION_ID,
+        released_at=RELEASED_AT,
+    )
+    record = GovernanceIntelligenceAuditRecord(
+        stage=GovernanceIntelligenceAuditStage.ANALYSIS_COMPLETED,
+        sequence=3,
+        analysis_type=GovernanceIntelligenceAnalysisType.RISK_IDENTIFICATION,
+        subject_id=INITIATIVE_ID,
+        correlation_id=CORRELATION_ID,
+        administrator_access=False,
+        references=envelope.candidate.sources,
+        findings=(
+            GovernanceIntelligenceFindingAudit(
+                finding_id=str(release.finding_id),
+                finding_type=release.finding_type,
+                agent_run_id=str(release.agent_run_id),
+                release_id=str(release.release_id),
+                candidate_digest=release.candidate_digest,
+                release_digest=release.release_digest,
+                released_at=release.released_at,
+            ),
+        ),
+    )
+    unit = SqlAlchemyGovernanceIntelligenceUnitOfWork(session_factory)
+    await unit.save_releases((release,))
+    await unit.append(actor_id=OWNER_ID, record=record)
+    await unit.commit()
 
 
 def _finding() -> GovernanceFindingEnvelope:

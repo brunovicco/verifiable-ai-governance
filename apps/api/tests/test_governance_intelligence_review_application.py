@@ -125,6 +125,43 @@ class FakeAuthorizer:
         return self.allowed
 
 
+class FakeReleaseVerifier:
+    """Return one configured content-free GI-2 release decision."""
+
+    def __init__(self, *, released: bool = True, fail: bool = False) -> None:
+        self.released = released
+        self.fail = fail
+        self.calls: list[tuple[object, ...]] = []
+
+    async def was_released(
+        self,
+        *,
+        finding_schema_version: str,
+        finding_id: UUID,
+        finding_type: GovernanceFindingType,
+        agent_run_id: UUID,
+        candidate_digest: str,
+        subject_id: str,
+        correlation_id: str,
+    ) -> bool:
+        self.calls.append(
+            (
+                finding_schema_version,
+                finding_id,
+                finding_type,
+                agent_run_id,
+                candidate_digest,
+                subject_id,
+                correlation_id,
+            )
+        )
+        if self.fail:
+            raise GovernanceFindingReviewDependencyError(
+                "release verification detail must not escape"
+            )
+        return self.released
+
+
 class FakeStore:
     """Capture minimized receipt persistence and deterministic failures."""
 
@@ -212,10 +249,12 @@ def use_case(
     store: FakeStore,
     audit: FakeAudit,
     transaction: FakeTransaction,
+    release_verifier: FakeReleaseVerifier | None = None,
 ) -> ReviewGovernanceFinding:
     """Compose the review boundary with deterministic seams."""
     return ReviewGovernanceFinding(
         authorizer,
+        release_verifier or FakeReleaseVerifier(),
         store,
         audit,
         transaction,
@@ -230,6 +269,7 @@ async def execute(
     store: FakeStore | None = None,
     audit: FakeAudit | None = None,
     transaction: FakeTransaction | None = None,
+    release_verifier: FakeReleaseVerifier | None = None,
     request_id: UUID = REQUEST_ID,
     envelope: GovernanceFindingEnvelope | None = None,
     disposition: GovernanceFindingReviewDisposition = (
@@ -243,6 +283,7 @@ async def execute(
         store or FakeStore(),
         audit or FakeAudit(),
         transaction or FakeTransaction(),
+        release_verifier,
     ).execute(
         request_id=request_id,
         finding=envelope or finding(),
@@ -256,12 +297,14 @@ async def test_authorized_review_returns_a_durable_non_authoritative_receipt(
     disposition: GovernanceFindingReviewDisposition,
 ) -> None:
     authorizer = FakeAuthorizer()
+    release_verifier = FakeReleaseVerifier()
     store = FakeStore()
     audit = FakeAudit()
     transaction = FakeTransaction()
 
     receipt = await execute(
         authorizer=authorizer,
+        release_verifier=release_verifier,
         store=store,
         audit=audit,
         transaction=transaction,
@@ -282,6 +325,7 @@ async def test_authorized_review_returns_a_durable_non_authoritative_receipt(
     assert store.saved == [receipt]
     assert transaction.commits == 1
     assert transaction.rollbacks == 0
+    assert len(release_verifier.calls) == 1
     actor_id, record = audit.records[0]
     assert actor_id == ACTOR_ID
     assert record.request_id == REQUEST_ID
@@ -329,11 +373,13 @@ async def test_invalid_review_input_fails_before_authorization_or_persistence(
     else:
         disposition = cast(GovernanceFindingReviewDisposition, "approved")
     authorizer = FakeAuthorizer()
+    release_verifier = FakeReleaseVerifier()
     store = FakeStore()
 
     with pytest.raises(GovernanceFindingReviewError) as captured:
         await execute(
             authorizer=authorizer,
+            release_verifier=release_verifier,
             store=store,
             request_id=request_id,
             envelope=envelope,
@@ -343,20 +389,53 @@ async def test_invalid_review_input_fails_before_authorization_or_persistence(
 
     assert captured.value.reason is GovernanceFindingReviewFailure.INVALID_REQUEST
     assert authorizer.calls == []
+    assert release_verifier.calls == []
     assert store.get_calls == []
 
 
 async def test_authorization_denial_is_content_free_and_writes_no_receipt() -> None:
     store = FakeStore()
     audit = FakeAudit()
+    release_verifier = FakeReleaseVerifier()
 
     with pytest.raises(GovernanceFindingReviewError) as captured:
-        await execute(authorizer=FakeAuthorizer(allowed=False), store=store, audit=audit)
+        await execute(
+            authorizer=FakeAuthorizer(allowed=False),
+            release_verifier=release_verifier,
+            store=store,
+            audit=audit,
+        )
 
     assert captured.value.reason is GovernanceFindingReviewFailure.FORBIDDEN
     assert STATEMENT not in str(captured.value)
+    assert release_verifier.calls == []
     assert store.get_calls == []
     assert audit.records == []
+
+
+async def test_unreleased_finding_fails_before_receipt_lookup_or_audit() -> None:
+    release_verifier = FakeReleaseVerifier(released=False)
+    store = FakeStore()
+    audit = FakeAudit()
+
+    with pytest.raises(GovernanceFindingReviewError) as captured:
+        await execute(release_verifier=release_verifier, store=store, audit=audit)
+
+    assert captured.value.reason is GovernanceFindingReviewFailure.INVALID_REQUEST
+    assert len(release_verifier.calls) == 1
+    assert store.get_calls == []
+    assert audit.records == []
+
+
+async def test_release_verification_dependency_failure_is_bounded() -> None:
+    store = FakeStore()
+
+    with pytest.raises(GovernanceFindingReviewError) as captured:
+        await execute(release_verifier=FakeReleaseVerifier(fail=True), store=store)
+
+    assert captured.value.reason is GovernanceFindingReviewFailure.DEPENDENCY_UNAVAILABLE
+    assert "release verification detail" not in str(captured.value)
+    assert store.get_calls == []
 
 
 async def test_replay_requires_fresh_authorization_before_loading_receipt() -> None:
@@ -378,7 +457,8 @@ async def test_exact_replay_returns_the_same_receipt_without_second_write_or_aud
     store = FakeStore()
     audit = FakeAudit()
     transaction = FakeTransaction()
-    service = use_case(authorizer, store, audit, transaction)
+    release_verifier = FakeReleaseVerifier()
+    service = use_case(authorizer, store, audit, transaction, release_verifier)
 
     first = await service.execute(
         request_id=REQUEST_ID,
@@ -399,6 +479,7 @@ async def test_exact_replay_returns_the_same_receipt_without_second_write_or_aud
     assert transaction.commits == 2
     assert transaction.rollbacks == 0
     assert len(authorizer.calls) == 2
+    assert len(release_verifier.calls) == 2
 
 
 @pytest.mark.parametrize("rebind", ["finding", "disposition", "actor", "subject", "admin"])
@@ -523,8 +604,13 @@ async def test_cancellation_during_audit_propagates_and_rolls_back() -> None:
 
 
 async def test_composition_persists_receipt_and_audit_atomically_and_replays() -> None:
-    service = dependencies.build_governance_finding_review(FakeAuthorizer())
+    release_verifier = FakeReleaseVerifier()
+    service = dependencies.build_governance_finding_review(
+        FakeAuthorizer(),
+        release_verifier,
+    )
     composition = vars(service)
+    assert composition["_release_verifier"] is release_verifier
     assert composition["_store"] is composition["_audit"]
     assert composition["_audit"] is composition["_transaction"]
 
@@ -592,7 +678,10 @@ async def test_composition_rolls_back_receipt_when_audit_append_fails(
         "append_audit_event",
         fail_audit,
     )
-    service = dependencies.build_governance_finding_review(FakeAuthorizer())
+    service = dependencies.build_governance_finding_review(
+        FakeAuthorizer(),
+        FakeReleaseVerifier(),
+    )
 
     with pytest.raises(GovernanceFindingReviewError) as captured:
         await service.execute(
@@ -620,7 +709,10 @@ async def test_composition_rolls_back_receipt_when_audit_append_fails(
 
 async def test_composition_rejects_a_tampered_persisted_receipt() -> None:
     """Require the concrete loader and replay boundary to verify stored evidence."""
-    service = dependencies.build_governance_finding_review(FakeAuthorizer())
+    service = dependencies.build_governance_finding_review(
+        FakeAuthorizer(),
+        FakeReleaseVerifier(),
+    )
     await service.execute(
         request_id=REQUEST_ID,
         finding=finding(),

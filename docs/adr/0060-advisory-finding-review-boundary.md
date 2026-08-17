@@ -1,5 +1,8 @@
 # ADR 0060 - Advisory Governance Intelligence finding review boundary
 
+> **Later decision:** ADR 0063 closes the release-boundary prerequisite identified here by requiring
+> exact minimized GI-2 release verification before every review receipt lookup.
+
 - **Status:** Accepted
 - **Date:** 2026-08-17
 - **Decision owners:** Engineering, architecture, security and AI Governance

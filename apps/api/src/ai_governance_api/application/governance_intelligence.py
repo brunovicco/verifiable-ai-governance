@@ -1,10 +1,16 @@
 """Governed orchestration for non-authoritative Governance Intelligence analysis."""
 
 import asyncio
+import hashlib
+import hmac
+import json
+from collections.abc import Callable
 from contextlib import suppress
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Protocol
+from uuid import UUID, uuid4
 
 from governance_schemas import (
     GovernanceFindingCandidate,
@@ -13,15 +19,26 @@ from governance_schemas import (
     GovernanceSourceReference,
 )
 
+from ai_governance_api.application.governance_intelligence_integrity import (
+    governance_finding_envelope_digest,
+)
 from ai_governance_api.application.governance_knowledge import (
     GovernanceKnowledgeAccess,
     GovernanceKnowledgeResolutionError,
     VerifiedGovernanceKnowledgeSource,
 )
 
+GOVERNANCE_INTELLIGENCE_FINDING_RELEASE_SCHEMA_VERSION = "1.0"
+_RELEASE_VERSION = 1
+_LOWERCASE_HEX = frozenset("0123456789abcdef")
+
 
 class GovernanceIntelligenceDependencyError(RuntimeError):
     """Report an unavailable analysis or audit dependency without provider details."""
+
+
+class GovernanceIntelligenceReleaseConflict(RuntimeError):
+    """Report a durable finding identity collision without persistence details."""
 
 
 class GovernanceIntelligenceFailure(StrEnum):
@@ -85,6 +102,82 @@ class GovernanceIntelligenceFindingAudit:
     finding_id: str
     finding_type: GovernanceFindingType
     agent_run_id: str
+    release_id: str
+    candidate_digest: str
+    release_digest: str
+    released_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class GovernanceIntelligenceFindingRelease:
+    """Immutable minimized evidence that one envelope passed the GI-2 boundary."""
+
+    release_id: UUID
+    schema_version: str
+    finding_schema_version: str
+    finding_id: UUID
+    finding_type: GovernanceFindingType
+    agent_run_id: UUID
+    candidate_digest: str
+    subject_id: str
+    correlation_id: str
+    released_at: datetime
+    release_digest: str
+    version: int = _RELEASE_VERSION
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        release_id: UUID,
+        envelope: GovernanceFindingEnvelope,
+        subject_id: str,
+        correlation_id: str,
+        released_at: datetime,
+    ) -> "GovernanceIntelligenceFindingRelease":
+        """Create sealed release evidence for one already validated envelope."""
+        candidate = envelope.candidate
+        unsigned = cls(
+            release_id=release_id,
+            schema_version=GOVERNANCE_INTELLIGENCE_FINDING_RELEASE_SCHEMA_VERSION,
+            finding_schema_version=envelope.schema_version,
+            finding_id=candidate.finding_id,
+            finding_type=candidate.finding_type,
+            agent_run_id=candidate.provenance.agent_run_id,
+            candidate_digest=governance_finding_envelope_digest(envelope),
+            subject_id=subject_id,
+            correlation_id=correlation_id,
+            released_at=released_at,
+            release_digest="0" * 64,
+        )
+        return replace(unsigned, release_digest=_release_digest(unsigned))
+
+    def __post_init__(self) -> None:
+        """Reject malformed durable release evidence before it crosses a port."""
+        for identifier in (self.release_id, self.finding_id, self.agent_run_id):
+            if not isinstance(identifier, UUID) or identifier.int == 0:
+                raise ValueError("Governance Intelligence release UUIDs must be non-nil")
+        if self.schema_version != GOVERNANCE_INTELLIGENCE_FINDING_RELEASE_SCHEMA_VERSION:
+            raise ValueError("Governance Intelligence release schema is unsupported")
+        if self.finding_schema_version != "1.0":
+            raise ValueError("Governance Intelligence finding schema is unsupported")
+        if not isinstance(self.finding_type, GovernanceFindingType):
+            raise ValueError("Governance Intelligence release type is unsupported")
+        for value in (self.subject_id, self.correlation_id):
+            if not _bounded_identifier(value):
+                raise ValueError("Governance Intelligence release identifiers are invalid")
+        if not _utc_datetime(self.released_at):
+            raise ValueError("Governance Intelligence release time must be UTC")
+        if not _lowercase_sha256(self.candidate_digest) or not _lowercase_sha256(
+            self.release_digest
+        ):
+            raise ValueError("Governance Intelligence release digests are invalid")
+        if self.version != _RELEASE_VERSION:
+            raise ValueError("Governance Intelligence release version is unsupported")
+
+    def has_valid_digest(self) -> bool:
+        """Verify the complete immutable release binding in constant time."""
+        return hmac.compare_digest(self.release_digest, _release_digest(self))
 
 
 @dataclass(frozen=True, slots=True)
@@ -183,6 +276,17 @@ class GovernanceIntelligenceAuditPort(Protocol):
         ...
 
 
+class GovernanceIntelligenceReleaseStorePort(Protocol):
+    """Persist minimized findings released by the governed analysis boundary."""
+
+    async def save_releases(
+        self,
+        releases: tuple[GovernanceIntelligenceFindingRelease, ...],
+    ) -> None:
+        """Insert one complete release set without committing."""
+        ...
+
+
 class GovernanceIntelligenceTransactionPort(Protocol):
     """Commit or roll back one audit stage before analysis can continue."""
 
@@ -217,6 +321,8 @@ _ALLOWED_FINDING_TYPES: dict[
 }
 
 type _ReferenceKey = tuple[str, str, str | None, str | None, str]
+type Clock = Callable[[], datetime]
+type ReleaseIdFactory = Callable[[], UUID]
 
 
 class RunGovernanceIntelligenceAnalysis:
@@ -226,12 +332,15 @@ class RunGovernanceIntelligenceAnalysis:
         self,
         knowledge: GovernedKnowledgeResolutionPort,
         intelligence: GovernanceIntelligencePort,
+        release_store: GovernanceIntelligenceReleaseStorePort,
         audit: GovernanceIntelligenceAuditPort,
         transaction: GovernanceIntelligenceTransactionPort,
         *,
         max_sources: int,
         max_findings: int,
         analysis_timeout_seconds: float,
+        clock: Clock | None = None,
+        release_id_factory: ReleaseIdFactory | None = None,
     ) -> None:
         """Initialize explicit boundaries and bounded analysis policy."""
         if not 1 <= max_sources <= 100:
@@ -242,11 +351,14 @@ class RunGovernanceIntelligenceAnalysis:
             raise ValueError("Governance Intelligence timeout must be between 0 and 300 seconds")
         self._knowledge = knowledge
         self._intelligence = intelligence
+        self._release_store = release_store
         self._audit = audit
         self._transaction = transaction
         self._max_sources = max_sources
         self._max_findings = max_findings
         self._analysis_timeout_seconds = analysis_timeout_seconds
+        self._clock = clock or (lambda: datetime.now(UTC))
+        self._release_id_factory = release_id_factory or uuid4
 
     async def execute(
         self,
@@ -350,27 +462,42 @@ class RunGovernanceIntelligenceAnalysis:
             )
             raise
 
-        findings = tuple(
-            GovernanceIntelligenceFindingAudit(
-                finding_id=str(candidate.finding_id),
-                finding_type=candidate.finding_type,
-                agent_run_id=str(candidate.provenance.agent_run_id),
-            )
-            for candidate in candidates
+        envelopes = tuple(
+            GovernanceFindingEnvelope(candidate=candidate) for candidate in candidates
         )
-        await self._append_audit(
-            actor_id=access.actor_id,
-            record=self._audit_record(
-                GovernanceIntelligenceAuditStage.ANALYSIS_COMPLETED,
-                3,
+        try:
+            releases = self._new_releases(envelopes, access)
+        except GovernanceIntelligenceDependencyError as exc:
+            await self._audit_analysis_failure(
                 analysis_type,
                 references,
                 access,
-                source_total_bytes=source_total_bytes,
-                findings=findings,
-            ),
+                source_total_bytes,
+                GovernanceIntelligenceFailure.DEPENDENCY_UNAVAILABLE.value,
+            )
+            raise GovernanceIntelligenceAnalysisError(
+                GovernanceIntelligenceFailure.DEPENDENCY_UNAVAILABLE
+            ) from exc
+        findings = tuple(_finding_audit(release) for release in releases)
+        completion = self._audit_record(
+            GovernanceIntelligenceAuditStage.ANALYSIS_COMPLETED,
+            3,
+            analysis_type,
+            references,
+            access,
+            source_total_bytes=source_total_bytes,
+            findings=findings,
         )
-        return tuple(GovernanceFindingEnvelope(candidate=candidate) for candidate in candidates)
+        await self._persist_completion(
+            releases=releases,
+            actor_id=access.actor_id,
+            record=completion,
+            analysis_type=analysis_type,
+            references=references,
+            access=access,
+            source_total_bytes=source_total_bytes,
+        )
+        return envelopes
 
     def _validate_request(
         self,
@@ -513,6 +640,96 @@ class RunGovernanceIntelligenceAnalysis:
             candidates.append(candidate)
         return tuple(candidates)
 
+    def _new_releases(
+        self,
+        envelopes: tuple[GovernanceFindingEnvelope, ...],
+        access: GovernanceKnowledgeAccess,
+    ) -> tuple[GovernanceIntelligenceFindingRelease, ...]:
+        """Create one immutable minimized release record per accepted envelope."""
+        if not envelopes:
+            return ()
+        released_at = self._released_at()
+        releases: list[GovernanceIntelligenceFindingRelease] = []
+        for envelope in envelopes:
+            releases.append(
+                GovernanceIntelligenceFindingRelease.create(
+                    release_id=self._release_id(),
+                    envelope=envelope,
+                    subject_id=access.subject_id,
+                    correlation_id=access.correlation_id,
+                    released_at=released_at,
+                )
+            )
+        return tuple(releases)
+
+    def _released_at(self) -> datetime:
+        """Return one canonical UTC release time for the complete candidate set."""
+        try:
+            released_at = self._clock()
+        except Exception as exc:
+            raise GovernanceIntelligenceDependencyError(
+                "Governance Intelligence release clock is unavailable"
+            ) from exc
+        if not _utc_datetime(released_at):
+            raise GovernanceIntelligenceDependencyError(
+                "Governance Intelligence release clock is invalid"
+            )
+        return released_at.astimezone(UTC)
+
+    def _release_id(self) -> UUID:
+        """Return one non-nil release identity from the configured factory."""
+        try:
+            release_id = self._release_id_factory()
+        except Exception as exc:
+            raise GovernanceIntelligenceDependencyError(
+                "Governance Intelligence release identity is unavailable"
+            ) from exc
+        if not isinstance(release_id, UUID) or release_id.int == 0:
+            raise GovernanceIntelligenceDependencyError(
+                "Governance Intelligence release identity is invalid"
+            )
+        return release_id
+
+    async def _persist_completion(
+        self,
+        *,
+        releases: tuple[GovernanceIntelligenceFindingRelease, ...],
+        actor_id: str,
+        record: GovernanceIntelligenceAuditRecord,
+        analysis_type: GovernanceIntelligenceAnalysisType,
+        references: tuple[GovernanceSourceReference, ...],
+        access: GovernanceKnowledgeAccess,
+        source_total_bytes: int,
+    ) -> None:
+        """Commit release records and terminal audit evidence atomically."""
+        try:
+            await self._release_store.save_releases(releases)
+            await self._audit.append(actor_id=actor_id, record=record)
+            await self._transaction.commit()
+        except GovernanceIntelligenceReleaseConflict as exc:
+            with suppress(GovernanceIntelligenceDependencyError):
+                await self._transaction.rollback()
+            await self._audit_analysis_rejection(
+                analysis_type,
+                references,
+                access,
+                source_total_bytes,
+                GovernanceIntelligenceFailure.OUTPUT_REJECTED,
+            )
+            raise GovernanceIntelligenceAnalysisError(
+                GovernanceIntelligenceFailure.OUTPUT_REJECTED
+            ) from exc
+        except GovernanceIntelligenceDependencyError as exc:
+            with suppress(GovernanceIntelligenceDependencyError):
+                await self._transaction.rollback()
+            raise GovernanceIntelligenceAnalysisError(
+                GovernanceIntelligenceFailure.DEPENDENCY_UNAVAILABLE
+            ) from exc
+        except asyncio.CancelledError:
+            with suppress(GovernanceIntelligenceDependencyError):
+                await self._transaction.rollback()
+            raise
+
     async def _audit_analysis_failure(
         self,
         analysis_type: GovernanceIntelligenceAnalysisType,
@@ -609,4 +826,72 @@ def _reference_key(reference: GovernanceSourceReference) -> _ReferenceKey:
         reference.node_id,
         reference.section,
         reference.content_digest,
+    )
+
+
+def _finding_audit(
+    release: GovernanceIntelligenceFindingRelease,
+) -> GovernanceIntelligenceFindingAudit:
+    """Project one release into content-minimized terminal audit facts."""
+    return GovernanceIntelligenceFindingAudit(
+        finding_id=str(release.finding_id),
+        finding_type=release.finding_type,
+        agent_run_id=str(release.agent_run_id),
+        release_id=str(release.release_id),
+        candidate_digest=release.candidate_digest,
+        release_digest=release.release_digest,
+        released_at=release.released_at,
+    )
+
+
+def _release_digest(release: GovernanceIntelligenceFindingRelease) -> str:
+    """Bind immutable finding release metadata without retaining its content."""
+    canonical = json.dumps(
+        {
+            "release_id": str(release.release_id),
+            "schema_version": release.schema_version,
+            "finding_schema_version": release.finding_schema_version,
+            "finding_id": str(release.finding_id),
+            "finding_type": release.finding_type.value,
+            "agent_run_id": str(release.agent_run_id),
+            "candidate_digest": release.candidate_digest,
+            "subject_id": release.subject_id,
+            "correlation_id": release.correlation_id,
+            "released_at": release.released_at.isoformat(),
+            "version": release.version,
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode()
+    return hashlib.sha256(canonical).hexdigest()
+
+
+def _bounded_identifier(value: object) -> bool:
+    """Return whether a value is one bounded printable identity without whitespace."""
+    return (
+        isinstance(value, str)
+        and bool(value)
+        and len(value) <= 200
+        and value == value.strip()
+        and all(character.isprintable() and not character.isspace() for character in value)
+    )
+
+
+def _utc_datetime(value: object) -> bool:
+    """Return whether a value is a timezone-aware UTC datetime."""
+    return (
+        isinstance(value, datetime)
+        and value.tzinfo is not None
+        and value.utcoffset() is not None
+        and value.utcoffset() == UTC.utcoffset(value)
+    )
+
+
+def _lowercase_sha256(value: object) -> bool:
+    """Return whether a value is one canonical lowercase SHA-256 digest."""
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in _LOWERCASE_HEX for character in value)
     )

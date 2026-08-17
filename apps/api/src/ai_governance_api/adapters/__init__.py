@@ -28,8 +28,9 @@ from ai_governance_api.adapters.evidence_persistence import (
     SqlAlchemyEvidenceAudit,
     SqlAlchemyEvidenceStore,
 )
-from ai_governance_api.adapters.governance_intelligence_audit import (
-    SqlAlchemyGovernanceIntelligenceAudit,
+from ai_governance_api.adapters.governance_intelligence_persistence import (
+    SqlAlchemyGovernanceFindingReleaseVerifier,
+    SqlAlchemyGovernanceIntelligenceUnitOfWork,
 )
 from ai_governance_api.adapters.governance_intelligence_review_authorization import (
     SqlAlchemyInitiativeFindingReviewAuthorizer,
@@ -72,7 +73,8 @@ __all__ = [
     "SqlAlchemyEvidenceAudit",
     "SqlAlchemyEvidenceStore",
     "SqlAlchemyGovernanceFindingReviewUnitOfWork",
-    "SqlAlchemyGovernanceIntelligenceAudit",
+    "SqlAlchemyGovernanceFindingReleaseVerifier",
+    "SqlAlchemyGovernanceIntelligenceUnitOfWork",
     "SqlAlchemyInitiativeFindingReviewAuthorizer",
     "SqlAlchemyIncidentAudit",
     "SqlAlchemyIncidentRepository",

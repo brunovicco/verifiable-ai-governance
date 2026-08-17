@@ -17,6 +17,7 @@ request_id + finding + disposition + authenticated access
   → require provenance correlation to match authenticated access
   → perform current actor/subject/type authorization
   → hash the complete canonical envelope
+  → require an intact exact GI-2 release binding
   → load minimized receipt by request_id
      ├─ exact valid binding: return the original receipt, add no audit event
      ├─ different or corrupted binding: fail with content-free conflict
@@ -24,8 +25,9 @@ request_id + finding + disposition + authenticated access
   → on unique race: roll back, reload the winner once, require exact binding
 ```
 
-Current authorization always precedes durable lookup. A prior successful review does not preserve
-permission after the actor's relationship to the subject changes.
+Current authorization always precedes release and receipt lookup. A prior successful review does
+not preserve permission after the actor's relationship to the subject changes, and an exact replay
+does not bypass current GI-2 release verification.
 
 ## Identity and binding
 
@@ -63,6 +65,8 @@ Receipt and `governance_intelligence.finding_reviewed` audit evidence commit tog
 | Stored receipt structure or digest is invalid | `conflict` |
 | Concurrent exact inserts | One winner; loser reloads and returns the winner |
 | Concurrent divergent inserts | One winner; loser returns `conflict` |
+| Release absent or bound to different facts | `invalid_request`; do not inspect a receipt |
+| Release evidence corrupt or unavailable | `dependency_unavailable`; do not inspect a receipt |
 | Receipt/audit dependency unavailable | `dependency_unavailable` and rollback |
 
 Do not log the submitted finding while diagnosing a replay. Use the content-free request/review,
@@ -74,6 +78,7 @@ subject and correlation identities and digests under the normal metadata access 
 uv run pytest -q \
   apps/api/tests/test_governance_intelligence_review_application.py \
   apps/api/tests/test_governance_intelligence_review_authorization_adapter.py \
+  apps/api/tests/test_governance_intelligence_release_persistence.py \
   apps/api/tests/test_migration_history.py \
   apps/api/tests/test_architecture.py
 ```

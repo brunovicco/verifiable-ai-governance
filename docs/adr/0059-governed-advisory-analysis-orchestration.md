@@ -1,5 +1,8 @@
 # ADR 0059 - Governed advisory analysis orchestration
 
+> **Later decision:** ADR 0063 supersedes the no-release-persistence portions of this decision by
+> adding content-minimized release evidence atomically with `analysis_completed`.
+
 - **Status:** Accepted
 - **Date:** 2026-08-17
 - **Decision owners:** Engineering, architecture, security and AI Governance
