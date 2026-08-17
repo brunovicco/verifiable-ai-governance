@@ -25,8 +25,8 @@ GOVERNANCE_INTELLIGENCE_AUDIT_ADAPTER_SOURCE = (
 GOVERNANCE_FINDING_REVIEW_APPLICATION_SOURCE = (
     API_SOURCE / "application/governance_intelligence_review.py"
 )
-GOVERNANCE_FINDING_REVIEW_AUDIT_ADAPTER_SOURCE = (
-    API_SOURCE / "adapters/governance_intelligence_review_audit.py"
+GOVERNANCE_FINDING_REVIEW_PERSISTENCE_ADAPTER_SOURCE = (
+    API_SOURCE / "adapters/governance_intelligence_review_persistence.py"
 )
 GOVERNANCE_FINDING_REVIEW_AUTHORIZATION_ADAPTER_SOURCE = (
     API_SOURCE / "adapters/governance_intelligence_review_authorization.py"
@@ -509,8 +509,32 @@ def test_governance_intelligence_audit_adapter_cannot_persist_content_fields() -
     assert "storage_key" not in source
 
 
-def test_finding_review_audit_adapter_cannot_persist_finding_content() -> None:
-    source = GOVERNANCE_FINDING_REVIEW_AUDIT_ADAPTER_SOURCE.read_text(encoding="utf-8")
+def test_finding_review_persistence_exposes_one_minimized_unit_of_work() -> None:
+    source = GOVERNANCE_FINDING_REVIEW_PERSISTENCE_ADAPTER_SOURCE.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    adapter = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef)
+        and node.name == "SqlAlchemyGovernanceFindingReviewUnitOfWork"
+    )
+    public_async_methods = {
+        node.name
+        for node in adapter.body
+        if isinstance(node, ast.AsyncFunctionDef) and not node.name.startswith("_")
+    }
+
+    assert public_async_methods == {
+        "append",
+        "commit",
+        "get_by_request_id",
+        "rollback",
+        "save",
+    }
+
+
+def test_finding_review_persistence_cannot_store_finding_content() -> None:
+    source = GOVERNANCE_FINDING_REVIEW_PERSISTENCE_ADAPTER_SOURCE.read_text(encoding="utf-8")
 
     assert "finding.statement" not in source
     assert '"statement"' not in source

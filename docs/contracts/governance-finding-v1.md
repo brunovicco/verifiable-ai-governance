@@ -135,6 +135,12 @@ advisory finding only. None represents a governed approval, authorization, compl
 or subject lifecycle transition. Finding content remains ephemeral; the audit receipt stores only
 identities, disposition, trace facts and the SHA-256 envelope digest.
 
+GI-3B adds a separate consumer-side receipt contract for durable replay. A caller-supplied
+`request_id` is bound to the complete review command and to an immutable receipt digest. Exact
+replays return the original receipt after current authorization; divergent reuse fails with a
+conflict. The minimized receipt table and audit event remain outside Governance Finding `1.0` and
+store no statement, confidence, source reference, prompt, provider or model content.
+
 ## Provenance and minimization
 
 `AgentRunProvenance` records stable run, agent, model/configuration, source, tool-call, time and
@@ -175,7 +181,7 @@ See ADR 0056 and the PH-2 contract-evolution runbook for the complete lifecycle 
 - architectural decisions: `docs/adr/0054-governance-intelligence-trust-boundary.md`,
   `docs/adr/0055-governance-intelligence-cross-repository-compatibility-gate.md` and
   `docs/adr/0056-governance-intelligence-versioned-contract-evolution.md`, plus the downstream
-  source/orchestration/review decisions in ADRs 0057 through 0060.
+  source/orchestration/review decisions in ADRs 0057 through 0062.
 
 The PH-1 gate builds and installs the wheel into an ephemeral target, then validates this fixture
 from isolated Python processes rooted in current external consumer checkouts. PH-2 separately

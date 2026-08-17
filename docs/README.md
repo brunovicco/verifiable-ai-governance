@@ -67,6 +67,7 @@ relevant ADR instead of duplicating detailed rationale.
 - [Governed advisory analysis](operations/GI_2_GOVERNED_ADVISORY_ANALYSIS.md)
 - [Advisory finding review boundary](operations/GI_3_ADVISORY_FINDING_REVIEW.md)
 - [Initiative finding review authorization](operations/GI_3A_INITIATIVE_FINDING_REVIEW_AUTHORIZATION.md)
+- [Durable finding review replay](operations/GI_3B_DURABLE_REVIEW_REPLAY.md)
 - [Runtime authorization v1](contracts/runtime-authorization-v1.md)
 - [Runtime violation v1](contracts/runtime-violation-v1.md)
 

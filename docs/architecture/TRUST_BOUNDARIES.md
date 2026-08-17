@@ -172,6 +172,14 @@ type uses the same policy and denial writes no receipt. Owner review is advisory
 exception to segregation of duties in later authoritative decisions. The internal builder remains
 unregistered at every delivery boundary.
 
+GI-3B gives that internal boundary durable request identity and exact replay without persisting the
+finding. Every attempt is revalidated and reauthorized before receipt lookup. One append-only,
+content-minimized receipt and its hash-chained audit event commit in the same transaction;
+`request_id` uniqueness serializes concurrent duplicates. Exact binding returns the original
+receipt without a second audit event, while changed finding, actor, subject, disposition or trace
+facts fail closed with a content-free conflict. There is still no review endpoint, listing, queue,
+provider, finding-content table or governed-state transition.
+
 ## Authority model
 
 | Layer | Authority |

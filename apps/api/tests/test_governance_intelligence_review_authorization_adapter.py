@@ -37,6 +37,7 @@ INITIATIVE_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 MISSING_INITIATIVE_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
 FINDING_ID = UUID("33333333-3333-4333-8333-333333333333")
 RUN_ID = UUID("44444444-4444-4444-8444-444444444444")
+REVIEW_REQUEST_ID = UUID("77777777-7777-4777-8777-777777777777")
 OWNER_ID = "initiative-owner"
 ADMIN_ID = "governance-admin"
 CORRELATION_ID = "corr:gi-3a-review"
@@ -262,6 +263,7 @@ async def test_initiative_composition_records_only_an_authorized_minimized_recei
     service = dependencies.build_initiative_governance_finding_review()
 
     receipt = await service.execute(
+        request_id=REVIEW_REQUEST_ID,
         finding=_finding(),
         disposition=GovernanceFindingReviewDisposition.ACCEPTED_FOR_CONSIDERATION,
         access=GovernanceFindingReviewAccess(
@@ -293,6 +295,7 @@ async def test_concrete_authorization_denial_writes_no_review_receipt() -> None:
 
     with pytest.raises(GovernanceFindingReviewError) as captured:
         await service.execute(
+            request_id=REVIEW_REQUEST_ID,
             finding=_finding(),
             disposition=GovernanceFindingReviewDisposition.REJECTED,
             access=GovernanceFindingReviewAccess(

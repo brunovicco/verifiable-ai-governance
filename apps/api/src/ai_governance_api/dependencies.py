@@ -32,7 +32,7 @@ from ai_governance_api.adapters import (
     SqlAlchemyDirectoryAuthorizationCacheTransaction,
     SqlAlchemyEvidenceAudit,
     SqlAlchemyEvidenceStore,
-    SqlAlchemyGovernanceFindingReviewAudit,
+    SqlAlchemyGovernanceFindingReviewUnitOfWork,
     SqlAlchemyGovernanceIntelligenceAudit,
     SqlAlchemyIncidentAudit,
     SqlAlchemyIncidentRepository,
@@ -1010,8 +1010,8 @@ def build_governance_finding_review(
     authorizer: GovernanceFindingReviewAuthorizerPort,
 ) -> ReviewGovernanceFinding:
     """Compose internal advisory review without exposing a delivery dependency."""
-    audit = SqlAlchemyGovernanceFindingReviewAudit(SessionFactory)
-    return ReviewGovernanceFinding(authorizer, audit, audit)
+    unit = SqlAlchemyGovernanceFindingReviewUnitOfWork(SessionFactory)
+    return ReviewGovernanceFinding(authorizer, unit, unit, unit)
 
 
 def build_initiative_governance_finding_review() -> ReviewGovernanceFinding:
