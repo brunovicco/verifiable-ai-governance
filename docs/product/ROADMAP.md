@@ -52,8 +52,9 @@ existing deterministic fixtures as live integration proof.
   Policy Model Router and Credit Desk checkouts;
 - PH-2 establishes immutable schema snapshots, fail-closed version dispatch and explicit
   backward-reader compatibility/evolution rules;
-- GI-1 introduces a governed knowledge foundation with source resolution, version and digest
-  verification before any agent or retrieval adapter is connected;
+- GI-1 establishes a governed knowledge foundation with authorized exact-version source resolution,
+  bounded reads and actual-byte digest verification before any agent or retrieval adapter is
+  connected;
 - keep agent/model output untrusted and route every accepted recommendation through existing human
   or deterministic governance decisions.
 

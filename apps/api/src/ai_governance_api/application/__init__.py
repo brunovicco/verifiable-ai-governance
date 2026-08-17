@@ -73,6 +73,18 @@ from ai_governance_api.application.evidence import (
     UploadEvidence,
 )
 from ai_governance_api.application.governance_intelligence import GovernanceIntelligencePort
+from ai_governance_api.application.governance_knowledge import (
+    GovernanceKnowledgeAccess,
+    GovernanceKnowledgeAuthorizerPort,
+    GovernanceKnowledgeContent,
+    GovernanceKnowledgeDependencyError,
+    GovernanceKnowledgeFailure,
+    GovernanceKnowledgeResolutionError,
+    GovernanceKnowledgeResolverPort,
+    ResolvedGovernanceKnowledgeSource,
+    ResolveGovernanceKnowledgeSources,
+    VerifiedGovernanceKnowledgeSource,
+)
 from ai_governance_api.application.incidents import (
     IncidentAuditPort,
     IncidentRepositoryPort,
@@ -129,6 +141,13 @@ __all__ = [
     "EvidenceStore",
     "EvidenceTransactionPort",
     "GetControlCrosswalk",
+    "GovernanceKnowledgeAccess",
+    "GovernanceKnowledgeAuthorizerPort",
+    "GovernanceKnowledgeContent",
+    "GovernanceKnowledgeDependencyError",
+    "GovernanceKnowledgeFailure",
+    "GovernanceKnowledgeResolutionError",
+    "GovernanceKnowledgeResolverPort",
     "GovernanceIntelligencePort",
     "InitiativeControlContextStore",
     "IdentityProviderUnavailable",
@@ -154,6 +173,8 @@ __all__ = [
     "ResolveDirectoryAuthorization",
     "RequireActiveDirectoryAccess",
     "RequestModelRoutingDecision",
+    "ResolvedGovernanceKnowledgeSource",
+    "ResolveGovernanceKnowledgeSources",
     "RestoreDirectoryAccess",
     "ReuseDirectoryAuthorization",
     "SaveAssessment",
@@ -161,4 +182,5 @@ __all__ = [
     "TransactionPort",
     "TokenVerifier",
     "UploadEvidence",
+    "VerifiedGovernanceKnowledgeSource",
 ]

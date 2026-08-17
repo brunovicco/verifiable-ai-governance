@@ -108,6 +108,13 @@ them a core dependency or source of governance authority.
 AI-generated interpretation is not evidence. The original resolved artifact may be evidence; the
 finding is a derived representation.
 
+GI-1 resolves each reference through an actor- and subject-bound application authorization port,
+requires the resolver to return the exact artifact identity and version, and calculates SHA-256
+over bounded source bytes. Only `VerifiedGovernanceKnowledgeSource` values may enter the
+`GovernanceIntelligencePort`; raw references are insufficient. Digest verification binds bytes to
+the reference but does not prove authenticity, applicability, evidentiary sufficiency or the truth
+of a generated interpretation.
+
 ## Provenance and minimization
 
 `AgentRunProvenance` records stable run, agent, model/configuration, source, tool-call, time and
