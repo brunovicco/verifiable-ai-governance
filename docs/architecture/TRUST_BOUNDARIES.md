@@ -137,6 +137,12 @@ callers, batch resolution is all-or-nothing, and source content is bounded and e
 messages and object representations. Verified bytes remain ephemeral unless a separately governed
 adapter defines persistence.
 
+GI-1A provides the first concrete source adapter for clean, trusted private evidence uploads. It
+maps only canonical `evidence:<uuid>` references, preserves initiative owner/admin authorization,
+requires the canonical private storage key and exposes no bucket, key or URI. External evidence
+references and fragment selectors remain unresolved. No current HTTP, retrieval or model path
+consumes the verified bytes.
+
 ## Authority model
 
 | Layer | Authority |

@@ -60,6 +60,7 @@ class GovernanceKnowledgeAccess:
     actor_id: str
     subject_id: str
     correlation_id: str
+    is_admin: bool = False
 
     def __post_init__(self) -> None:
         """Reject absent or unbounded access identifiers before port invocation."""

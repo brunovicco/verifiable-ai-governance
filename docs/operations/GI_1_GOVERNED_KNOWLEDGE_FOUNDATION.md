@@ -10,6 +10,9 @@ GI-1 provides the deterministic boundary that must run before a Governance Intel
 can consume source content. It does not connect a model, retrieval engine, vector database or
 external knowledge provider.
 
+GI-1A adds the first concrete adapter for clean, trusted uploaded evidence while preserving this
+gate. It still adds no HTTP, retrieval or model consumer. See ADR 0058 and the GI-1A runbook.
+
 ## Guaranteed sequence
 
 ```text

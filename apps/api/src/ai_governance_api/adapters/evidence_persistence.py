@@ -45,6 +45,24 @@ class SqlAlchemyEvidenceStore:
         )
         return [_to_domain(entity) for entity in entities]
 
+    async def get_uploaded(
+        self,
+        evidence_id: str,
+        initiative_id: str,
+    ) -> EvidenceRecord | None:
+        """Return one eligible upload by exact evidence and initiative identity."""
+        entity = await self._session.scalar(
+            select(Evidence).where(
+                Evidence.id == evidence_id,
+                Evidence.initiative_id == initiative_id,
+                Evidence.trusted_source.is_(True),
+                Evidence.scan_status == ScanVerdict.CLEAN.value,
+                Evidence.storage_bucket.is_not(None),
+                Evidence.storage_key.is_not(None),
+            )
+        )
+        return _to_domain(entity) if entity is not None else None
+
     async def save(self, record: EvidenceRecord) -> EvidenceRecord:
         """Insert immutable metadata without committing the transaction."""
         entity = Evidence(

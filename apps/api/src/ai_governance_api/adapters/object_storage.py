@@ -11,6 +11,37 @@ from ai_governance_api.application.evidence import BinaryContent, EvidenceDepend
 from ai_governance_api.domain.evidence import StoredObject
 
 
+class S3ObjectContent:
+    """Asynchronous bounded reader over one private S3 streaming body."""
+
+    def __init__(self, body: Any) -> None:
+        """Capture an already-open body without exposing its bucket or key."""
+        self._body = body
+        self._closed = False
+
+    async def read(self, size: int) -> bytes:
+        """Read bounded bytes without blocking the event loop."""
+        if self._closed:
+            raise EvidenceDependencyError("S3 content is closed")
+        try:
+            content = await asyncio.to_thread(self._body.read, size)
+        except (BotoCoreError, ClientError, OSError) as exc:
+            raise EvidenceDependencyError("S3 read failed") from exc
+        if not isinstance(content, bytes):
+            raise EvidenceDependencyError("S3 returned invalid content")
+        return content
+
+    async def close(self) -> None:
+        """Close the remote stream once and map dependency failures."""
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            await asyncio.to_thread(self._body.close)
+        except (BotoCoreError, ClientError, OSError) as exc:
+            raise EvidenceDependencyError("S3 close failed") from exc
+
+
 class S3ObjectStorage:
     """Store private evidence objects in an S3-compatible bucket."""
 
@@ -92,6 +123,25 @@ class S3ObjectStorage:
             )
         except (BotoCoreError, ClientError, OSError) as exc:
             raise EvidenceDependencyError("S3 delete failed") from exc
+
+    async def open(self, stored: StoredObject) -> S3ObjectContent:
+        """Open one exact private object without returning storage coordinates."""
+        if stored.bucket != self._bucket:
+            raise EvidenceDependencyError("S3 bucket mismatch")
+        try:
+            response = await asyncio.to_thread(
+                self._client.get_object,
+                Bucket=stored.bucket,
+                Key=stored.key,
+            )
+        except (BotoCoreError, ClientError, OSError) as exc:
+            raise EvidenceDependencyError("S3 get failed") from exc
+        body = response.get("Body") if isinstance(response, dict) else None
+        if body is None or not callable(getattr(body, "read", None)) or not callable(
+            getattr(body, "close", None)
+        ):
+            raise EvidenceDependencyError("S3 response body is invalid")
+        return S3ObjectContent(body)
 
     async def _ensure_bucket(self) -> None:
         """Verify bucket availability and create it only when explicitly allowed."""

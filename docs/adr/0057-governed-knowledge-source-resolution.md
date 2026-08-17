@@ -26,8 +26,9 @@ The application layer owns two provider-neutral ports:
 - `GovernanceKnowledgeResolverPort` returns an unverified, bounded-read source stream for the exact
   artifact identity and version without interpreting content.
 
-Authorization receives `GovernanceKnowledgeAccess`, which binds actor, governed subject and
-correlation identity. A denial and an absent source produce the same content-free public failure so
+Authorization receives `GovernanceKnowledgeAccess`, which binds actor, governed subject,
+correlation identity and an authenticated administrator assertion. A denial and an absent source
+produce the same content-free public failure so
 the failure payload does not reveal whether a source exists. Dependency failures remain distinct
 for operations but disclose no source metadata or content. Concrete adapters must also address
 timing and transport side channels appropriate to their source system.

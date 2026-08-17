@@ -37,6 +37,11 @@ A file processed by the platform's evidence pipeline:
 “Verified” refers to transport and integrity controls performed by the platform. It does
 not mean that the file's claims are true.
 
+GI-1A may resolve this class as a Governance Knowledge source only for the owning initiative and an
+authorized owner/administrator. The adapter uses the stable evidence ID and version, never its
+private storage coordinates, and the application recalculates SHA-256 over actual bytes. This does
+not turn a generated interpretation into evidence or grant the interpretation decision authority.
+
 ### External reference
 
 A URI, ticket, report identifier or other reference provided during a decision. It may
@@ -135,6 +140,8 @@ effectiveness or compliance by itself.
 - classify and protect backup packages as sensitive;
 - define retention, deletion and legal-hold requirements outside local use;
 - avoid collecting prompts, responses or personal data when metadata is sufficient.
+- require a separate purpose, access-audit and egress review before verified evidence content is
+  sent to a retrieval or model provider.
 
 ## Evidence quality criteria
 

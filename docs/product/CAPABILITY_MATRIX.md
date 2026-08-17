@@ -68,6 +68,7 @@
 | Governance Intelligence | Cross-repository contract compatibility gate | Implemented | Built-wheel inspection and isolated probes protect v1 against current Policy Model Router and Credit Desk checkouts |
 | Governance Intelligence | Versioned contract compatibility and evolution | Implemented | Immutable schema snapshots, a closed manifest, fail-closed dispatch and backward-reader rules prevent silent v1 drift |
 | Governance Intelligence | Governed knowledge and retrieval foundation | Implemented | Verified-only application ports enforce authorization, exact-version resolution, bounded reads and SHA-256 before adapters; no provider or retrieval adapter is connected |
+| Governance Intelligence | Verified uploaded evidence source adapter | Implemented | Canonical evidence identity, initiative owner/admin authorization and exact private S3 reads feed the GI-1 gate; no HTTP, retrieval or model consumer exists |
 | Integration | CMDB and enterprise GRC | Planned | API/webhook integration roadmap |
 | Integration | Data catalog and CI/CD | Planned | API/webhook integration roadmap |
 | Sector | Financial-services overlay | Planned | Baseline remains sector-neutral; canonical credit scenario is a demo, not a policy overlay |
