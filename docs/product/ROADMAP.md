@@ -48,7 +48,8 @@ existing deterministic fixtures as live integration proof.
 
 - GI-0 establishes closed, versioned advisory finding/source/provenance contracts and a
   consumer-owned application port;
-- PH-1 adds a cross-repository compatibility gate before external consumers rely on the contract;
+- PH-1 establishes an artifact-first cross-repository compatibility gate against the current
+  Policy Model Router and Credit Desk checkouts;
 - PH-2 defines versioned contract compatibility and evolution rules;
 - GI-1 introduces a governed knowledge foundation with source resolution, version and digest
   verification before any agent or retrieval adapter is connected;

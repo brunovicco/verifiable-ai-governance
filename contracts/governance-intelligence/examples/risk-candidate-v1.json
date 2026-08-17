@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "candidate": {
+    "finding_id": "11111111-1111-4111-8111-111111111111",
+    "finding_type": "risk_candidate",
+    "statement": "The policy language may require an additional human review gate.",
+    "confidence": 0.91,
+    "sources": [
+      {
+        "artifact_id": "policy:acceptable-ai-use",
+        "version": "3.1",
+        "node_id": "clause:4.2.3",
+        "section": "4.2.3",
+        "content_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    ],
+    "external_taxonomy_references": [
+      {
+        "provider": "nist",
+        "taxonomy": "ai-rmf",
+        "identifier": "GOVERN-1.2",
+        "version": "1.0",
+        "reference_uri": "https://airc.nist.gov/AI_RMF_Knowledge_Base/Playbook"
+      }
+    ],
+    "provenance": {
+      "agent_run_id": "22222222-2222-4222-8222-222222222222",
+      "agent_name": "risk_mapper",
+      "provider": "provider-neutral",
+      "model": "governance-analysis-model",
+      "model_version": "2026.08",
+      "prompt_config_version": "risk-mapping-v1",
+      "retrieval_query_reference": "query:4de78b5f",
+      "retrieved_sources": [],
+      "tool_call_references": [
+        "tool-call:resolve-policy"
+      ],
+      "created_at": "2026-08-16T18:30:00Z",
+      "correlation_id": "corr:gi-0-example"
+    },
+    "trust_level": "untrusted",
+    "advisory_only": true
+  }
+}
