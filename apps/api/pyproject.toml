@@ -21,7 +21,7 @@ dependencies = [
   "python-multipart>=0.0.20,<1",
   "pyjwt[crypto]>=2.13.0,<3",
   "sqlalchemy[asyncio]>=2.0.51,<3",
-  "uvicorn[standard]>=0.35.0,<1",
+  "uvicorn[standard]>=0.52.3,<1",
 ]
 
 [tool.uv.sources]
